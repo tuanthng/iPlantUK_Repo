@@ -1,0 +1,11 @@
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\bin\Plossum CommandLine.xml
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\bin\Plossum CommandLine.dll
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\bin\Plossum CommandLine.pdb
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\bin\Plossum CommandLine.dll.CodeAnalysisLog.xml
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\bin\Plossum CommandLine.dll.lastcodeanalysissucceeded
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\src\Plossum\obj\Debug\Plossum.csprojResolveAssemblyReference.cache
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\src\Plossum\obj\Debug\Plossum.Resources.CommandLineStrings.resources
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\src\Plossum\obj\Debug\Plossum.Resources.PlossumStrings.resources
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\src\Plossum\obj\Debug\Plossum.csproj.GenerateResource.Cache
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\src\Plossum\obj\Debug\Plossum CommandLine.dll
+C:\Users\psztn\Downloads\plossum_commandline_src\plossum-commandline\src\Plossum\obj\Debug\Plossum CommandLine.pdb

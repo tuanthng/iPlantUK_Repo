@@ -1,0 +1,6 @@
+/home/tuan/MyProject/RootNavLinux/plossum-commandline/src/Plossum/obj/Release/Plossum.Resources.CommandLineStrings.resources
+/home/tuan/MyProject/RootNavLinux/plossum-commandline/src/Plossum/obj/Release/Plossum.Resources.PlossumStrings.resources
+/home/tuan/MyProject/RootNavLinux/plossum-commandline/bin/Plossum CommandLine.dll.mdb
+/home/tuan/MyProject/RootNavLinux/plossum-commandline/bin/Plossum CommandLine.dll
+/home/tuan/MyProject/RootNavLinux/plossum-commandline/src/Plossum/obj/Release/Plossum CommandLine.dll
+/home/tuan/MyProject/RootNavLinux/plossum-commandline/src/Plossum/obj/Release/Plossum CommandLine.dll.mdb
