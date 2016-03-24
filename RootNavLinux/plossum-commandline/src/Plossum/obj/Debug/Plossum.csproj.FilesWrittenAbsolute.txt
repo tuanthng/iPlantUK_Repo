@@ -8,3 +8,9 @@
 /home/tuan/MyProject/RootNavLinux/plossum-commandline/bin/Plossum CommandLine.dll
 /home/tuan/MyProject/RootNavLinux/plossum-commandline/src/Plossum/obj/Debug/Plossum CommandLine.dll
 /home/tuan/MyProject/RootNavLinux/plossum-commandline/src/Plossum/obj/Debug/Plossum CommandLine.dll.mdb
+/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/plossum-commandline/src/Plossum/obj/Debug/Plossum.Resources.CommandLineStrings.resources
+/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/plossum-commandline/src/Plossum/obj/Debug/Plossum.Resources.PlossumStrings.resources
+/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/plossum-commandline/bin/Plossum CommandLine.dll.mdb
+/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/plossum-commandline/bin/Plossum CommandLine.dll
+/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/plossum-commandline/src/Plossum/obj/Debug/Plossum CommandLine.dll
+/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/plossum-commandline/src/Plossum/obj/Debug/Plossum CommandLine.dll.mdb
