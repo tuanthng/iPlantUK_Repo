@@ -75,13 +75,13 @@ namespace RootNavLinux
 
 			try
 			{
-
 				img = CvInvoke.Imread(filePath, Emgu.CV.CvEnum.ImreadModes.AnyColor);
+
+				//for testing
 				//Console.WriteLine(filePath);
 				Console.WriteLine(img.NumberOfChannels.ToString());
 				Console.WriteLine(img.Cols.ToString() + " " + img.Rows.ToString());
-				//for testing
-				//ImageConverter.DisplayImage(img);
+				ImageConverter.DisplayImage(img, "Origin", false);
 				//convert to gray scale
 				//Mat gray = ImageConverter.ConvertGrayScaleImage(img);
 				//Console.WriteLine(gray.Cols.ToString());
@@ -91,8 +91,8 @@ namespace RootNavLinux
 
 				Console.WriteLine(data.Length.ToString());
 
-				Mat newImg = ImageConverter.ConvertByteArrayToMat(ref data, img.Cols, img.Rows, img.NumberOfChannels);
-				ImageConverter.DisplayImage(newImg);
+				Mat newImg = ImageConverter.ConvertByteArrayToMat(ref data, img.Cols, img.Rows, img.NumberOfChannels, img.Depth);
+				ImageConverter.DisplayImage(newImg, "Getting back", true);
 
 			}
 			catch(Exception ex)
