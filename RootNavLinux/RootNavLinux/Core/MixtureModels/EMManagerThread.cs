@@ -7,11 +7,11 @@ using System.ComponentModel;
 
 namespace RootNav.Core.MixtureModels
 {
-    public delegate void TaskProgressChangedHandler(int progress);
+	public delegate void TaskThreadProgressChangedHandler(int progress);
 
-    public delegate void EMManagerProgressCompleted();
+	public delegate void EMManagerThreadProgressCompleted();
 
-    class EMManager
+	class EMManagerThread
     {
         public class EMWorkNotCompletedException : Exception
         {
@@ -47,7 +47,9 @@ namespace RootNav.Core.MixtureModels
         }
 
         // Worker information
-        private List<EMWorker> currentWorkers = null;
+        //private List<EMWorker> currentWorkers = null;
+		private List<EMThread> currentWorkers = null;
+
         private List<bool> currentWorkersCompleted = null;
         private List<int> currentWorkersProgress = null;
         private int currentProgress;
@@ -57,15 +59,16 @@ namespace RootNav.Core.MixtureModels
 			Console.WriteLine ("Run with " + ThreadCount.ToString() + " threads.");
 
             // Create thread workers
-            currentWorkers = new List<EMWorker>();
+			currentWorkers = new List<EMThread>();
             currentWorkersCompleted = new List<bool>();
             currentWorkersProgress = new List<int>();
             currentProgress = 0;
             for (int worker = 0; worker < ThreadCount; worker++)
             {
-                EMWorker thread = new EMWorker();
+				EMThread thread = new EMThread();
+
                 thread.ProgressChanged += new ProgressChangedEventHandler(OnWorkerProgressChanged);
-                thread.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnWorkerProgressCompleted);
+				thread.ProgressCompleted += new RunWorkerCompletedEventHandler(OnWorkerProgressCompleted);
                 currentWorkers.Add(thread);
                 currentWorkersCompleted.Add(false);
                 currentWorkersProgress.Add(0);
@@ -108,7 +111,7 @@ namespace RootNav.Core.MixtureModels
                 currentWorkers[worker].Width = this.Width;
                 currentWorkers[worker].Height = this.Height;
                 currentWorkers[worker].Configuration = this.Configuration;
-                currentWorkers[worker].RunWorkerAsync();
+				currentWorkers[worker].Start();
 
 				//Console.WriteLine ("Lauching...");
             }
@@ -118,7 +121,7 @@ namespace RootNav.Core.MixtureModels
         {
 			Console.WriteLine ("OnWorkerProgressChanged of EMManager...");
 
-            EMWorker worker = sender as EMWorker;
+			EMThread worker = sender as EMThread;
 
             if (worker == null)
             {
@@ -143,7 +146,7 @@ namespace RootNav.Core.MixtureModels
 
         private void OnWorkerProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
         {
-            EMWorker worker = sender as EMWorker;
+			EMThread worker = sender as EMThread;
 			Console.WriteLine("OnWorkerProgressCompleted of EMManager");
 
             if (worker == null)
@@ -163,7 +166,7 @@ namespace RootNav.Core.MixtureModels
             if (!this.currentWorkersCompleted.Contains(false))
             {
                 this.Mixtures = new Dictionary<EMPatch, GaussianMixtureModel>();
-                foreach (EMWorker w in this.currentWorkers)
+				foreach (EMThread w in this.currentWorkers)
                 {
                     foreach (Tuple<EMPatch, GaussianMixtureModel> t in w.Mixtures)
                     {
