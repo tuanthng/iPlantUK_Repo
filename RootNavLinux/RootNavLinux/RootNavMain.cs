@@ -17,7 +17,7 @@ namespace RootNavLinux
 	{
 		public static double BackgroundPenalty = 0.1;
 
-		private EMManager emManager = null;
+		private EMManagerThread emManager = null;
 		private byte[] intensityBuffer = null;
 		private GaussianMixtureModel highlightedMixture = null;
 		//private LiveWirePrimaryManager primaryLiveWireManager = null;
@@ -210,7 +210,7 @@ namespace RootNavLinux
 //			}
 
 
-			this.emManager = new EMManager()
+			this.emManager = new EMManagerThread()
 			{
 				IntensityBuffer = intensityBuffer,
 				Width = width,
@@ -271,7 +271,11 @@ namespace RootNavLinux
 				EMPatch currentPatch = Pair.Key;
 				GaussianMixtureModel currentModel = Pair.Value;
 				currentModel.CalculateBounds();
-				UpdateImageOnPatchChange(currentPatch, currentModel, wbmp, this.featureBitmap);
+
+				Image<Bgr, Byte> imgScreen = wbmp.ToImage<Bgr, Byte> ();
+				Image<Gray, Byte> featureScreen = this.featureBitmap.ToImage<Gray, Byte> ();
+
+				UpdateImageOnPatchChange(currentPatch, currentModel, ref imgScreen, ref featureScreen);
 			}
 //
 //			if (wbmp.CanFreeze)
@@ -314,7 +318,7 @@ namespace RootNavLinux
 
 			//BeginTipDetection();
 		}
-		unsafe private void UpdateImageOnPatchChange(EMPatch patch, GaussianMixtureModel model, Mat screenBitmap, Mat featureBitmap)
+		unsafe private void UpdateImageOnPatchChange(EMPatch patch, GaussianMixtureModel model, ref Image<Bgr, Byte> screenBitmap, ref Image<Gray, Byte>  featureBitmap)
 		{
 
 			Console.WriteLine ("UpdateImageOnPatchChange");
@@ -410,8 +414,12 @@ namespace RootNavLinux
 						//*(featurePointer + (y * featureStride) + x) = (byte)(this.probabilityMapBrightestClass[index] * 255);
 						//*(outputPointer + (y * outputStride) + x) = bgr32;
 
-						featureBitmap.Data.SetValue ((byte)(this.probabilityMapBrightestClass[index] * 255), (y * featureStride) + x);
-						screenBitmap.Data.SetValue(bgr32, (y * outputStride) + x);
+						//featureBitmap.Data.SetValue ((byte)(this.probabilityMapBrightestClass[index] * 255), (y * featureStride) + x);
+						featureBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBrightestClass[index] * 255);
+						//screenBitmap.Data.SetValue(bgr32, (y * outputStride) + x);
+						screenBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBestClass[index] * 255);
+						screenBitmap.Data[y, x, 1] = 80;
+						screenBitmap.Data[y, x, 2] = 80;
 
 
 					}
@@ -420,8 +428,8 @@ namespace RootNavLinux
 				// Saves the blue channel out to a probability map
 				//ImageEncoder.SaveImage(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\featuremap.png", featureBitmap, ImageEncoder.EncodingType.PNG);
 				Console.WriteLine ("Saving...");
-				featureBitmap.Save("featuremap.png");
-				ImageConverter.DisplayImage (featureBitmap, "Feature");
+				featureBitmap.Save("/home/tuan/MyProject/RootNavLinux_MovedTo_iPlantUK_Repo/RootNavLinux/bin/Debug/featuremap.png");
+				//ImageConverter.DisplayImage (featureBitmap.Mat, "Feature");
 
 			} 
 

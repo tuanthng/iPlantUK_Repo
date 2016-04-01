@@ -41,7 +41,7 @@ namespace RootNav.Core.MixtureModels
 
         public void OnDoWork()
         {
-			Console.WriteLine ("OnDoWork of Worker");
+			Console.WriteLine ("OnDoWork of Thread");
 
             List<Tuple<EMPatch, GaussianMixtureModel>> currentMixtures = new List<Tuple<EMPatch, GaussianMixtureModel>>();
 
@@ -113,6 +113,11 @@ namespace RootNav.Core.MixtureModels
 
             // Assign this.Mixtures
             this.Mixtures = currentMixtures;
+
+			if (this.ProgressCompleted != null) 
+			{
+				this.ProgressCompleted(this, new RunWorkerCompletedEventArgs(null, null, false));
+			}
         }
     }
 }

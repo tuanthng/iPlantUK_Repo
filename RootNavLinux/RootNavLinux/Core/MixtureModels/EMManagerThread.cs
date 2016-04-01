@@ -119,7 +119,7 @@ namespace RootNav.Core.MixtureModels
 
         private void OnWorkerProgressChanged(object sender, ProgressChangedEventArgs args)
         {
-			Console.WriteLine ("OnWorkerProgressChanged of EMManager...");
+			Console.WriteLine ("OnWorkerProgressChanged of EMManagerThread...");
 
 			EMThread worker = sender as EMThread;
 
@@ -147,7 +147,7 @@ namespace RootNav.Core.MixtureModels
         private void OnWorkerProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
         {
 			EMThread worker = sender as EMThread;
-			Console.WriteLine("OnWorkerProgressCompleted of EMManager");
+			Console.WriteLine("OnWorkerProgressCompleted of EMManagerThread");
 
             if (worker == null)
             {
@@ -163,12 +163,20 @@ namespace RootNav.Core.MixtureModels
 
             this.currentWorkersCompleted[currentWorkers.IndexOf(worker)] = true;
 
+
             if (!this.currentWorkersCompleted.Contains(false))
             {
+				Console.WriteLine("Here.");	
+
                 this.Mixtures = new Dictionary<EMPatch, GaussianMixtureModel>();
+
+				if (this.currentWorkers == null) {
+					Console.WriteLine("Here has errors.");	
+				}
+
 				foreach (EMThread w in this.currentWorkers)
                 {
-                    foreach (Tuple<EMPatch, GaussianMixtureModel> t in w.Mixtures)
+					foreach (Tuple<EMPatch, GaussianMixtureModel> t in w.Mixtures)
                     {
                         this.Mixtures.Add(t.Item1, t.Item2);
                     }
