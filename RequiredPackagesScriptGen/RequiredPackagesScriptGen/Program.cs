@@ -20,10 +20,30 @@ namespace RequiredPackagesScriptGen
 			// Read the file into a string
 			//string s = file.ReadToEnd();
 
+			writer.WriteLine ("sudo apt-get install gcc");
+			writer.WriteLine ("sudo apt-get install gfortran");
 			writer.WriteLine ("sudo apt-get install python-dev");
 			writer.WriteLine ("sudo apt-get install python-virtualenv");
-			writer.WriteLine ("sudo apt-get install python-dev");
+			writer.WriteLine ("sudo apt-get install libxml2-dev");
+			writer.WriteLine ("sudo apt-get install libxslt1-dev");
+			writer.WriteLine ("sudo apt-get install postgresql");
+			writer.WriteLine ("sudo apt-get install libopenslide-dev");
+			writer.WriteLine ("sudo apt-get install libtiff4-dev");
+			writer.WriteLine ("sudo apt-get update");
+			writer.WriteLine ("# remember to install setuptools, matlab, configure postgres");
+			//make sure to use the latest virtualenv package. Some errors have happened while isntalling bisque on Debian 7
+			writer.WriteLine ("sudo pip install virtualenv --upgrade");
+			writer.WriteLine ("sudo apt-get install build-essential");
+			writer.WriteLine ("sudo apt-get install libbz2-dev");
 
+			//Install required packages to compile imgcnv.
+			//Note: Thecodec packages (libopenjpeg-dev, libschroedinger-dev, libtheora-dev and libxvidcore-dev) may not be needed for imgcnv in later versions
+			writer.WriteLine ("sudo apt-get install libopenjpeg-dev");
+			writer.WriteLine ("sudo apt-get install libschroedinger-dev");
+			writer.WriteLine ("sudo apt-get install libtheora-dev");
+			writer.WriteLine ("sudo apt-get install qt4-qmake");
+			writer.WriteLine ("apt-get install qt4-dev-tools");
+					
 			writer.WriteLine ("");
 
 			while (!file.EndOfStream) 
@@ -33,7 +53,19 @@ namespace RequiredPackagesScriptGen
 				if (line.Length > 0) {
 					if (line [0] != '#' && line [0] != '-') {
 						// Add a single line
-						string newPackage = "sudo pip install " + line;
+						string newPackage = "";
+
+						//ignore some special packages above
+						if (line == "Minimatic==1.0.4" || line == "Paste==1.7.5.2" || line == "PasteScript==1.7.3"
+						    || line == "tgext.registration2==0.5.2" || line == "tw.output==0.5.0dev-20110906" ||
+						    line == "numpy==1.11.0" || line == "TurboGears2==2.1.5" ||	line == "httplib2==0.7.1-1") {
+
+							newPackage = "# sudo pip install " + line;
+
+						} else {
+							newPackage = "sudo pip install " + line;	
+						}
+
 						writer.WriteLine (newPackage);	
 					}
 				}
@@ -50,6 +82,7 @@ namespace RequiredPackagesScriptGen
 			writer.WriteLine ("sudo pip install tgext.registration2-0.5.2-py2-none-any.whl");
 			writer.WriteLine ("sudo pip install tw.output-0.5.0dev_20110906-py2-none-any.whl");
 			writer.WriteLine ("sudo pip install pylibtiff-0.3.0_1-cp27-none-linux_x86_64.whl");
+
 
 			// Close the file so it can be accessed again.
 			file.Close();
