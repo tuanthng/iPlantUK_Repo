@@ -42,7 +42,7 @@ namespace RequiredPackagesScriptGen
 			writer.WriteLine ("sudo apt-get install libschroedinger-dev");
 			writer.WriteLine ("sudo apt-get install libtheora-dev");
 			writer.WriteLine ("sudo apt-get install qt4-qmake");
-			writer.WriteLine ("apt-get install qt4-dev-tools");
+			writer.WriteLine ("sudo apt-get install qt4-dev-tools");
 					
 			writer.WriteLine ("");
 
