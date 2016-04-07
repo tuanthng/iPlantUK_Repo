@@ -30,7 +30,7 @@ namespace RequiredPackagesScriptGen
 			writer.WriteLine ("sudo apt-get install libopenslide-dev");
 			writer.WriteLine ("sudo apt-get install libtiff4-dev");
 			writer.WriteLine ("sudo apt-get update");
-			writer.WriteLine ("# remember to install setuptools, matlab, configure postgres");
+			writer.WriteLine ("# remember to install setuptools, matlab, configure postgres, mysql");
 			//make sure to use the latest virtualenv package. Some errors have happened while isntalling bisque on Debian 7
 			writer.WriteLine ("sudo pip install virtualenv --upgrade");
 			writer.WriteLine ("sudo apt-get install build-essential");
@@ -43,7 +43,17 @@ namespace RequiredPackagesScriptGen
 			writer.WriteLine ("sudo apt-get install libtheora-dev");
 			writer.WriteLine ("sudo apt-get install qt4-qmake");
 			writer.WriteLine ("sudo apt-get install qt4-dev-tools");
-					
+			writer.WriteLine ("sudo apt-get install libhdf5-dev");
+			writer.WriteLine ("sudo apt-get install python-psycopg2");
+			writer.WriteLine ("sudo apt-get install libpq-dev");
+			writer.WriteLine ("# install setuptools");
+			writer.WriteLine ("wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python");
+
+			writer.WriteLine ("# install bisque");
+			writer.WriteLine ("mkdir bisque; cd bisque");
+			writer.WriteLine ("wget http://biodev.ece.ucsb.edu/projects/bisquik/export/tip/bisque-stable/contrib/bootstrap/bisque-bootstrap.py");
+			writer.WriteLine ("python bisque-bootstrap.py");
+
 			writer.WriteLine ("");
 
 			while (!file.EndOfStream) 
@@ -82,6 +92,7 @@ namespace RequiredPackagesScriptGen
 			writer.WriteLine ("sudo pip install tgext.registration2-0.5.2-py2-none-any.whl");
 			writer.WriteLine ("sudo pip install tw.output-0.5.0dev_20110906-py2-none-any.whl");
 			writer.WriteLine ("sudo pip install pylibtiff-0.3.0_1-cp27-none-linux_x86_64.whl");
+
 
 
 			// Close the file so it can be accessed again.
