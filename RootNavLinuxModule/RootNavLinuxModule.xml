@@ -1,0 +1,23 @@
+<module name="RootNavLinux" type="runtime">
+    <tag name="inputs">
+        <tag name="mex_url"      type="system-input" />
+        <tag name="bisque_token" type="system-input" />
+        
+         <tag name="image_url" type="image">     
+            <template>
+	                <tag name="label" value="Select an input image" />
+	                <tag name="example_query" value="example:Botanicam" />
+	            </template>
+	        </tag>   
+    </tag>
+    
+    <tag name="outputs">
+         <tag name="SegImage" value = "Finshed segmentation."/>
+    </tag>
+    
+    <tag name="help" value="No help yet..." /> 
+    <tag name="thumbnail" type="file" value="public/thumbnail.png" />   
+    <tag name="title" value="RootNav" /> 
+    <tag name="authors" value="iPlantUK" /> 
+    <tag name="description" value="This module allows the semiautomated quantification of complex root system architectures in a range of plant species grown and imaged in a variety of ways." /> 
+</module>
