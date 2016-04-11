@@ -7,11 +7,15 @@ import glob
 import csv
 import pickle
 import logging
+import re
 import itertools
+import gobject
 
 from bqapi import BQSession
 from bqapi.util import fetch_image_planes, AttrDict
 from lxml.builder import E
+
+img_url_tag = 'image url'
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -91,11 +95,11 @@ class RootNavLinux(object):
         
         # use regular expressions in order to get the base name
         # of the file executing this cide and use it as the log file name
-            self name = re.match(r'(.*)\.py$', sys.argv[0]).group(1)
+            self_name = re.match(r'(.*)\.py$', sys.argv[0]).group(1)
         
             # start some logging (DEBUG is verbose, WARNING is not)
-            log fn = self name + '.log'
-            logging.basicConfig(filename=log fn , level=logging.WARNING)
+            log_fn = self_name + '.log'
+            logging.basicConfig(filename=log_fn , level=logging.WARNING)
             
             #logging . basicConfig ( filename=log fn , level=logging .DEBUG)
             logging.debug('Script invocation: ' + str(sys.argv))
@@ -104,46 +108,49 @@ class RootNavLinux(object):
             for arg in sys.argv[1:]:
                 tag, sep, val = arg.partition('=')
                 if sep != '=':
-                    error msg = 'malformed argument ' + arg
-                    logging.error(error msg)
-                    raise Exception(error msg)
-                named args[tag] = val
+                    error_msg = 'malformed argument ' + arg
+                    logging.error(error_msg)
+                    raise Exception(error_msg)
+                named_args[tag] = val
                 logging.debug('parsed a named arg ' + str(tag) + '=' + str(val))
 
             # Three mandatory key=value pairs on command line
             murl = 'mex url'
             btoken = 'bisque_token'
             
-            for required arg in [btoken, murl, img url tag]:
-                if required arg not in named args:
-                    error msg = 'missing mandatory argument ' + required_arg
-                    logging.error(error msg)
-                    raise Exception(error msg)
+            #for required_arg in [btoken, murl, img_url_tag]:
+            #    if required_arg not in named_args:
+            #        error_msg = 'missing mandatory argument ' + required_arg
+            #        logging.error(error msg)
+            #        raise Exception(error msg)
                     
             # Record staging path (maybe on cmd line)
-            stage tag = 'staging_path'
-            if stage tag in named args:
-                staging path = named args[stage tag]
-                del named args[stage tag] # it ’s saved, so delete it from named args
+            stage_tag = 'staging_path'
+            if stage_tag in named_args:
+                stage_tag = named_args[stage_tag]
+                del named_args[stage_tag] # it's saved, so delete it from named args.
              else:
-                staging path = os.getcwd() # get current working directory
+                staging_path = os.getcwd() # get current working directory
                 
             # establish the connection to the Bisque session
-            logging.debug('init bqsession , mex url=' + str(named args[murl]) + ' and auth token=' + str(named args[btoken]))
+            logging.debug('init bqsession , mex url=' + str(named_args[murl]) + ' and auth token=' + str(named_args[btoken]))
             
             # Starting a Bisque session
-            bqsession = bq.api.BQSession().init mex(named args[murl], named args[btoken])
+            #bqsession = bq.api.BQSession().init mex(named_args[murl], named_argsbtoken])
+            bqsession = bq.api.BQSession().init_mex(named_args[murl], named_args[btoken])
             
-            del named args[murl] # no longer needed
-            del named args[btoken] # no longer needed
+            del named_args[murl] # no longer needed
+            del named_args[btoken] # no longer needed
             
-             self.bq.update_mex('executing')
+             #self.bq.update_mex('executing')
+             bqsession.update_mex('executing')
              subprocess.call([EXEC])
             
             
         except Exception, e:
             logging.exception ("problem during %s" % command)
-            self.bq.fail_mex(msg = "Exception during %s: %s" % (command,  e))
+            #self.bq.fail_mex(msg = "Exception during %s: %s" % (command,  e))
+            bqsession.fail_mex(msg = "Exception during %s: %s" % (command,  e))
             sys.exit(1)
 
         sys.exit(0)
