@@ -9,14 +9,17 @@ import pickle
 import logging
 import re
 import itertools
-import gobject
+#mport gobject
 
-from bqapi import BQSession
-from bqapi.util import fetch_image_planes, AttrDict
-from lxml.builder import E
+#mport BQSession
+
+#from bqapi import BQSession
+#from bqapi.util import fetch_image_planes, AttrDict
+#from lxml.builder import E
 
 img_url_tag = 'image url'
 
+named_args = {}
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -107,15 +110,18 @@ class RootNavLinux(object):
             # read key=value pairs from the command line
             for arg in sys.argv[1:]:
                 tag, sep, val = arg.partition('=')
+                
                 if sep != '=':
                     error_msg = 'malformed argument ' + arg
                     logging.error(error_msg)
-                    raise Exception(error_msg)
-                named_args[tag] = val
-                logging.debug('parsed a named arg ' + str(tag) + '=' + str(val))
+                    #raise Exception(error_msg)
+                else:
+                    tag = tag.replace('--', ''); #remove the '--', this string by convention is the way to pass values via argument in linux/unix
+                    named_args[tag] = val
+                    logging.debug('parsed a named arg ' + str(tag) + '=' + str(val))
 
             # Three mandatory key=value pairs on command line
-            murl = 'mex url'
+            murl = 'mex_url'
             btoken = 'bisque_token'
             
             #for required_arg in [btoken, murl, img_url_tag]:
@@ -126,14 +132,15 @@ class RootNavLinux(object):
                     
             # Record staging path (maybe on cmd line)
             stage_tag = 'staging_path'
+            
             if stage_tag in named_args:
                 stage_tag = named_args[stage_tag]
                 del named_args[stage_tag] # it's saved, so delete it from named args.
-             else:
+            else:
                 staging_path = os.getcwd() # get current working directory
                 
             # establish the connection to the Bisque session
-            logging.debug('init bqsession , mex url=' + str(named_args[murl]) + ' and auth token=' + str(named_args[btoken]))
+            logging.debug('init bqsession , mex_url=' + str(named_args[murl]) + ' and auth token=' + str(named_args[btoken]))
             
             # Starting a Bisque session
             #bqsession = bq.api.BQSession().init mex(named_args[murl], named_argsbtoken])
@@ -143,14 +150,16 @@ class RootNavLinux(object):
             del named_args[btoken] # no longer needed
             
              #self.bq.update_mex('executing')
-             bqsession.update_mex('executing')
-             subprocess.call([EXEC])
+            bqsession.update_mex('executing')
+            subprocess.call([EXEC])
             
             
         except Exception, e:
-            logging.exception ("problem during %s" % command)
+            #logging.exception ("problem during %s" % command)
+            logging.exception ("problem during %s" % e)
             #self.bq.fail_mex(msg = "Exception during %s: %s" % (command,  e))
-            bqsession.fail_mex(msg = "Exception during %s: %s" % (command,  e))
+            #bqsession.fail_mex(msg = "Exception during %s: %s" % (command,  e))
+            #bqsession.fail_mex(msg = "Exception during %s: " % ( e))
             sys.exit(1)
 
         sys.exit(0)
