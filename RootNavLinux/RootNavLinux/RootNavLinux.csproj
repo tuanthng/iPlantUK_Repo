@@ -72,6 +72,10 @@
     <Compile Include="Core\Imaging\ImageProcessor.cs" />
     <Compile Include="Core\MixtureModels\EMThread.cs" />
     <Compile Include="Core\MixtureModels\EMManagerThread.cs" />
+    <Compile Include="Core\Tips\HarrisCornerDetector.cs" />
+    <Compile Include="Core\Tips\RootIntersectionFinder.cs" />
+    <Compile Include="Core\Tips\TipDetectionWorker.cs" />
+    <Compile Include="Core\Tips\TipFeatures.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

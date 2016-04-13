@@ -265,6 +265,9 @@ namespace RootNavLinux
 
 			Console.WriteLine ("Total MM: " + this.emManager.Mixtures.Count.ToString());
 
+			Image<Bgr, Byte> imgScreen = wbmp.ToImage<Bgr, Byte> ();
+			Image<Gray, Byte> featureScreen = this.featureBitmap.ToImage<Gray, Byte> ();
+
 			foreach (KeyValuePair<EMPatch, GaussianMixtureModel> Pair in this.emManager.Mixtures)
 			{
 				Console.WriteLine ("foreach (KeyValuePair");
@@ -272,11 +275,10 @@ namespace RootNavLinux
 				GaussianMixtureModel currentModel = Pair.Value;
 				currentModel.CalculateBounds();
 
-				Image<Bgr, Byte> imgScreen = wbmp.ToImage<Bgr, Byte> ();
-				Image<Gray, Byte> featureScreen = this.featureBitmap.ToImage<Gray, Byte> ();
-
 				UpdateImageOnPatchChange(currentPatch, currentModel, ref imgScreen, ref featureScreen);
 			}
+			//TODO: for testing. should be removed later on.
+			//imgScreen.Save("imgScreen.png");
 //
 //			if (wbmp.CanFreeze)
 //			{
@@ -418,8 +420,8 @@ namespace RootNavLinux
 						featureBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBrightestClass[index] * 255);
 						//screenBitmap.Data.SetValue(bgr32, (y * outputStride) + x);
 						screenBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBestClass[index] * 255);
-						screenBitmap.Data[y, x, 1] = 80;
-						screenBitmap.Data[y, x, 2] = 80;
+						screenBitmap.Data[y, x, 1] = 0;
+						screenBitmap.Data[y, x, 2] = 0;
 
 
 					}
@@ -427,8 +429,8 @@ namespace RootNavLinux
 
 				// Saves the blue channel out to a probability map
 				//ImageEncoder.SaveImage(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\featuremap.png", featureBitmap, ImageEncoder.EncodingType.PNG);
-				Console.WriteLine ("Saving...");
-				featureBitmap.Save("/home/tuan/MyProject/RootNavLinux_MovedTo_iPlantUK_Repo/RootNavLinux/bin/Debug/featuremap.png");
+				//Console.WriteLine ("Saving...");
+				//featureBitmap.Save("/home/tuan/MyProject/RootNavLinux_MovedTo_iPlantUK_Repo/RootNavLinux/bin/Debug/featuremap.png");
 				//ImageConverter.DisplayImage (featureBitmap.Mat, "Feature");
 
 			} 
@@ -438,7 +440,45 @@ namespace RootNavLinux
 //			ImageConverter.DisplayImage (featureBitmap, "Feature");
 		}
 
+		public void BeginTipDetection()
+		{
+			TipDetectionWorker tdw = new TipDetectionWorker();
+			tdw.FeatureBitmap = this.featureBitmap;
+			tdw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(TipDetectionCompleted);
+			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Hidden;
+			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Visible;
+			tdw.RunWorkerAsync();
+		}
 
+		void TipDetectionCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			TipDetectionWorker tdw = sender as TipDetectionWorker;
+			List<Int32Point> points = null;
+			if (tdw != null)
+			{
+				points = tdw.Points;
+			}
+
+			if (points != null)
+			{
+				this.screenOverlay.TipAnchorPoints.Clear();
+
+				//this.screenOverlay.ResetAll();
+
+				foreach (Int32Point p in points)
+				{
+					this.screenOverlay.TipAnchorPoints.Add((Point)p);
+
+					// this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
+				}
+			}
+
+			int count = this.screenOverlay.TipAnchorPoints.Count;
+			this.detectionToolbox.tipDetectionLabel.Content = count == 1 ? "1 Tip Detected" : count.ToString() + " Tips Detected";
+			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
+			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
+			this.screenOverlay.InvalidateVisual();
+		}
 	} //end class
 } //end namespace
 
