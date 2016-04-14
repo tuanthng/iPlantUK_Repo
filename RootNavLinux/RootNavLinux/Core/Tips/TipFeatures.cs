@@ -76,7 +76,7 @@ namespace RootNav.Core.Tips
 //
 //            return outputPoints;
 //        }
-		public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, ref Image<Gray, Byte>  source)
+		public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, Image<Gray, Byte>  source)
 		{
 			// Convert bitmap to thresholded image - at this point thresholding is adequate and computationally more efficient
 			int width = source.Width;

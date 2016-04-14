@@ -71,8 +71,10 @@ namespace RootNav.Core.Tips
                 K = 0.07
             };
 
-            int sourceWidth = featureBitmap.PixelWidth;
-            int sourceHeight = featureBitmap.PixelHeight;
+            //int sourceWidth = featureBitmap.PixelWidth;
+            //int sourceHeight = featureBitmap.PixelHeight;
+			int sourceWidth = featureBitmap.Width;
+			int sourceHeight = featureBitmap.Height;
             int optimumDimension = 300;
 
             // Calculate optimum scaling amount
@@ -85,9 +87,13 @@ namespace RootNav.Core.Tips
             double xScale = sourceWidth / (double)scaledWidth;
             double yScale = sourceHeight / (double)scaledHeight;
 
-            WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+            //WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+			Mat smaller = null;
 
-            List<Tuple<Int32Point, double>> points = hcd.FindCorners(smaller);
+			CvInvoke.Resize (featureBitmap, smaller, new System.Drawing.Size (scaledWidth, scaledHeight));
+			 
+
+			List<Tuple<Int32Point, double>> points = hcd.FindCorners(smaller.ToImage<Bgr, Byte>());
 
             // Scale points back to original locations
             for (int i = 0; i < points.Count; i++)
@@ -97,7 +103,7 @@ namespace RootNav.Core.Tips
 
             // Detect tips on the original image, not the smaller version
             TipFeatures tf = new TipFeatures();            
-            weightedPoints = tf.MatchFeatures(points, featureBitmap);
+			weightedPoints = tf.MatchFeatures(points, featureBitmap.ToImage<Gray, Byte>());
         }
     }
 }
