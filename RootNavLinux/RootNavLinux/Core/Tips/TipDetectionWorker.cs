@@ -85,7 +85,10 @@ namespace RootNav.Core.Tips
             double xScale = sourceWidth / (double)scaledWidth;
             double yScale = sourceHeight / (double)scaledHeight;
 
-            WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+			//WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+			Mat smaller = null;
+
+			CvInvoke.Resize (featureBitmap, smaller, new System.Drawing.Size (scaledWidth, scaledHeight));
 
             List<Tuple<Int32Point, double>> points = hcd.FindCorners(smaller);
 

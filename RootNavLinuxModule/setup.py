@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # Install script for RootTip Mult
 import sys
-from bq.setup.module_setup import matlab_setup, python_setup, read_config, docker_setup
+from bqapi.comm import BQSession
+#from bq.setup.module_setup import matlab_setup, python_setup, read_config, docker_setup
+from bq.setup.module_setup import python_setup, require, read_config
+from bq.setup.bisque_setup import getanswer
 
-#def setup(params, *args, **kw):
-#    python_setup("RootNavLinuxModule.py", params)
+def setup(params, *args, **kw):
+    python_setup("RootNavLinuxModule.py", params)
 #    matlab_setup('matlab/maizeG.m', bisque_deps=False, params=params)
 #    docker_setup('roottipmulti', 'RootTipMulti', 'matlab_runtime', params=params)
 

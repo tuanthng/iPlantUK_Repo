@@ -4,6 +4,7 @@ using RootNav.Core;
 using RootNav.Core.MixtureModels;
 using RootNav.Core.Threading;
 using RootNav.IO;
+using RootNav.Core.Tips;
 
 using Emgu.CV;
 using Emgu.CV.UI;
