@@ -137,6 +137,7 @@ class RootNavLinux(object):
             murl = 'mex_url'
             btoken = 'bisque_token'
             auth_token = 'auth_token'
+            module_dir_tag = 'module_dir'
             
             #for required_arg in [btoken, murl, img_url_tag]:
             #    if required_arg not in named_args:
@@ -169,7 +170,7 @@ class RootNavLinux(object):
 
             self.bq.update_mex('executing')
             #bqsession.update_mex('executing')
-            subprocess.call([EXEC])
+            subprocess.call([named_args[module_dir_tag], '/', EXEC])
 
         except Exception, e:
             #logging.exception ("problem during %s" % command)
