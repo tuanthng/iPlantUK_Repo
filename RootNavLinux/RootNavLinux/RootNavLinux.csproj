@@ -76,6 +76,7 @@
     <Compile Include="Core\Tips\RootIntersectionFinder.cs" />
     <Compile Include="Core\Tips\TipDetectionWorker.cs" />
     <Compile Include="Core\Tips\TipFeatures.cs" />
+    <Compile Include="Core\Imaging\DistanceMap.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

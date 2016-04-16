@@ -1,6 +1,7 @@
 ﻿using System;
 using RootNav;
 using RootNav.Core;
+using RootNav.Core.Imaging;
 using RootNav.Core.MixtureModels;
 using RootNav.Core.Threading;
 using RootNav.IO;
@@ -293,9 +294,9 @@ namespace RootNavLinux
 //
 //			this.screenOverlay.IsBusy = false;
 //
-//			this.probabilityBitmap = wbmp;
-//
-//			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
+			this.probabilityBitmap = wbmp;
+
+			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
 //			*/
 //
 //

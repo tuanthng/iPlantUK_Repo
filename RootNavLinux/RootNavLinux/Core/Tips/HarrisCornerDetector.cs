@@ -196,7 +196,8 @@ namespace RootNav.Core.Tips
 //            return outputList;
 //        }
 
-		public unsafe List<Tuple<Int32Point, double>> FindCorners(Image<Bgr, Byte> wbmp)
+		//public unsafe List<Tuple<Int32Point, double>> FindCorners(Image<Bgr, Byte> wbmp)
+		public unsafe List<Tuple<Int32Point, double>> FindCorners(Mat wbmp)
 		{
 			int width = wbmp.Width;
 			int height = wbmp.Height;
@@ -210,7 +211,13 @@ namespace RootNav.Core.Tips
 
 			// Convert to grayscale if needed
 			//WriteableBitmap grayImage = wbmp;
-			Image<Gray, Byte> grayImage = wbmp.Convert<Gray, Byte>();
+			Image<Gray, Byte> grayImage = wbmp.ToImage<Gray, Byte> ();;
+
+			//if (wbmp.NumberOfChannels == 1) {
+			//} else {
+			//}
+
+			//Image<Gray, Byte> grayImage = wbmp.Convert<Gray, Byte>();
 
 			//if (grayImage.Mat.Depth != Emgu.CV.CvEnum.DepthType.Cv8U) //!= PixelFormats.Gray8)
 			//if (grayImage.NumberOfChannels != 1)

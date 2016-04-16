@@ -7,7 +7,11 @@ using System.Collections;
 using System.Linq;
 //using System.Windows.Media.Imaging;
 
-using RootNav.Core.LiveWires;
+//using RootNav.Core.LiveWires;
+
+using Emgu.CV;
+using Emgu.CV.UI;
+using Emgu.CV.Structure;
 
 namespace RootNav.Core.Imaging
 {
@@ -19,56 +23,130 @@ namespace RootNav.Core.Imaging
             q1, q2, q3, q4, q5, q6, q7, q8
         }
 
-        public static unsafe double[,] CreateDistanceMap(WriteableBitmap wbmp)
-        {
-            int width = wbmp.PixelWidth;
-            int height = wbmp.PixelHeight;
+//        public static unsafe double[,] CreateDistanceMap(WriteableBitmap wbmp)
+//        {
+//            int width = wbmp.PixelWidth;
+//            int height = wbmp.PixelHeight;
+//
+//            byte[] bPixelsInterior = new byte[width * height];
+//            float[] fPixelsInterior = new float[width * height];
+//            byte[] bPixelsExterior = new byte[width * height];
+//            float[] fPixelsExterior = new float[width * height];
+//            const int NO_POINT = -1;
+//
+//            // Convert to grayscale if needed
+//            WriteableBitmap grayImage = wbmp;
+//            if (grayImage.Format != PixelFormats.Gray8)
+//            {
+//                grayImage = RootNav.Core.Imaging.ImageProcessor.MakeGreyscale8bpp(wbmp);
+//            }
+//
+//            byte* grayBuffer = (byte*)grayImage.BackBuffer.ToPointer();
+//            int grayStride = grayImage.BackBufferStride;
+//
+//            for (int y = 0; y < height; y++)
+//            {
+//                for (int x = 0; x < width; x++)
+//                {
+//                    bPixelsInterior[y * width + x] = *(grayBuffer + y * grayStride + x) > 0 ? (byte)255 : (byte)0;
+//
+//                    if (bPixelsInterior[y * width + x] != 0)
+//                        fPixelsInterior[y * width + x] = float.MaxValue;
+//
+//                    bPixelsExterior[y * width + x] = *(grayBuffer + y * grayStride + x) == 0 ? (byte)255 : (byte)0;
+//
+//                    if (bPixelsExterior[y * width + x] != 0)
+//                        fPixelsExterior[y * width + x] = float.MaxValue;
+//                }
+//            }
+//
+//            double[,] interiorDistanceMap = DistanceMapFromMasks(width, height, NO_POINT, bPixelsInterior, fPixelsInterior);
+//            double[,] exteriorDistanceMap = DistanceMapFromMasks(width, height, NO_POINT, bPixelsExterior, fPixelsExterior);
+//
+//            double[,] combinedDistanceMap = new double[width, height];
+//            for (int y = 0; y < height; y++)
+//            {
+//                for (int x = 0; x < width; x++)
+//                {
+//                    combinedDistanceMap[x,y] = 0.5 * interiorDistanceMap[x,y] + 0.5 * (1 - exteriorDistanceMap[x,y]);
+//                }
+//            }
+//
+//            /* Testing Code
+//            WriteableBitmap outbmp = new WriteableBitmap(width, height, 96, 96, PixelFormats.Gray8, null);
+//            outbmp.Lock();
+//            byte* ptr = (byte*)outbmp.BackBuffer.ToPointer();
+//            int stride = outbmp.BackBufferStride;
+//
+//            for (int y = 0; y < wbmp.PixelHeight; y++)
+//            {
+//                for (int x = 0; x < wbmp.PixelWidth; x++)
+//                {
+//                    *(ptr + y * stride + x) = (byte)(combinedDistanceMap[x, y] * 255);
+//                }
+//            }
+//
+//            outbmp.AddDirtyRect(new System.Windows.Int32Rect(0, 0, wbmp.PixelWidth, wbmp.PixelHeight));
+//            outbmp.Unlock();
+//
+//            IO.ImageEncoder.SaveImage("G:\\combinedmap.png", outbmp, IO.ImageEncoder.EncodingType.PNG);
+//            */
+//
+//            return interiorDistanceMap;
+//        }
+		public static unsafe double[,] CreateDistanceMap(Mat wbmp)
+		{
+			int width = wbmp.Width;
+			int height = wbmp.Height;
 
-            byte[] bPixelsInterior = new byte[width * height];
-            float[] fPixelsInterior = new float[width * height];
-            byte[] bPixelsExterior = new byte[width * height];
-            float[] fPixelsExterior = new float[width * height];
-            const int NO_POINT = -1;
+			byte[] bPixelsInterior = new byte[width * height];
+			float[] fPixelsInterior = new float[width * height];
+			byte[] bPixelsExterior = new byte[width * height];
+			float[] fPixelsExterior = new float[width * height];
+			const int NO_POINT = -1;
 
-            // Convert to grayscale if needed
-            WriteableBitmap grayImage = wbmp;
-            if (grayImage.Format != PixelFormats.Gray8)
-            {
-                grayImage = RootNav.Core.Imaging.ImageProcessor.MakeGreyscale8bpp(wbmp);
-            }
+			// Convert to grayscale if needed
+			//WriteableBitmap grayImage = wbmp;
+			Image<Gray, Byte> grayImage = wbmp.ToImage<Gray, Byte>();
+			//if (grayImage.Format != PixelFormats.Gray8)
+			//{
+			//	grayImage = RootNav.Core.Imaging.ImageProcessor.MakeGreyscale8bpp(wbmp);
+			//}
 
-            byte* grayBuffer = (byte*)grayImage.BackBuffer.ToPointer();
-            int grayStride = grayImage.BackBufferStride;
+			//byte* grayBuffer = (byte*)grayImage.BackBuffer.ToPointer();
+			//int grayStride = grayImage.BackBufferStride;
 
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    bPixelsInterior[y * width + x] = *(grayBuffer + y * grayStride + x) > 0 ? (byte)255 : (byte)0;
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					//bPixelsInterior[y * width + x] = *(grayBuffer + y * grayStride + x) > 0 ? (byte)255 : (byte)0;
+					bPixelsInterior[y * width + x] = grayImage[y, x] > 0 ? (byte)255 : (byte)0;
 
-                    if (bPixelsInterior[y * width + x] != 0)
-                        fPixelsInterior[y * width + x] = float.MaxValue;
+					if (bPixelsInterior[y * width + x] != 0)
+						fPixelsInterior[y * width + x] = float.MaxValue;
 
-                    bPixelsExterior[y * width + x] = *(grayBuffer + y * grayStride + x) == 0 ? (byte)255 : (byte)0;
+					//bPixelsExterior[y * width + x] = *(grayBuffer + y * grayStride + x) == 0 ? (byte)255 : (byte)0;
+					bPixelsExterior[y * width + x] = grayImage[ y, x] == 0 ? (byte)255 : (byte)0;
 
-                    if (bPixelsExterior[y * width + x] != 0)
-                        fPixelsExterior[y * width + x] = float.MaxValue;
-                }
-            }
+					if (bPixelsExterior[y * width + x] != 0)
+						fPixelsExterior[y * width + x] = float.MaxValue;
+				}
+			}
 
-            double[,] interiorDistanceMap = DistanceMapFromMasks(width, height, NO_POINT, bPixelsInterior, fPixelsInterior);
-            double[,] exteriorDistanceMap = DistanceMapFromMasks(width, height, NO_POINT, bPixelsExterior, fPixelsExterior);
+			double[,] interiorDistanceMap = DistanceMapFromMasks(width, height, NO_POINT, bPixelsInterior, fPixelsInterior);
+			double[,] exteriorDistanceMap = DistanceMapFromMasks(width, height, NO_POINT, bPixelsExterior, fPixelsExterior);
 
-            double[,] combinedDistanceMap = new double[width, height];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    combinedDistanceMap[x,y] = 0.5 * interiorDistanceMap[x,y] + 0.5 * (1 - exteriorDistanceMap[x,y]);
-                }
-            }
+			double[,] combinedDistanceMap = new double[width, height];
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					combinedDistanceMap[x,y] = 0.5 * interiorDistanceMap[x,y] + 0.5 * (1 - exteriorDistanceMap[x,y]);
+				}
+			}
 
-            /* Testing Code
+			/* Testing Code
             WriteableBitmap outbmp = new WriteableBitmap(width, height, 96, 96, PixelFormats.Gray8, null);
             outbmp.Lock();
             byte* ptr = (byte*)outbmp.BackBuffer.ToPointer();
@@ -88,9 +166,8 @@ namespace RootNav.Core.Imaging
             IO.ImageEncoder.SaveImage("G:\\combinedmap.png", outbmp, IO.ImageEncoder.EncodingType.PNG);
             */
 
-            return interiorDistanceMap;
-        }
-
+			return interiorDistanceMap;
+		}
         public static unsafe double[,] DistanceMapFromMasks(int width, int height, int NO_POINT, byte[] bPixels, float[] fPixels)
         {
             int[] pointBuf0 = new int[width];  //two buffers for two passes; low short contains x, high short y
@@ -143,106 +220,106 @@ namespace RootNav.Core.Imaging
             return outArr;
         }
 
-        public static unsafe double[,] CreateDistanceMapOld(WriteableBitmap wbmp)
-        {
-            int width = wbmp.PixelWidth;
-            int height = wbmp.PixelHeight;
-
-            byte[] bPixels = new byte[width * height];
-            float[] fPixels = new float[width * height];
-            const int NO_POINT = -1;
-
-            // Convert to grayscale if needed
-            WriteableBitmap grayImage = wbmp;
-            if (grayImage.Format != PixelFormats.Gray8)
-            {
-                grayImage = RootNav.Core.Imaging.ImageProcessor.MakeGreyscale8bpp(wbmp);
-            }
-
-            byte* grayBuffer = (byte*)grayImage.BackBuffer.ToPointer();
-            int grayStride = grayImage.BackBufferStride;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    bPixels[y * width + x] = *(grayBuffer + y * grayStride + x) > 0 ? (byte)255 : (byte)0;
-
-                    if (bPixels[y * width + x] != 0)
-                        fPixels[y * width + x] = float.MaxValue;
-                }
-            }
-
-            int[] pointBuf0 = new int[width];  //two buffers for two passes; low short contains x, high short y
-            int[] pointBuf1 = new int[width];
-
-            // pass 1 & 2: increasing y
-            for (int x = 0; x < width; x++)
-            {
-                pointBuf0[x] = NO_POINT;
-                pointBuf1[x] = NO_POINT;
-            }
-            for (int y = 0; y < height; y++)
-            {
-                edmLine(bPixels, fPixels, pointBuf0, pointBuf1, width, y * width, y);
-            }
-
-            //pass 3 & 4: decreasing y
-            for (int x = 0; x < width; x++)
-            {
-                pointBuf0[x] = NO_POINT;
-                pointBuf1[x] = NO_POINT;
-            }
-            for (int y = height - 1; y >= 0; y--)
-            {
-                edmLine(bPixels, fPixels, pointBuf0, pointBuf1, width, y * width, y);
-            }
-
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    fPixels[y * width + x] = (float)Math.Sqrt(fPixels[y * width + x]);
-                }
-            }
-
-
-            float max = fPixels.Max();
-
-            double[,] outArr = new double[width, height];
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    outArr[x,y] = 1 - ((fPixels[y * width + x] / max));
-                }
-            }
-           
-            
-            /*
-            WriteableBitmap outbmp = new WriteableBitmap(width, height, 96, 96, PixelFormats.Gray8, null);
-            outbmp.Lock();
-            byte* ptr = (byte*)outbmp.BackBuffer.ToPointer();
-            int stride = outbmp.BackBufferStride;
-
-            Random r = new Random();
-
-            for (int y = 0; y < wbmp.PixelHeight; y++)
-            {
-                for (int x = 0; x < wbmp.PixelWidth; x++)
-                {
-                    *(ptr + y * stride + x) = (byte)(outArr[x,y] * 255);
-                }
-            }
-
-            outbmp.AddDirtyRect(new System.Windows.Int32Rect(0, 0, wbmp.PixelWidth, wbmp.PixelHeight));
-            outbmp.Unlock();
-
-            IO.ImageEncoder.SaveImage("G:\\map.png", outbmp, IO.ImageEncoder.EncodingType.PNG);
-            */
-            
-            return outArr;
-        }
+//        public static unsafe double[,] CreateDistanceMapOld(WriteableBitmap wbmp)
+//        {
+//            int width = wbmp.PixelWidth;
+//            int height = wbmp.PixelHeight;
+//
+//            byte[] bPixels = new byte[width * height];
+//            float[] fPixels = new float[width * height];
+//            const int NO_POINT = -1;
+//
+//            // Convert to grayscale if needed
+//            WriteableBitmap grayImage = wbmp;
+//            if (grayImage.Format != PixelFormats.Gray8)
+//            {
+//                grayImage = RootNav.Core.Imaging.ImageProcessor.MakeGreyscale8bpp(wbmp);
+//            }
+//
+//            byte* grayBuffer = (byte*)grayImage.BackBuffer.ToPointer();
+//            int grayStride = grayImage.BackBufferStride;
+//
+//            for (int y = 0; y < height; y++)
+//            {
+//                for (int x = 0; x < width; x++)
+//                {
+//                    bPixels[y * width + x] = *(grayBuffer + y * grayStride + x) > 0 ? (byte)255 : (byte)0;
+//
+//                    if (bPixels[y * width + x] != 0)
+//                        fPixels[y * width + x] = float.MaxValue;
+//                }
+//            }
+//
+//            int[] pointBuf0 = new int[width];  //two buffers for two passes; low short contains x, high short y
+//            int[] pointBuf1 = new int[width];
+//
+//            // pass 1 & 2: increasing y
+//            for (int x = 0; x < width; x++)
+//            {
+//                pointBuf0[x] = NO_POINT;
+//                pointBuf1[x] = NO_POINT;
+//            }
+//            for (int y = 0; y < height; y++)
+//            {
+//                edmLine(bPixels, fPixels, pointBuf0, pointBuf1, width, y * width, y);
+//            }
+//
+//            //pass 3 & 4: decreasing y
+//            for (int x = 0; x < width; x++)
+//            {
+//                pointBuf0[x] = NO_POINT;
+//                pointBuf1[x] = NO_POINT;
+//            }
+//            for (int y = height - 1; y >= 0; y--)
+//            {
+//                edmLine(bPixels, fPixels, pointBuf0, pointBuf1, width, y * width, y);
+//            }
+//
+//            for (int x = 0; x < width; x++)
+//            {
+//                for (int y = 0; y < height; y++)
+//                {
+//                    fPixels[y * width + x] = (float)Math.Sqrt(fPixels[y * width + x]);
+//                }
+//            }
+//
+//
+//            float max = fPixels.Max();
+//
+//            double[,] outArr = new double[width, height];
+//            for (int x = 0; x < width; x++)
+//            {
+//                for (int y = 0; y < height; y++)
+//                {
+//                    outArr[x,y] = 1 - ((fPixels[y * width + x] / max));
+//                }
+//            }
+//           
+//            
+//            /*
+//            WriteableBitmap outbmp = new WriteableBitmap(width, height, 96, 96, PixelFormats.Gray8, null);
+//            outbmp.Lock();
+//            byte* ptr = (byte*)outbmp.BackBuffer.ToPointer();
+//            int stride = outbmp.BackBufferStride;
+//
+//            Random r = new Random();
+//
+//            for (int y = 0; y < wbmp.PixelHeight; y++)
+//            {
+//                for (int x = 0; x < wbmp.PixelWidth; x++)
+//                {
+//                    *(ptr + y * stride + x) = (byte)(outArr[x,y] * 255);
+//                }
+//            }
+//
+//            outbmp.AddDirtyRect(new System.Windows.Int32Rect(0, 0, wbmp.PixelWidth, wbmp.PixelHeight));
+//            outbmp.Unlock();
+//
+//            IO.ImageEncoder.SaveImage("G:\\map.png", outbmp, IO.ImageEncoder.EncodingType.PNG);
+//            */
+//            
+//            return outArr;
+//        }
 
         private static void edmLine(byte[] bPixels, float[] fPixels, int[] pointBuf0, int[] pointBuf1, int width, int offset, int y)
         {
