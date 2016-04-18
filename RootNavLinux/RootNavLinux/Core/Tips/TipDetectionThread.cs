@@ -98,10 +98,13 @@ namespace RootNav.Core.Tips
             double yScale = sourceHeight / (double)scaledHeight;
 
 			//WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+
+			//Mat smaller = new Mat(featureBitmap.Size, featureBitmap.Depth, featureBitmap.NumberOfChannels);
 			//Mat smaller = new Mat(new System.Drawing.Size (scaledWidth, scaledHeight), featureBitmap.Depth, featureBitmap.NumberOfChannels);
 			//Mat smaller = featureBitmap.Clone();
 
-			//CvInvoke.Resize (featureBitmap, smaller, new System.Drawing.Size (scaledWidth, scaledHeight));
+			//CvInvoke.Resize (featureBitmap, smaller,smaller.Size);
+
 			//TODO: could use above methods to resize images. Not sure why? It's fine if converting it to an image then resize it and convert back to Mat
 
 			Image<Gray, Byte> grayImg = this.featureBitmap.ToImage<Gray, Byte> ();
