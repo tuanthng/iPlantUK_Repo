@@ -71,8 +71,8 @@ namespace RootNav.Core.Tips
                 K = 0.07
             };
 
-            int sourceWidth = featureBitmap.PixelWidth;
-            int sourceHeight = featureBitmap.PixelHeight;
+			int sourceWidth = featureBitmap.Width;
+            int sourceHeight = featureBitmap.Height;
             int optimumDimension = 300;
 
             // Calculate optimum scaling amount

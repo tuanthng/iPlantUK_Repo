@@ -85,13 +85,14 @@ namespace RootNav.Core.Tips
 
 			//byte* srcBuffer = (byte*)source.BackBuffer.ToPointer();
 			//int stride = source.BackBufferStride;
+			Image<Gray, Byte> sourceGrayImg = source.ToImage<Gray, Byte>();
 
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
 				{
 					//thresholdedArray[x, y] = *(srcBuffer + y * stride + x) > 128 ? (byte)1 : (byte)0;
-					thresholdedArray[x, y] = source.Data[y, x, 0] > 128 ? (byte)1 : (byte)0;
+					thresholdedArray[x, y] = sourceGrayImg.Data[y, x, 0] > 128 ? (byte)1 : (byte)0;
 				}
 			}
 

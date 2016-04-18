@@ -121,13 +121,13 @@ namespace RootNav.Core.Imaging
 				for (int x = 0; x < width; x++)
 				{
 					//bPixelsInterior[y * width + x] = *(grayBuffer + y * grayStride + x) > 0 ? (byte)255 : (byte)0;
-					bPixelsInterior[y * width + x] = grayImage[y, x] > 0 ? (byte)255 : (byte)0;
+					bPixelsInterior[y * width + x] = grayImage.Data[y, x, 0] > 0 ? (byte)255 : (byte)0;
 
 					if (bPixelsInterior[y * width + x] != 0)
 						fPixelsInterior[y * width + x] = float.MaxValue;
 
 					//bPixelsExterior[y * width + x] = *(grayBuffer + y * grayStride + x) == 0 ? (byte)255 : (byte)0;
-					bPixelsExterior[y * width + x] = grayImage[ y, x] == 0 ? (byte)255 : (byte)0;
+					bPixelsExterior[y * width + x] = grayImage.Data[ y, x, 0] == 0 ? (byte)255 : (byte)0;
 
 					if (bPixelsExterior[y * width + x] != 0)
 						fPixelsExterior[y * width + x] = float.MaxValue;

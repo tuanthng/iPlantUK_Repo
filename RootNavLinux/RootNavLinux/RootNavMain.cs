@@ -447,8 +447,7 @@ namespace RootNavLinux
 			TipDetectionWorker tdw = new TipDetectionWorker();
 			tdw.FeatureBitmap = this.featureBitmap;
 			tdw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(TipDetectionCompleted);
-			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Hidden;
-			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Visible;
+
 			tdw.RunWorkerAsync();
 		}
 
@@ -463,23 +462,23 @@ namespace RootNavLinux
 
 			if (points != null)
 			{
-				this.screenOverlay.TipAnchorPoints.Clear();
+				//this.screenOverlay.TipAnchorPoints.Clear();
 
-				//this.screenOverlay.ResetAll();
+				////this.screenOverlay.ResetAll();
 
 				foreach (Int32Point p in points)
 				{
-					this.screenOverlay.TipAnchorPoints.Add((Point)p);
+//					this.screenOverlay.TipAnchorPoints.Add((Point)p);
 
-					// this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
+//					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
 				}
 			}
 
-			int count = this.screenOverlay.TipAnchorPoints.Count;
-			this.detectionToolbox.tipDetectionLabel.Content = count == 1 ? "1 Tip Detected" : count.ToString() + " Tips Detected";
-			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
-			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
-			this.screenOverlay.InvalidateVisual();
+//			int count = this.screenOverlay.TipAnchorPoints.Count;
+//			this.detectionToolbox.tipDetectionLabel.Content = count == 1 ? "1 Tip Detected" : count.ToString() + " Tips Detected";
+//			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
+//			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
+//			this.screenOverlay.InvalidateVisual();
 		}
 	} //end class
 } //end namespace
