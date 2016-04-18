@@ -85,6 +85,7 @@ namespace RootNav.Core.Tips
 
 			//byte* srcBuffer = (byte*)source.BackBuffer.ToPointer();
 			//int stride = source.BackBufferStride;
+			//TODO: can make it runs faster by using memory blocks to do the copy as in ImageConverter.ConvertMatToByteArray
 			Image<Gray, Byte> sourceGrayImg = source.ToImage<Gray, Byte>();
 
 			for (int y = 0; y < height; y++)

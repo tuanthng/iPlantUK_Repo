@@ -11,6 +11,9 @@ namespace RootNav.Core.MixtureModels
 
     public delegate void EMManagerProgressCompleted();
 
+	/// <summary>
+	/// This class is replaced by the EMManagerThread.
+	/// </summary>
     class EMManager
     {
         public class EMWorkNotCompletedException : Exception

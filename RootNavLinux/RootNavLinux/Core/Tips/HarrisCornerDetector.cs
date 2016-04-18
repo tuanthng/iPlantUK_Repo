@@ -211,7 +211,7 @@ namespace RootNav.Core.Tips
 
 			// Convert to grayscale if needed
 			//WriteableBitmap grayImage = wbmp;
-			Image<Gray, Byte> grayImage = wbmp.ToImage<Gray, Byte> ();;
+			Image<Gray, Byte> grayImage = wbmp.ToImage<Gray, Byte> ();
 
 			//if (wbmp.NumberOfChannels == 1) {
 			//} else {
