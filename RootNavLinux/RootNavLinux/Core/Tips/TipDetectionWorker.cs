@@ -5,6 +5,10 @@ using System.Text;
 using System.ComponentModel;
 //using System.Windows.Media.Imaging;
 
+using Emgu.CV;
+using Emgu.CV.UI;
+using Emgu.CV.Structure;
+
 namespace RootNav.Core.Tips
 {
     class TipDetectionWorker : BackgroundWorker
@@ -16,13 +20,20 @@ namespace RootNav.Core.Tips
             this.WorkerSupportsCancellation = false;
         }
 
-        WriteableBitmap featureBitmap = null;
+        //WriteableBitmap featureBitmap = null;
+		Mat featureBitmap = null;
 
-        public WriteableBitmap FeatureBitmap
-        {
-            get { return featureBitmap; }
-            set { featureBitmap = value; }
-        }
+//        public WriteableBitmap FeatureBitmap
+//        {
+//            get { return featureBitmap; }
+//            set { featureBitmap = value; }
+//        }
+
+		public Mat FeatureBitmap
+		{
+			get { return featureBitmap; }
+			set { featureBitmap = value; }
+		}
 
         List<Tuple<Int32Point, double>> weightedPoints = null;
 
@@ -74,7 +85,10 @@ namespace RootNav.Core.Tips
             double xScale = sourceWidth / (double)scaledWidth;
             double yScale = sourceHeight / (double)scaledHeight;
 
-            WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+			//WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
+			Mat smaller = null;
+
+			CvInvoke.Resize (featureBitmap, smaller, new System.Drawing.Size (scaledWidth, scaledHeight));
 
             List<Tuple<Int32Point, double>> points = hcd.FindCorners(smaller);
 

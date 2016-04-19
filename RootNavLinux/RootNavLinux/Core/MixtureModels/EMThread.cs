@@ -4,11 +4,20 @@ using System.Linq;
 using System.Text;
 //using System.Windows.Media.Imaging;
 using System.ComponentModel;
+using System.Threading;
 
 namespace RootNav.Core.MixtureModels
 {
-    public class EMWorker : BackgroundWorker
+    public class EMThread
     {
+		//thread.ProgressChanged += new ProgressChangedEventHandler(OnWorkerProgressChanged);
+		//thread.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnWorkerProgressCompleted);
+
+		//public delegate void ThreadProgressChangedEventHandler(int progress);
+
+		public event ProgressChangedEventHandler ProgressChanged;
+		public event RunWorkerCompletedEventHandler ProgressCompleted;
+
         public List<Tuple<EMPatch, GaussianMixtureModel>> Mixtures { get; set; }
         public EMConfiguration Configuration { get; set; }
         public List<EMPatch> Patches { get; set; }
@@ -18,9 +27,21 @@ namespace RootNav.Core.MixtureModels
 
         private double[] data = null;
 
-        protected override void OnDoWork(DoWorkEventArgs e)
+		private Thread actualThread;
+
+		public EMThread()
+		{
+			actualThread = new Thread (new ThreadStart (OnDoWork));
+		}
+
+		public void Start()
+		{
+			this.actualThread.Start ();
+		}
+
+        public void OnDoWork()
         {
-			Console.WriteLine ("OnDoWork of Worker");
+			Console.WriteLine ("OnDoWork of Thread");
 
             List<Tuple<EMPatch, GaussianMixtureModel>> currentMixtures = new List<Tuple<EMPatch, GaussianMixtureModel>>();
 
@@ -86,11 +107,17 @@ namespace RootNav.Core.MixtureModels
                 currentMixtures.Add(new Tuple<EMPatch, GaussianMixtureModel>(patch, GMM));
 
                 // Signal progress changed
-                base.OnProgressChanged(new ProgressChangedEventArgs((int)(++patchProgressCount * 100.0 / totalPatches), null));
+                //base.OnProgressChanged(new ProgressChangedEventArgs((int)(++patchProgressCount * 100.0 / totalPatches), null));
+
             }
 
             // Assign this.Mixtures
             this.Mixtures = currentMixtures;
+
+			if (this.ProgressCompleted != null) 
+			{
+				this.ProgressCompleted(this, new RunWorkerCompletedEventArgs(null, null, false));
+			}
         }
     }
 }

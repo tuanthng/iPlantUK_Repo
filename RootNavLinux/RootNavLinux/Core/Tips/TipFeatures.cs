@@ -7,7 +7,11 @@ using System.Collections;
 using System.Linq;
 //using System.Windows.Media.Imaging;
 
-using RootNav.Core.LiveWires;
+//using RootNav.Core.LiveWires;
+
+using Emgu.CV;
+using Emgu.CV.UI;
+using Emgu.CV.Structure;
 
 namespace RootNav.Core.Tips
 {
@@ -37,42 +41,77 @@ namespace RootNav.Core.Tips
             set { maximumRootWidth = value; }
         }
 
-        public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, WriteableBitmap source)
-        {
-            // Convert bitmap to thresholded image - at this point thresholding is adequate and computationally more efficient
-            int width = source.PixelWidth;
-            int height = source.PixelHeight;
-            byte[,] thresholdedArray = new byte[width, height];
+//        public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, WriteableBitmap source)
+//        {
+//            // Convert bitmap to thresholded image - at this point thresholding is adequate and computationally more efficient
+//            int width = source.PixelWidth;
+//            int height = source.PixelHeight;
+//            byte[,] thresholdedArray = new byte[width, height];
+//
+//            byte* srcBuffer = (byte*)source.BackBuffer.ToPointer();
+//            int stride = source.BackBufferStride;
+//
+//            for (int y = 0; y < height; y++)
+//            {
+//                for (int x = 0; x < width; x++)
+//                {
+//                    thresholdedArray[x, y] = *(srcBuffer + y * stride + x) > 128 ? (byte)1 : (byte)0;
+//                }
+//            }
+//
+//            List<Tuple<Int32Point, double>> outputPoints = new List<Tuple<Int32Point, double>>();
+//            foreach (Tuple<Int32Point, double> kvp in sourcePoints)
+//            {
+//                Int32Point currentPoint = kvp.Item1;
+//
+//                List<byte> profile = GetCircularProfile(thresholdedArray, currentPoint.X, currentPoint.Y);
+//                int noiseCount = 0;
+//                int count = CountProfileIntersections(profile, out noiseCount);
+//
+//                if (count == 1 && noiseCount == 0)
+//                {
+//                    outputPoints.Add(kvp);
+//                }
+//            }
+//
+//            return outputPoints;
+//        }
+		public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, ref Image<Gray, Byte>  source)
+		{
+			// Convert bitmap to thresholded image - at this point thresholding is adequate and computationally more efficient
+			int width = source.Width;
+			int height = source.Height;
+			byte[,] thresholdedArray = new byte[width, height];
 
-            byte* srcBuffer = (byte*)source.BackBuffer.ToPointer();
-            int stride = source.BackBufferStride;
+			//byte* srcBuffer = (byte*)source.BackBuffer.ToPointer();
+			//int stride = source.BackBufferStride;
 
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    thresholdedArray[x, y] = *(srcBuffer + y * stride + x) > 128 ? (byte)1 : (byte)0;
-                }
-            }
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					//thresholdedArray[x, y] = *(srcBuffer + y * stride + x) > 128 ? (byte)1 : (byte)0;
+					thresholdedArray[x, y] = source.Data[y, x, 0] > 128 ? (byte)1 : (byte)0;
+				}
+			}
 
-            List<Tuple<Int32Point, double>> outputPoints = new List<Tuple<Int32Point, double>>();
-            foreach (Tuple<Int32Point, double> kvp in sourcePoints)
-            {
-                Int32Point currentPoint = kvp.Item1;
+			List<Tuple<Int32Point, double>> outputPoints = new List<Tuple<Int32Point, double>>();
+			foreach (Tuple<Int32Point, double> kvp in sourcePoints)
+			{
+				Int32Point currentPoint = kvp.Item1;
 
-                List<byte> profile = GetCircularProfile(thresholdedArray, currentPoint.X, currentPoint.Y);
-                int noiseCount = 0;
-                int count = CountProfileIntersections(profile, out noiseCount);
+				List<byte> profile = GetCircularProfile(thresholdedArray, currentPoint.X, currentPoint.Y);
+				int noiseCount = 0;
+				int count = CountProfileIntersections(profile, out noiseCount);
 
-                if (count == 1 && noiseCount == 0)
-                {
-                    outputPoints.Add(kvp);
-                }
-            }
+				if (count == 1 && noiseCount == 0)
+				{
+					outputPoints.Add(kvp);
+				}
+			}
 
-            return outputPoints;
-        }
-
+			return outputPoints;
+		}
         private int CountProfileIntersections(List<byte> profile, out int noiseCount, int minimumSize = 3)
         {
             int rootCount = 0;

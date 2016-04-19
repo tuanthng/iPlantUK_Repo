@@ -1,0 +1,18 @@
+<module name="RootNavLinuxModule" type="runtime">
+    <tag name="inputs">
+        <tag name="mex_url"      type="system-input" />
+        <tag name="bisque_token" type="system-input" />
+        
+         
+    </tag>
+    
+    <tag name="outputs">
+         <tag name="SegImage" value = "Finshed segmentation."/>
+    </tag>
+    
+    <tag name="help" value="No help yet..." /> 
+    <tag name="thumbnail" type="file" value="public/roots.png" />   
+    <tag name="title" value="RootNav" /> 
+    <tag name="authors" value="Tuan Nguyen - iPlantUK" /> 
+    <tag name="description" value="This module allows the semiautomated quantification of complex root system architectures in a range of plant species grown and imaged in a variety of ways." /> 
+</module>

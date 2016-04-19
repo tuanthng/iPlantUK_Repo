@@ -1,14 +1,18 @@
 ﻿<Properties StartupItem="RootNavLinux/RootNavLinux.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="RootNavLinux/IO/ImageConverter.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="RootNavLinux/RootNavMain.cs">
     <Files>
-      <File FileName="RootNavLinux/Program.cs" Line="45" Column="7" />
-      <File FileName="RootNavLinux/RootNavMain.cs" Line="49" Column="6" />
-      <File FileName="RootNavLinux/IO/ImageConverter.cs" Line="115" Column="56" />
+      <File FileName="RootNavLinux/Program.cs" Line="1" Column="1" />
+      <File FileName="RootNavLinux/RootNavMain.cs" Line="315" Column="26" />
+      <File FileName="RootNavLinux/Core/MixtureModels/EMThread.cs" Line="1" Column="1" />
+      <File FileName="RootNavLinux/Core/MixtureModels/EMManagerThread.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="255" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="322" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

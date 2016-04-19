@@ -331,22 +331,31 @@ namespace RootNav.IO
 			int length = (int)img.Total * img.NumberOfChannels;
 
 			byte[] newBytes = new byte[length];
-			//GCHandle handle = default(GCHandle);
+			//Image<Bgr, Byte> img1 ;
+			//Image<Gray, Byte> img2 ;
+
+			GCHandle handle = default(GCHandle);
 			try
 			{
 				//img
-				img.Data.CopyTo(newBytes, 0);
-				//handle = GCHandle.Alloc(newBytes, GCHandleType.Pinned);
+				//img.Data.CopyTo(newBytes, 0);
+				handle = GCHandle.Alloc(newBytes, GCHandleType.Pinned);
 				//IntPtr ptr = handle.AddrOfPinnedObject ();
 				//Marshal.Copy (ptr, newBytes, 0, length);
 				//Marshal.Copy (img.Ptr., newBytes, 0, length);
+				using (Mat m2 = new Mat(img.Size, img.Depth, img.NumberOfChannels, handle.AddrOfPinnedObject(), img.Width * img.NumberOfChannels))
+				{
+					CvInvoke.BitwiseOr(img, m2, m2);
+					//DisplayImage(m2, "aaa");
+				}
 			}
 			finally 
 			{
-				//if (handle != default(GCHandle)) {
-				//	handle.Free ();
-				//}
+				if (handle != default(GCHandle)) {
+					handle.Free ();
+				}
 			}
+		
 
 			return newBytes;
 		}
@@ -358,7 +367,7 @@ namespace RootNav.IO
 		/// <param name="width">Width.</param>
 		/// <param name="height">Height.</param>
 		/// <param name="channels">Channels.</param>
-		public static Mat ConvertByteArrayToMat(ref byte[] bytes, int width, int height, int channels)
+		public static Mat ConvertByteArrayToMat(ref byte[] bytes, int width, int height, int channels, Emgu.CV.CvEnum.DepthType depth)
 		{
 			GCHandle handle = default(GCHandle);
 			Mat newMat;
@@ -368,8 +377,9 @@ namespace RootNav.IO
 				handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 				IntPtr ptr = handle.AddrOfPinnedObject ();
 
-				newMat = new Mat (new System.Drawing.Size(width, height) , Emgu.CV.CvEnum.DepthType.Cv8U, channels, ptr, width * channels);
-					
+				newMat = new Mat (new System.Drawing.Size(width, height) , depth, channels, ptr, width * channels);
+				//newMat = new Mat (height, width, depth, channels);
+				//newMat.SetTo(bytes);
 			}
 			finally {
 				if (handle != default(GCHandle)) {
@@ -380,11 +390,15 @@ namespace RootNav.IO
 			return newMat;
 		}
 
-		public static void DisplayImage(Mat img, string title = "Testing")
+		public static void DisplayImage(Mat img, string title = "Testing", bool isFinal = true)
 		{
-			//CvInvoke.NamedWindow(title, Emgu.CV.CvEnum.NamedWindowType.AutoSize);
+			CvInvoke.NamedWindow(title, Emgu.CV.CvEnum.NamedWindowType.AutoSize);
 			CvInvoke.Imshow(title, img);
-			CvInvoke.WaitKey(0);
+
+			if (isFinal) {
+				
+				CvInvoke.WaitKey (0);
+			}
 		}
 
     }

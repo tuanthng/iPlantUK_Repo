@@ -67,9 +67,15 @@ namespace RootNavLinux
 
 			if (argc > 0) {
 				RootNavMain mainRoot = new RootNavMain (args [0]);	
-
+				//process the task
+				mainRoot.Process ();
 			} else {
-				Console.WriteLine ("Please provide an image file");
+				Console.WriteLine ("Using the default image.");
+
+				RootNavMain mainRoot = new RootNavMain ("0002.jpg");	
+				//process the task
+				mainRoot.Process ();
+
 			}
 
 
