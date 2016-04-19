@@ -111,6 +111,11 @@ namespace RootNav.Core.Tips
 			grayImg = grayImg.Resize(scaledWidth, scaledHeight, Emgu.CV.CvEnum.Inter.Linear);
 			Mat smaller = grayImg.Mat;
 
+			//TODO: if not scalled
+			//smaller = this.featureBitmap;
+
+			//smaller.Save ("Smaller.png");
+
             List<Tuple<Int32Point, double>> points = hcd.FindCorners(smaller);
 
             // Scale points back to original locations

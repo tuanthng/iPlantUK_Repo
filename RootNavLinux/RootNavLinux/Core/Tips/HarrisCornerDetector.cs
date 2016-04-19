@@ -211,7 +211,16 @@ namespace RootNav.Core.Tips
 
 			// Convert to grayscale if needed
 			//WriteableBitmap grayImage = wbmp;
-			Image<Gray, Byte> grayImage = wbmp.ToImage<Gray, Byte> ();
+			Image<Gray, Byte> grayImage = null;
+
+			grayImage = wbmp.ToImage<Gray, Byte> ();
+
+			//if (wbmp.NumberOfChannels != 1) {
+				
+			//} else {
+				
+			//}
+
 
 			//if (wbmp.NumberOfChannels == 1) {
 			//} else {
@@ -253,7 +262,7 @@ namespace RootNav.Core.Tips
 							//imageTotalX += *(grayBuffer + (kY * grayStride) + kX) * sobelX[u + 1, v + 1];
 							//imageTotalY += *(grayBuffer + (kY * grayStride) + kX) * sobelY[u + 1, v + 1];
 							imageTotalX += grayImage.Data[kY, kX, 0] * sobelX[u + 1, v + 1];
-							imageTotalY += grayImage.Data[kY, kX, 0] * sobelX[u + 1, v + 1];
+							imageTotalY += grayImage.Data[kY, kX, 0] * sobelY[u + 1, v + 1];
 						}
 					}
 

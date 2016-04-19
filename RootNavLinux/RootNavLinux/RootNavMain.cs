@@ -285,6 +285,9 @@ namespace RootNavLinux
 			}
 			//TODO: for testing. should be removed later on.
 			//imgScreen.Save("imgScreen.png");
+
+			this.featureBitmap = featureScreen.Mat;
+
 //
 //			if (wbmp.CanFreeze)
 //			{
@@ -301,6 +304,10 @@ namespace RootNavLinux
 			this.probabilityBitmap = wbmp;
 
 			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
+
+			//TODO: testing
+			featureBitmap.Save ("FeatureMapInMain.png");
+
 //			*/
 //
 //
