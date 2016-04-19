@@ -1,17 +1,24 @@
 ﻿<Properties StartupItem="RootNavLinux/RootNavLinux.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="RootNavLinux/RootNavMain.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="RootNavLinux/Core/Tips/HarrisCornerDetector.cs">
     <Files>
       <File FileName="RootNavLinux/Program.cs" Line="1" Column="1" />
-      <File FileName="RootNavLinux/RootNavMain.cs" Line="315" Column="26" />
-      <File FileName="RootNavLinux/Core/MixtureModels/EMThread.cs" Line="1" Column="1" />
-      <File FileName="RootNavLinux/Core/MixtureModels/EMManagerThread.cs" Line="1" Column="1" />
+      <File FileName="RootNavLinux/RootNavMain.cs" Line="473" Column="4" />
+      <File FileName="RootNavLinux/Core/Tips/TipDetectionThread.cs" Line="112" Column="30" />
+      <File FileName="RootNavLinux/Core/Tips/HarrisCornerDetector.cs" Line="286" Column="6" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="255" column="1" />
-      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="322" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="259" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="472" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="472" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="503" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="481" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="482" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/RootNavMain.cs" line="334" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/Core/Tips/TipDetectionThread.cs" line="86" column="1" />
+      <Breakpoint file="/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/Core/Tips/TipDetectionThread.cs" line="119" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
