@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 //using System.Windows.Media.Imaging;
+using System.Threading;
 
 using Emgu.CV;
 using Emgu.CV.UI;
@@ -11,14 +12,20 @@ using Emgu.CV.Structure;
 
 namespace RootNav.Core.Tips
 {
-    class TipDetectionWorker : BackgroundWorker
+    class TipDetectionThread 
     {
-        public TipDetectionWorker()
+		public event ProgressChangedEventHandler ProgressChanged;
+		public event RunWorkerCompletedEventHandler ProgressCompleted;
+
+		public TipDetectionThread()
             : base()
         {
-            this.WorkerReportsProgress = false;
-            this.WorkerSupportsCancellation = false;
+            //this.WorkerReportsProgress = false;
+            //this.WorkerSupportsCancellation = false;
+			actualThread = new Thread (new ThreadStart (OnDoWork));
         }
+
+		private Thread actualThread;
 
         //WriteableBitmap featureBitmap = null;
 		Mat featureBitmap = null;
@@ -56,7 +63,12 @@ namespace RootNav.Core.Tips
             }
         }
 
-        protected override void OnDoWork(DoWorkEventArgs e)
+		public void Start()
+		{
+			this.actualThread.Start ();
+		}
+
+        protected void OnDoWork()
         {
             if (featureBitmap == null)
             {
@@ -86,9 +98,23 @@ namespace RootNav.Core.Tips
             double yScale = sourceHeight / (double)scaledHeight;
 
 			//WriteableBitmap smaller = RootNav.IO.ImageConverter.Resize8bpp(featureBitmap, scaledWidth, scaledHeight);
-			Mat smaller = null;
 
-			CvInvoke.Resize (featureBitmap, smaller, new System.Drawing.Size (scaledWidth, scaledHeight));
+			//Mat smaller = new Mat(featureBitmap.Size, featureBitmap.Depth, featureBitmap.NumberOfChannels);
+			//Mat smaller = new Mat(new System.Drawing.Size (scaledWidth, scaledHeight), featureBitmap.Depth, featureBitmap.NumberOfChannels);
+			//Mat smaller = featureBitmap.Clone();
+
+			//CvInvoke.Resize (featureBitmap, smaller,smaller.Size);
+
+			//TODO: could use above methods to resize images. Not sure why? It's fine if converting it to an image then resize it and convert back to Mat
+
+			Image<Gray, Byte> grayImg = this.featureBitmap.ToImage<Gray, Byte> ();
+			grayImg = grayImg.Resize(scaledWidth, scaledHeight, Emgu.CV.CvEnum.Inter.Linear);
+			Mat smaller = grayImg.Mat;
+
+			//TODO: if not scalled
+			//smaller = this.featureBitmap;
+
+			//smaller.Save ("Smaller.png");
 
             List<Tuple<Int32Point, double>> points = hcd.FindCorners(smaller);
 
@@ -101,6 +127,15 @@ namespace RootNav.Core.Tips
             // Detect tips on the original image, not the smaller version
             TipFeatures tf = new TipFeatures();            
             weightedPoints = tf.MatchFeatures(points, featureBitmap);
+
+
+			//notify an event when the process finishes
+
+			if (this.ProgressCompleted != null) 
+			{
+				this.ProgressCompleted(this, new RunWorkerCompletedEventArgs(null, null, false));
+			}
+
         }
     }
 }

@@ -76,7 +76,7 @@ namespace RootNav.Core.Tips
 //
 //            return outputPoints;
 //        }
-		public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, ref Image<Gray, Byte>  source)
+		public unsafe List<Tuple<Int32Point, double>> MatchFeatures(List<Tuple<Int32Point, double>> sourcePoints, Mat  source)
 		{
 			// Convert bitmap to thresholded image - at this point thresholding is adequate and computationally more efficient
 			int width = source.Width;
@@ -85,13 +85,15 @@ namespace RootNav.Core.Tips
 
 			//byte* srcBuffer = (byte*)source.BackBuffer.ToPointer();
 			//int stride = source.BackBufferStride;
+			//TODO: can make it runs faster by using memory blocks to do the copy as in ImageConverter.ConvertMatToByteArray
+			Image<Gray, Byte> sourceGrayImg = source.ToImage<Gray, Byte>();
 
 			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < width; x++)
 				{
 					//thresholdedArray[x, y] = *(srcBuffer + y * stride + x) > 128 ? (byte)1 : (byte)0;
-					thresholdedArray[x, y] = source.Data[y, x, 0] > 128 ? (byte)1 : (byte)0;
+					thresholdedArray[x, y] = sourceGrayImg.Data[y, x, 0] > 128 ? (byte)1 : (byte)0;
 				}
 			}
 
