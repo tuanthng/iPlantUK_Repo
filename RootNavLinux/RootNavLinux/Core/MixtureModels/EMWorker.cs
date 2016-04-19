@@ -7,6 +7,9 @@ using System.ComponentModel;
 
 namespace RootNav.Core.MixtureModels
 {
+	/// <summary>
+	/// This class is replaced by EMThread
+	/// </summary>
     public class EMWorker : BackgroundWorker
     {
         public List<Tuple<EMPatch, GaussianMixtureModel>> Mixtures { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using RootNav;
 using RootNav.Core;
+using RootNav.Core.Imaging;
 using RootNav.Core.MixtureModels;
 using RootNav.Core.Threading;
 using RootNav.IO;
@@ -223,6 +224,10 @@ namespace RootNavLinux
 			//int GMMArrayWidth = (int)Math.Ceiling(width / (double)emManager.Configuration.PatchSize);
 			//int GMMArrayHeight = (int)Math.Ceiling(height / (double)emManager.Configuration.PatchSize);
 
+			//Mat smaller = new Mat(new System.Drawing.Size (500, 600), grayImg.Depth, grayImg.NumberOfChannels);
+			//CvInvoke.Resize (grayImg, smaller, smaller.Size);
+
+
 			//GaussianMixtureModel[,] GMMArray = new GaussianMixtureModel[GMMArrayWidth, GMMArrayHeight];
 
 			this.emManager.ProgressChanged += new ProgressChangedEventHandler(EMManagerProgressChanged);
@@ -271,7 +276,7 @@ namespace RootNavLinux
 
 			foreach (KeyValuePair<EMPatch, GaussianMixtureModel> Pair in this.emManager.Mixtures)
 			{
-				Console.WriteLine ("foreach (KeyValuePair");
+				//Console.WriteLine ("foreach (KeyValuePair");
 				EMPatch currentPatch = Pair.Key;
 				GaussianMixtureModel currentModel = Pair.Value;
 				currentModel.CalculateBounds();
@@ -280,7 +285,7 @@ namespace RootNavLinux
 			}
 			//TODO: for testing. should be removed later on.
 			//imgScreen.Save("imgScreen.png");
-//
+
 //			if (wbmp.CanFreeze)
 //			{
 //				wbmp.Freeze();
@@ -293,9 +298,15 @@ namespace RootNavLinux
 //
 //			this.screenOverlay.IsBusy = false;
 //
-//			this.probabilityBitmap = wbmp;
-//
-//			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
+			//this.probabilityBitmap = wbmp;
+			this.probabilityBitmap = imgScreen.Mat;
+			this.featureBitmap = featureScreen.Mat;
+
+			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
+
+			//TODO: testing
+			//featureBitmap.Save ("FeatureMapInMain.png");
+
 //			*/
 //
 //
@@ -319,7 +330,7 @@ namespace RootNavLinux
 			//this.Dispatcher.Invoke(new ScreenImageUpdateDelegate(this.UpdateScreenImageAndZoom), wbmp);
 			//this.Dispatcher.Invoke(new EMCompletedDelegate(this.EMTaskCompleted), null);
 
-			//BeginTipDetection();
+			BeginTipDetection();
 		}
 		unsafe private void UpdateImageOnPatchChange(EMPatch patch, GaussianMixtureModel model, ref Image<Bgr, Byte> screenBitmap, ref Image<Gray, Byte>  featureBitmap)
 		{
@@ -436,6 +447,7 @@ namespace RootNavLinux
 
 			} 
 
+
 //			Console.WriteLine ("Saving...");
 //			featureBitmap.Save("/home/tuan/MyProject/iPlantUK_Repo/RootNavLinux/RootNavLinux/bin/Debug/featuremap.png");
 //			ImageConverter.DisplayImage (featureBitmap, "Feature");
@@ -443,17 +455,29 @@ namespace RootNavLinux
 
 		public void BeginTipDetection()
 		{
-			TipDetectionWorker tdw = new TipDetectionWorker();
+			//TipDetectionWorker tdw = new TipDetectionWorker();
+			TipDetectionThread tdw = new TipDetectionThread();
 			tdw.FeatureBitmap = this.featureBitmap;
-			tdw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(TipDetectionCompleted);
-			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Hidden;
-			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Visible;
-			tdw.RunWorkerAsync();
+
+			//this.featureBitmap.Save ("FeatureMap.png");
+
+			//Mat smaller = new Mat(this.featureBitmap, new System.Drawing.Rectangle(0, 0, this.featureBitmap.Width, this.featureBitmap.Height));
+			//CvInvoke.Resize (smaller, smaller, new System.Drawing.Size (600, 800) );
+
+			//Mat smaller = new Mat(new System.Drawing.Size (600, 800), featureBitmap.Depth, featureBitmap.NumberOfChannels);
+			//CvInvoke.Resize (featureBitmap, smaller, smaller.Size );
+
+
+			tdw.ProgressCompleted += new RunWorkerCompletedEventHandler(TipDetectionCompleted);
+
+			//tdw.RunWorkerAsync();
+			tdw.Start();
 		}
 
 		void TipDetectionCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			TipDetectionWorker tdw = sender as TipDetectionWorker;
+			//TipDetectionWorker tdw = sender as TipDetectionWorker;
+			TipDetectionThread tdw = sender as TipDetectionThread;
 			List<Int32Point> points = null;
 			if (tdw != null)
 			{
@@ -462,23 +486,26 @@ namespace RootNavLinux
 
 			if (points != null)
 			{
-				this.screenOverlay.TipAnchorPoints.Clear();
+				//this.screenOverlay.TipAnchorPoints.Clear();
 
-				//this.screenOverlay.ResetAll();
+				////this.screenOverlay.ResetAll();
 
 				foreach (Int32Point p in points)
 				{
-					this.screenOverlay.TipAnchorPoints.Add((Point)p);
+//					this.screenOverlay.TipAnchorPoints.Add((Point)p);
 
-					// this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
+//					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
 				}
 			}
 
-			int count = this.screenOverlay.TipAnchorPoints.Count;
-			this.detectionToolbox.tipDetectionLabel.Content = count == 1 ? "1 Tip Detected" : count.ToString() + " Tips Detected";
-			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
-			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
-			this.screenOverlay.InvalidateVisual();
+			//TODO: testing
+			System.Console.WriteLine("Total points: " + points.Count.ToString());
+
+//			int count = this.screenOverlay.TipAnchorPoints.Count;
+//			this.detectionToolbox.tipDetectionLabel.Content = count == 1 ? "1 Tip Detected" : count.ToString() + " Tips Detected";
+//			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
+//			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
+//			this.screenOverlay.InvalidateVisual();
 		}
 	} //end class
 } //end namespace

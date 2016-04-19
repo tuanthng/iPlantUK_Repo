@@ -196,7 +196,8 @@ namespace RootNav.Core.Tips
 //            return outputList;
 //        }
 
-		public unsafe List<Tuple<Int32Point, double>> FindCorners(Image<Bgr, Byte> wbmp)
+		//public unsafe List<Tuple<Int32Point, double>> FindCorners(Image<Bgr, Byte> wbmp)
+		public unsafe List<Tuple<Int32Point, double>> FindCorners(Mat wbmp)
 		{
 			int width = wbmp.Width;
 			int height = wbmp.Height;
@@ -210,7 +211,22 @@ namespace RootNav.Core.Tips
 
 			// Convert to grayscale if needed
 			//WriteableBitmap grayImage = wbmp;
-			Image<Gray, Byte> grayImage = wbmp.Convert<Gray, Byte>();
+			Image<Gray, Byte> grayImage = null;
+
+			grayImage = wbmp.ToImage<Gray, Byte> ();
+
+			//if (wbmp.NumberOfChannels != 1) {
+				
+			//} else {
+				
+			//}
+
+
+			//if (wbmp.NumberOfChannels == 1) {
+			//} else {
+			//}
+
+			//Image<Gray, Byte> grayImage = wbmp.Convert<Gray, Byte>();
 
 			//if (grayImage.Mat.Depth != Emgu.CV.CvEnum.DepthType.Cv8U) //!= PixelFormats.Gray8)
 			//if (grayImage.NumberOfChannels != 1)
@@ -246,7 +262,7 @@ namespace RootNav.Core.Tips
 							//imageTotalX += *(grayBuffer + (kY * grayStride) + kX) * sobelX[u + 1, v + 1];
 							//imageTotalY += *(grayBuffer + (kY * grayStride) + kX) * sobelY[u + 1, v + 1];
 							imageTotalX += grayImage.Data[kY, kX, 0] * sobelX[u + 1, v + 1];
-							imageTotalY += grayImage.Data[kY, kX, 0] * sobelX[u + 1, v + 1];
+							imageTotalY += grayImage.Data[kY, kX, 0] * sobelY[u + 1, v + 1];
 						}
 					}
 
