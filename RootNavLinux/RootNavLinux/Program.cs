@@ -8,28 +8,6 @@ using Plossum.CommandLine;
 
 namespace RootNavLinux
 {
-//	[CommandLineManager(ApplicationName = "RootNavLinux", Copyright = "University of Nottingham")]
-//	class Options
-//	{
-//
-//		[CommandLineOption(Description = "Displays this help text")]
-//		public bool Help = false;
-//
-//		[CommandLineOption(Description = "Specifies the input file", MinOccurs = 0)]
-//		public string Name
-//		{
-//			get { return mName; }
-//			set
-//			{
-//				if (String.IsNullOrEmpty(value))
-//					throw new InvalidOptionValueException("The name must not be empty", false);
-//				mName = value;
-//			}
-//		}
-//
-//		private string mName;
-//	}
-
 	class MainClass
 	{
 		public static void Main (string[] args)

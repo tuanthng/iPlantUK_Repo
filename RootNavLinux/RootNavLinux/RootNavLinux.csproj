@@ -78,6 +78,7 @@
     <Compile Include="Core\Tips\TipFeatures.cs" />
     <Compile Include="Core\Imaging\DistanceMap.cs" />
     <Compile Include="Core\Tips\TipDetectionThread.cs" />
+    <Compile Include="RootNavOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
