@@ -49,11 +49,11 @@ namespace RootNavLinux
 				mainRoot.PresetRootName = options.PresetName;
 
 				if (options.PresetName.Equals ("Custom")) {
-					//create custom configuration
-					EMConfiguration custom = new EMConfiguration();
+					System.Console.WriteLine ("In custome");
+					System.Console.WriteLine (options.ToString ());
 
+					mainRoot.CustomEMConfiguration = options.CreateConfiguration();
 
-					mainRoot.CustomEMConfiguration = custom;
 				}
 
 				//process the task

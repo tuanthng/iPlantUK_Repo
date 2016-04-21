@@ -3,6 +3,8 @@
 using Plossum.CommandLine;
 using System.Collections.Generic;
 
+using RootNav.Core.MixtureModels;
+
 namespace RootNavLinux
 {
 	[CommandLineManager(ApplicationName = "RootNavLinux", Copyright = "University of Nottingham")]
@@ -10,7 +12,7 @@ namespace RootNavLinux
 	{
 		public RootNavOptions ()
 		{
-			
+			//Weights = new List<double> ();
 		}
 
 		[CommandLineOption(Description = "Displays this help text")]
@@ -62,8 +64,54 @@ namespace RootNavLinux
 		public double BackgroundExcessSigma { get; set; }
 
 		[CommandLineOption(Description = "Specifies the Weights", RequireExplicitAssignment= true, MinOccurs = 0)]
-		public List<double> Weights { get; set; }
+		public string Weights { get; set; }
 
+		public EMConfiguration CreateConfiguration()
+		{
+			//create custom configuration
+			EMConfiguration custom = new EMConfiguration();
+
+			custom.BackgroundExcessSigma = this.BackgroundExcessSigma;
+			custom.BackgroundPercentage = this.BackgroundPercentage;
+			custom.ExpectedRootClassCount = this.ExpectedRootClassCount;
+			custom.InitialClassCount = this.InitialClassCount;
+			custom.MaximumClassCount = this.MaximumClassCount;
+			custom.Name = this.PresetName;
+			custom.PatchSize = this.PatchSize;
+
+			Weights.Replace (" ", "");
+
+			var splitted = Weights.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			List<double> ws = new List<double> ();
+
+			foreach (string s in splitted) {
+				double d;
+				Double.TryParse (s, out d);
+				ws.Add (d);
+			}
+
+			custom.Weights = ws.ToArray();
+
+			return custom;
+		}
+
+		public override string ToString()
+		{
+			string line = String.Format ("InitialClassCount: %d MaximumClassCount: %d ExpectedRootClassCount: %d PatchSize: %d " +
+			              "BackgroundPercentage: %f BackgroundExcessSigma: %f", this.InitialClassCount, this.MaximumClassCount, this.ExpectedRootClassCount, this.PatchSize,
+				              this.BackgroundPercentage, this.BackgroundExcessSigma);
+
+			string weight = "Weights: " + Weights;
+
+			//foreach (double w in this.Weights) {
+			//	weight += w.ToString() + " ";
+			//}
+
+			line += weight;
+
+			return line;
+		}
 	}
 
 
