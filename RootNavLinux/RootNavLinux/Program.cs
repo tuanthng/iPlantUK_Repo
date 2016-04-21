@@ -23,7 +23,7 @@ namespace RootNavLinux
 //			}
 
 
-			/*Options options = new Options();
+			RootNavOptions options = new RootNavOptions();
 			CommandLineParser parser = new CommandLineParser(options);
 			parser.Parse();
 
@@ -40,8 +40,8 @@ namespace RootNavLinux
 				//return -1;
 				return;
 			}
-			Console.WriteLine("Hello {0}!", options.Name);
-			*/
+
+			Console.ReadLine ();
 
 			if (argc > 0) {
 				RootNavMain mainRoot = new RootNavMain (args [0]);	
