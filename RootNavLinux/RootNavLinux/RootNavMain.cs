@@ -29,6 +29,15 @@ namespace RootNavLinux
 		private EMConfiguration customConfiguration = null;
 		private int currentEMConfiguration = 0;
 
+		public string PresetRootName{ get; set; }
+
+		public EMConfiguration CustomEMConfiguration
+		{
+			set{
+				customConfiguration = value;
+			}
+		}
+
 //		private bool connectionExists = false;
 
 //		RootNav.Data.IO.Databases.DatabaseManager databaseManager = null;

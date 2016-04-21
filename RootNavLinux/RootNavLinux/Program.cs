@@ -6,6 +6,8 @@ using Emgu.CV.Structure;
 using System.Windows;
 using Plossum.CommandLine;
 
+using RootNav.Core.MixtureModels;
+
 namespace RootNavLinux
 {
 	class MainClass
@@ -41,10 +43,19 @@ namespace RootNavLinux
 				return;
 			}
 
-			Console.ReadLine ();
-
 			if (argc > 0) {
-				RootNavMain mainRoot = new RootNavMain (args [0]);	
+				RootNavMain mainRoot = new RootNavMain (options.ImageFile);	
+
+				mainRoot.PresetRootName = options.PresetName;
+
+				if (options.PresetName.Equals ("Custom")) {
+					//create custom configuration
+					EMConfiguration custom = new EMConfiguration();
+
+
+					mainRoot.CustomEMConfiguration = custom;
+				}
+
 				//process the task
 				mainRoot.Process ();
 			} else {
