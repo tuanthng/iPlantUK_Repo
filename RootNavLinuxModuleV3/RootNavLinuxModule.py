@@ -30,8 +30,8 @@ from bqapi.util import fetch_image_planes, AttrDict
 
 logging.basicConfig(level=logging.DEBUG)
 
-EXEC = "mono RootNavLinux.exe"
-#EXEC = "./runRootNav.sh"
+#EXEC = "mono RootNavLinux.exe"
+EXEC = "./runRootNav.sh"
 
 def gettag (el, tagname):
     for kid in el:
@@ -105,11 +105,11 @@ class RootNavLinux(object):
         fullPath = os.path.join(self.options.stagingPath, EXEC)
         logging.debug('fullPath: ' + fullPath)
         
-        fullExec = fullPath + ' ' + parasRootNav
-        logging.debug('Execute: ' + fullExec)
+        #fullExec = fullPath + ' ' + parasRootNav
+        #logging.debug('Execute: ' + fullExec)
         
         #r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
-        r = subprocess.call(fullExec)
+        r = subprocess.call([fullPath, parasRootNav])
         
         return r;
 
