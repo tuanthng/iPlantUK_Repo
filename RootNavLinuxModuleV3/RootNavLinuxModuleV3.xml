@@ -1,0 +1,112 @@
+<module name="RootNavLinuxModuleV3" type="runtime">
+    <tag name="inputs">
+      
+      <tag name="mex_url"      type="system-input" />
+      <tag name="bisque_token" type="system-input" />
+      
+      <tag name="image_url" type="resource">
+	  <template>
+	      <tag name="accepted_type" value="image" />
+	      <tag name="label" value="Image to process the root" />
+	  </template>
+      </tag> 
+      
+      <tag name="PresetName" value="Wheat" type="combo" >
+	  <template>
+	      <tag name="label" value="Present Name" />
+		<tag name="select">
+		<value>Wheat</value>
+		<value>Plate</value>
+		<value>Rice Scan</value>
+		<value>Custom</value>
+	      </tag>
+	      <tag name="defaultValue" value="Wheat" />
+	      <tag name="description" value="Select one Preset Root or choose Custom to manually input values below." />
+	  </template>             
+      </tag>
+
+      <tag name="InitialClassCount" value="3" type="number" >
+	  <template>
+	      <tag name="label" value="Initial Class Count" />
+	      <tag name="minValue" value="0" type="number" />
+	      <tag name="allowDecimals" value="false" type="boolean" />
+	      <tag name="step" value="1" type="number" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      <tag name="MaximumClassCount" value="4" type="number" >
+	  <template>
+	      <tag name="label" value="Maximum Class Count" />
+	      <tag name="minValue" value="1" type="number" />
+	      <tag name="allowDecimals" value="false" type="boolean" />
+	      <tag name="step" value="1" type="number" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      <tag name="ExpectedRootClassCount" value="2" type="number" >
+	  <template>
+	      <tag name="label" value="Expected Root Class Count" />
+	      <tag name="minValue" value="1" type="number" />
+	      <tag name="allowDecimals" value="false" type="boolean" />
+	      <tag name="step" value="1" type="number" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      <tag name="PatchSize" value="150" type="number" >
+	  <template>
+	      <tag name="label" value="Patch Size" />
+	      <tag name="minValue" value="1" type="number" />
+	      <tag name="allowDecimals" value="false" type="boolean" />
+	      <tag name="step" value="1" type="number" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      <tag name="BackgroundPercentage" value="0.5" type="number" >
+	  <template>
+	      <tag name="label" value="Background Percentage" />
+	      <tag name="minValue" value="0" type="number" />
+	      <tag name="allowDecimals" value="true" type="boolean" />
+	      <tag name="decimalPrecision" value="3" type="number" />
+	      <tag name="step" value="0.01" type="number" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      <tag name="BackgroundExcessSigma" value="1.5" type="number" >
+	  <template>
+	      <tag name="label" value="Background Excess Sigma" />
+	      <tag name="minValue" value="0" type="number" />
+	      <tag name="allowDecimals" value="true" type="boolean" />
+	      <tag name="decimalPrecision" value="3" type="number" />
+	      <tag name="step" value="0.01" type="number" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      <tag name="Weights" value="0.35,0.68,0.99" type="string" >
+	  <template>
+	      <tag name="label" value="Background Excess Sigma" />
+	      <tag name="description" value="This value will be used when using Custom Preset Root" />
+	  </template>             
+      </tag>
+      
+    </tag>
+    
+    <tag name="outputs">
+      <tag name="TipDetection">
+	<template>
+	    <tag name="label" value="Tip(s) detected" />
+	</template>
+      </tag>
+      <tag name="SegedImage" type="image">
+	<template>
+	    <tag name="label" value="Output image" />
+	</template>
+      </tag>
+      
+    </tag>
+    
+    <tag name="help" value="No help yet...Coming soon" /> 
+    <tag name="thumbnail" type="file" value="public/roots.png" />   
+    <tag name="title" value="RootNav version 3" />
+    <tag name="authors" value="Tuan Nguyen - iPlantUK" /> 
+    <tag name="description" value="This module allows the semiautomated quantification of complex root system architectures in a range of plant species grown and imaged in a variety of ways." /> 
+</module>

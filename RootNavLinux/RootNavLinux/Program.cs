@@ -6,30 +6,10 @@ using Emgu.CV.Structure;
 using System.Windows;
 using Plossum.CommandLine;
 
+using RootNav.Core.MixtureModels;
+
 namespace RootNavLinux
 {
-//	[CommandLineManager(ApplicationName = "RootNavLinux", Copyright = "University of Nottingham")]
-//	class Options
-//	{
-//
-//		[CommandLineOption(Description = "Displays this help text")]
-//		public bool Help = false;
-//
-//		[CommandLineOption(Description = "Specifies the input file", MinOccurs = 0)]
-//		public string Name
-//		{
-//			get { return mName; }
-//			set
-//			{
-//				if (String.IsNullOrEmpty(value))
-//					throw new InvalidOptionValueException("The name must not be empty", false);
-//				mName = value;
-//			}
-//		}
-//
-//		private string mName;
-//	}
-
 	class MainClass
 	{
 		public static void Main (string[] args)
@@ -45,7 +25,7 @@ namespace RootNavLinux
 //			}
 
 
-			/*Options options = new Options();
+			RootNavOptions options = new RootNavOptions();
 			CommandLineParser parser = new CommandLineParser(options);
 			parser.Parse();
 
@@ -62,11 +42,20 @@ namespace RootNavLinux
 				//return -1;
 				return;
 			}
-			Console.WriteLine("Hello {0}!", options.Name);
-			*/
 
 			if (argc > 0) {
-				RootNavMain mainRoot = new RootNavMain (args [0]);	
+				RootNavMain mainRoot = new RootNavMain (options.ImageFile);	
+
+				mainRoot.PresetRootName = options.PresetName;
+
+				if (options.PresetName.Equals ("Custom")) {
+					System.Console.WriteLine ("In custome");
+					System.Console.WriteLine (options.ToString ());
+
+					mainRoot.CustomEMConfiguration = options.CreateConfiguration();
+
+				}
+
 				//process the task
 				mainRoot.Process ();
 			} else {

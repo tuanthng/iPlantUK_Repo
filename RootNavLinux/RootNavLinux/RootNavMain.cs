@@ -29,6 +29,15 @@ namespace RootNavLinux
 		private EMConfiguration customConfiguration = null;
 		private int currentEMConfiguration = 0;
 
+		public string PresetRootName{ get; set; }
+
+		public EMConfiguration CustomEMConfiguration
+		{
+			set{
+				customConfiguration = value;
+			}
+		}
+
 //		private bool connectionExists = false;
 
 //		RootNav.Data.IO.Databases.DatabaseManager databaseManager = null;
@@ -116,6 +125,8 @@ namespace RootNavLinux
 			catch(Exception ex)
 			{
 				Console.WriteLine (ex.Message);
+
+				throw ex;
 			}
 
 			return img;
@@ -335,7 +346,7 @@ namespace RootNavLinux
 		unsafe private void UpdateImageOnPatchChange(EMPatch patch, GaussianMixtureModel model, ref Image<Bgr, Byte> screenBitmap, ref Image<Gray, Byte>  featureBitmap)
 		{
 
-			Console.WriteLine ("UpdateImageOnPatchChange");
+			//Console.WriteLine ("UpdateImageOnPatchChange");
 
 			int width = emManager.Width;
 			int height = emManager.Height;
@@ -507,6 +518,8 @@ namespace RootNavLinux
 //			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
 //			this.screenOverlay.InvalidateVisual();
 		}
+
+
 	} //end class
 } //end namespace
 
