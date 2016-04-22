@@ -30,8 +30,8 @@ from bqapi.util import fetch_image_planes, AttrDict
 
 logging.basicConfig(level=logging.DEBUG)
 
-#EXEC = "mono RootNavLinux.exe"
-EXEC = "./runRootNav.sh"
+EXEC = "mono RootNavLinux.exe"
+#EXEC = "./runRootNav.sh"
 
 def gettag (el, tagname):
     for kid in el:
@@ -41,7 +41,7 @@ def gettag (el, tagname):
 
 class RootNavLinux(object):
 
-    def mex_parameter_parser(self, mex_xml):
+    def mex_parameter_parser(self, options, mex_xml):
         """
         Parses input of the xml and add it to RootNav's options attribute
             
@@ -53,11 +53,11 @@ class RootNavLinux(object):
             for tag in mex_inputs[0]:
                 if tag.tag == 'tag' and tag.attrib['type'] != 'system-input':
                     logging.debug('Set options with %s as %s'%(tag.attrib['name'],tag.attrib['value']))
-                    setattr(self.options,tag.attrib['name'],tag.attrib['value'])
+                    setattr(options,tag.attrib['name'],tag.attrib['value'])
         else:
             logging.debug('No Inputs Found on MEX!')
         
-        logging.debug('final options include: ' + str(self.options))
+        logging.debug('mex_parameter_parser/ options: ' + str(options))
         
         
     def setup(self):
@@ -67,8 +67,10 @@ class RootNavLinux(object):
         self.bq.update_mex('initializing')
         #results = fetch_image_planes(self.bq, self.resource_url, '.')
 	
-	self.mex_parameter_parser(self.bq.mex.xmltree)
+        #self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
 	
+        #logging.debug('setup/ final options: ' + str(self.options))
+        
         # extract gobject inputs
         #tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('tips', 'gobject')
         #with open('inputtips.csv', 'w') as TIPS:
@@ -80,9 +82,34 @@ class RootNavLinux(object):
     def start(self):
         self.bq.update_mex('executing')
         # Matlab requires trailing slash
-        logging.debug(['/home/tuan/bisque/modules/RootNavLinuxModuleV3/', EXEC])
+        #build parameters for the tool
+        # -ImageFile="0002.jpg" -PresetName="Custom" -InitialClassCount=3 -MaximumClassCount=4 -ExpectedRootClassCount=2 -PatchSize=150 -BackgroundPercentage=0.5 -BackgroundExcessSigma=1.5 -Weights="0.35,0.68,0.99"
+        
+        self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
+        
+        logging.debug('start/ final options: ' + str(self.options))
+        
+        parasRootNav = ' -PresetName="' + self.options.PresetName + '"' + \
+			' -InitialClassCount=' + self.options.InitialClassCount + \
+			' -MaximumClassCount=' + self.options.MaximumClassCount + \
+			' -ExpectedRootClassCount=' + self.options.ExpectedRootClassCount + \
+			' -PatchSize=' + self.options.PatchSize + \
+			' -BackgroundPercentage=' + self.options.BackgroundPercentage + \
+			' -BackgroundExcessSigma=' + self.options.BackgroundExcessSigma + \
+			' -Weights="' + self.options.Weights + '"'
+        
+        #parasRootNav = str(parasRootNav)
+        
+        logging.debug('parasRootNav: ' + parasRootNav)
+        
+        fullPath = os.path.join(self.options.stagingPath, EXEC)
+        logging.debug('fullPath: ' + fullPath)
+        
+        fullExec = fullPath + ' ' + parasRootNav
+        logging.debug('Execute: ' + fullExec)
+        
         #r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
-        r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV3/./runRootNav.sh'])
+        r = subprocess.call(fullExec)
         
         return r;
 
