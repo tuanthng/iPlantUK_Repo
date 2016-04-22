@@ -41,13 +41,34 @@ def gettag (el, tagname):
 
 class RootNavLinux(object):
 
+    def mex_parameter_parser(self, mex_xml):
+        """
+        Parses input of the xml and add it to RootNav's options attribute
+            
+        @param: mex_xml
+        """
+        mex_inputs = mex_xml.xpath('tag[@name="inputs"]')
+        
+        if mex_inputs:
+            for tag in mex_inputs[0]:
+                if tag.tag == 'tag' and tag.attrib['type'] != 'system-input':
+                    logging.debug('Set options with %s as %s'%(tag.attrib['name'],tag.attrib['value']))
+                    setattr(self.options,tag.attrib['name'],tag.attrib['value'])
+        else:
+            logging.debug('No Inputs Found on MEX!')
+        
+        logging.debug('final options include: ' + str(self.options))
+        
+        
     def setup(self):
         #if not os.path.exists(self.images):
         #    os.makedirs(self.images)
 
         self.bq.update_mex('initializing')
         #results = fetch_image_planes(self.bq, self.resource_url, '.')
-
+	
+	self.mex_parameter_parser(self.bq.mex.xmltree)
+	
         # extract gobject inputs
         #tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('tips', 'gobject')
         #with open('inputtips.csv', 'w') as TIPS:
@@ -59,9 +80,9 @@ class RootNavLinux(object):
     def start(self):
         self.bq.update_mex('executing')
         # Matlab requires trailing slash
-        logging.debug(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
+        logging.debug(['/home/tuan/bisque/modules/RootNavLinuxModuleV3/', EXEC])
         #r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
-        r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/./runRootNav.sh'])
+        r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV3/./runRootNav.sh'])
         
         return r;
 
@@ -91,13 +112,32 @@ class RootNavLinux(object):
 	  logging.debug('Script invocation: ' + str(sys.argv))
 	  
 	  parser  = optparse.OptionParser()
-	  parser.add_option('-d','--debug', action="store_true")
-	  parser.add_option('-n','--dryrun', action="store_true")
-	  parser.add_option('--credentials')
+	  #parser.add_option('-d','--debug', action="store_true")
+	  #parser.add_option('-n','--dryrun', action="store_true")
+	  #parser.add_option('--credentials')
 	  #parser.add_option('--image_url')
-
+	  
+	  parser.add_option('--image_url', dest="image_url")
+	  parser.add_option('--mex_url', dest="mexURL")
+	  parser.add_option('--module_dir', dest="modulePath")
+	  parser.add_option('--staging_path', dest="stagingPath")
+	  parser.add_option('--auth_token', dest="token")
+	  
 	  (options, args) = parser.parse_args()
-	  named = AttrDict (bisque_token=None, mex_url=None, staging_path=None)
+
+	  logging.debug('optparse, options: ' + str(options))
+	  
+	  if options.image_url is None:
+	    logging.debug('image_url option needed.')
+	  else:
+	    logging.debug('image_url option: ' + options.image_url)
+	  
+	  self.options = options;
+	  
+	  logging.debug('optparse, args: ' + str(args))
+
+	  named = AttrDict (auth_token=None, mex_url=None, staging_path=None, modulePath=None)
+	  
 	  for arg in list(args):
 	      tag, sep, val = arg.partition('=')
 	      logging.debug('args , tag=' + str(tag) + ' and sep ' + str(sep) + ' and value: ' + str(val))
@@ -106,7 +146,13 @@ class RootNavLinux(object):
 		  named[tag] = val
 		  args.remove(arg)
 	  
-	  self.bq = BQSession().init_mex(args[0], args[1])
+	  logging.debug('optparse, named: ' + str(named))
+	  
+	  logging.debug('optparse, final args: ' + str(args))
+	    
+	  #self.bq = BQSession().init_mex(args[0], args[1])  #mex_url, bisque_token
+	  self.bq = BQSession().init_mex(options.mexURL, options.token)
+	  	  
 	  #if named.bisque_token:
 	  #  self.bq = BQSession().init_mex(named.mex_url, named.bisque_token)
 	  #  self.resource_url =  named.image_url
@@ -120,8 +166,13 @@ class RootNavLinux(object):
 	  #if self.resource_url is None:
 	  #  parser.error('Need a resource_url')
       
+	  if len(args) == 1:
+	    commands = [ args.pop(0)]
+	  else:
+            commands =['setup','start', 'teardown']
+      
 	  #if not args :
-	  commands = ['setup', 'start', 'teardown']
+	  #  commands = ['setup', 'start', 'teardown']
 	  #else:
 	  #  commands = [ args ]
             
