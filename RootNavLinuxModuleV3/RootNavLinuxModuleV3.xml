@@ -4,9 +4,8 @@
       <tag name="mex_url"      type="system-input" />
       <tag name="bisque_token" type="system-input" />
       
-      <tag name="image_url" type="resource">
+      <tag name="image_url" type="image">
 	  <template>
-	      <tag name="accepted_type" value="image" />
 	      <tag name="label" value="Image to process the root" />
 	  </template>
       </tag> 
@@ -91,6 +90,11 @@
     </tag>
     
     <tag name="outputs">
+      <tag name="summary">
+	  <template>
+	      <tag name="label" value="Processing summary" />
+	  </template>
+      </tag>
       <tag name="TipDetection">
 	<template>
 	    <tag name="label" value="Tip(s) detected" />

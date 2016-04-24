@@ -14,13 +14,15 @@ import itertools
 #import BQSession
 from os import sys, path
 
+from lxml import etree
+
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 sys.path.append('/home/tuan/bisque/bqapi/')
 
 from bqapi.comm import BQSession
 
-from bqapi.util import fetch_image_planes, AttrDict
+from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels
 #from lxml.builder import E
 
 #img_url_tag = 'image_url'
@@ -89,7 +91,27 @@ class RootNavLinux(object):
         
         logging.debug('start/ final options: ' + str(self.options))
         
-        parasRootNav = ' -PresetName="' + self.options.PresetName + '"' + \
+        
+        #image_xml = self.bq.fetchxml(self.options.image_url)
+        #logging.debug('image_xml: ' + str(image_xml))
+        
+        #image_url = self.bq.service_url('image_service',path=image_xml.attrib['resource_uniq'])
+        #logging.debug('image_url: ' + str(image_url))
+        
+        #results = fetch_image_planes(self.bq, self.options.image_url, self.options.stagingPath)
+        results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
+#         image = self.bq.load(self.options.image_url)
+#         pixels = image.pixels() #.fetch()
+#         dest = os.path.join(self.options.stagingPath, image.name)
+#         f = open(dest, 'wb')
+#         f.write(pixels)
+#         f.close()
+        logging.debug('results fetching image: ' + str(results))
+        #logging.debug('results fetching image: ' + str(image))
+        #logging.debug('image name: ' + str(image.name))
+        
+        parasRootNav = ' -ImageFile="' +  results[self.options.image_url] + '"' + \
+            ' -PresetName="' + self.options.PresetName + '"' + \
 			' -InitialClassCount=' + self.options.InitialClassCount + \
 			' -MaximumClassCount=' + self.options.MaximumClassCount + \
 			' -ExpectedRootClassCount=' + self.options.ExpectedRootClassCount + \
@@ -97,23 +119,24 @@ class RootNavLinux(object):
 			' -BackgroundPercentage=' + self.options.BackgroundPercentage + \
 			' -BackgroundExcessSigma=' + self.options.BackgroundExcessSigma + \
 			' -Weights="' + self.options.Weights + '"'
-        
+         
         #parasRootNav = str(parasRootNav)
-        
+         
         logging.debug('parasRootNav: ' + parasRootNav)
-        
+         
         fullPath = os.path.join(self.options.stagingPath, EXEC)
         logging.debug('fullPath: ' + fullPath)
-        
+         
         #fullExec = fullPath + ' ' + parasRootNav
         #logging.debug('Execute: ' + fullExec)
-        
+         
         #r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
         r = subprocess.call([fullPath, parasRootNav])
-        
+         
         return r;
 
     def teardown(self):
+        self.bq.update_mex('Collecting result...')
         # Post all submex for files and return xml list of results
         #gobjects = self._read_results()
         #tags = [{ 'name': 'outputs',
@@ -121,7 +144,30 @@ class RootNavLinux(object):
         #                    'gobject' : [{ 'name': 'root_tips', 'type': 'root_tips', 'gobject' : gobjects }] }]
         #          }]
         #self.bq.finish_mex(tags = tags)
-        self.bq.finish_mex('Finished')
+        
+#         mex_outputs = self.bq.mex.xmltree.xpath('tag[@name="outputs"]')
+#         logging.debug('Outputs mex:' + str(mex_outputs))
+#         if mex_outputs:
+#             logging.debug('Outputs mex:' + str(mex_outputs))
+#             
+#             for tag in mex_outputs[0]:
+#                 if tag.tag == 'tag' and tag.attrib['name'] == 'TipDetection':
+#                     tag.attrib['value'] = "390"
+# #                 if tag.tag == 'tag' and tag.attrib['type'] != 'system-input':
+# #                     logging.debug('Set options with %s as %s'%(tag.attrib['name'],tag.attrib['value']))
+#                     setattr(options,tag.attrib['name'],tag.attrib['value'])
+#         else:
+#             logging.debug('No Outputs Found on MEX!')
+        
+        outputTag = etree.Element('tag', name='outputs')
+        outputSubTag = etree.SubElement(outputTag, 'tag', name='summary')
+        
+        #etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
+        etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+        
+        self.bq.finish_mex(tags = [outputTag])
+        #self.bq.finish_mex('Finished')
+        self.bq.close()
         return;
    
     def run(self):
