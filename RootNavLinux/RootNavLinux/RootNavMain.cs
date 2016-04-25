@@ -55,36 +55,48 @@ namespace RootNavLinux
 		private double[] probabilityMapSecondClass = null;
 		private double[,] distanceProbabilityMap = null;
 
-		private string FileName { get; set; }
-		private string ResultFileName{ get; set; }
+		private string ImageFileName { get; set; }
+		private string ResultXMLFileName{ get; set; } //the xml file containing result processed
 		public string OutputPath{ get; set; } //output and input path will be passed from outside. By default, they should be the current directory of the program
 		public string InputPath{ get; set; }
 
+		private string ProbabilityFilename{ get; set; }
+
 		public RootNavMain (string filePathImg)
 		{
-			this.FileName = filePathImg;
+			this.ImageFileName = filePathImg;
 
 			initConfiguration ();
 			createResultFilename ();
+			createProbabilityFilename ();
 
-			OutputResultXML.FullOutputFileName = ResultFileName;
+			//store the xml file into the global
+			OutputResultXML.FullOutputFileName = ResultXMLFileName;
 		}
 
 		public void Process()
 		{
-			LoadImage (this.FileName);
+			LoadImage (this.ImageFileName);
 
 			EMProcessing ();
 
 			//writing input data
-			OutputResultXML.writeInputData(FileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+
+			OutputResultXML.writeOutputData (this.ProbabilityFilename, null);
+
 
 		}
 		private void createResultFilename()
 		{
 			
-			ResultFileName = FileName + "_result.xml";
+			ResultXMLFileName = this.ImageFileName + "_result.xml";
 
+		}
+		private void createProbabilityFilename()
+		{
+			string name = System.IO.Path.GetFileNameWithoutExtension (this.ImageFileName);
+			ProbabilityFilename = name + "_map.png";
 		}
 		private int initConfiguration()
 		{
@@ -105,7 +117,7 @@ namespace RootNavLinux
 				//Application.Current.Shutdown();
 				throw e;
 				//if error
-				return -1;
+				//return -1;
 			}
 
 			return 0;
@@ -156,7 +168,7 @@ namespace RootNavLinux
 			try
 			{
 				String filePath = filePaths[0];
-				this.FileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+				this.ImageFileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
 
 
 //				// For TIF files, extract header information
