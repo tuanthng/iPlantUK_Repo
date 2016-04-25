@@ -56,35 +56,54 @@ namespace RootNavLinux
 		private double[,] distanceProbabilityMap = null;
 
 		private string FileName { get; set; }
+		private string ResultFileName{ get; set; }
+		public string OutputPath{ get; set; } //output and input path will be passed from outside. By default, they should be the current directory of the program
+		public string InputPath{ get; set; }
 
 		public RootNavMain (string filePathImg)
 		{
 			this.FileName = filePathImg;
 
 			initConfiguration ();
+			createResultFilename ();
 
+			OutputResultXML.FullOutputFileName = ResultFileName;
 		}
 
 		public void Process()
 		{
 			LoadImage (this.FileName);
-			EMProcessing ();
-		}
 
+			EMProcessing ();
+
+			//writing input data
+			OutputResultXML.writeInputData(FileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+
+		}
+		private void createResultFilename()
+		{
+			
+			ResultFileName = FileName + "_result.xml";
+
+		}
 		private int initConfiguration()
 		{
 			try
 			{
+				//intialise the input/output as the current directory
+				InputPath = System.IO.Directory.GetCurrentDirectory();
+				OutputPath = InputPath;
+
 				this.configurations = EMConfiguration.LoadFromXML();
 
 				this.currentEMConfiguration = EMConfiguration.DefaultIndex(configurations);
 
 			}
-			catch
+			catch(Exception e)
 			{
 				Console.WriteLine("Configuration XML Error: An invalid value has been found in the E-M configuration XML file. Please correct this before running RootNav.");
 				//Application.Current.Shutdown();
-
+				throw e;
 				//if error
 				return -1;
 			}
