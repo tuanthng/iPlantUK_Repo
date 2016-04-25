@@ -14,6 +14,8 @@ import itertools
 #import BQSession
 from os import sys, path
 
+
+
 from lxml import etree
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
@@ -21,6 +23,7 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 sys.path.append('/home/tuan/bisque/bqapi/')
 
 from bqapi.comm import BQSession
+from bqapi import BQTag
 
 from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels
 #from lxml.builder import E
@@ -165,6 +168,10 @@ class RootNavLinux(object):
         #etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
         etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
         
+        #just for testing
+        self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
+        etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
+        #or using # self.bq.addTag()
         self.bq.finish_mex(tags = [outputTag])
         #self.bq.finish_mex('Finished')
         self.bq.close()

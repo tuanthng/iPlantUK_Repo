@@ -100,7 +100,7 @@
 	    <tag name="label" value="Tip(s) detected" />
 	</template>
       </tag>
-      <tag name="SegedImage" type="image">
+      <tag name="OutputImage" type="image">
 	<template>
 	    <tag name="label" value="Output image" />
 	</template>
