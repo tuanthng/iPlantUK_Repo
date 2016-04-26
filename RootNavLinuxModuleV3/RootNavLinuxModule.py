@@ -30,6 +30,8 @@ from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels
 
 #img_url_tag = 'image_url'
 
+imageDownloaded = '';
+
 #named_args = {}
 #staging_path = None
 
@@ -69,7 +71,7 @@ class RootNavLinux(object):
         #if not os.path.exists(self.images):
         #    os.makedirs(self.images)
 
-        self.bq.update_mex('initializing')
+        self.bq.update_mex('initialising')
         #results = fetch_image_planes(self.bq, self.resource_url, '.')
 	
         #self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
@@ -112,6 +114,7 @@ class RootNavLinux(object):
         logging.debug('results fetching image: ' + str(results))
         #logging.debug('results fetching image: ' + str(image))
         #logging.debug('image name: ' + str(image.name))
+        imageDownloaded = results[self.options.image_url];
         
         parasRootNav = ' -ImageFile="' +  results[self.options.image_url] + '"' + \
             ' -PresetName="' + self.options.PresetName + '"' + \
@@ -135,7 +138,9 @@ class RootNavLinux(object):
          
         #r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
         r = subprocess.call([fullPath, parasRootNav])
-         
+        #r = 0
+        
+        #self.bq.update_mex('Collecting result...')
         return r;
 
     def teardown(self):
@@ -162,15 +167,61 @@ class RootNavLinux(object):
 #         else:
 #             logging.debug('No Outputs Found on MEX!')
         
+        #load result data from the xml file. For testing, just use the fix xml i.e. will be changed later time
+        #resultfile = os.path.join(self.options.stagingPath, '0002.jpg_result.xml')
+        #reload parameters
+        self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
+        #get the image downloaded
+        image = self.bq.load(self.options.image_url)
+        imageDownloaded = image.name + ".tif"
+        
+        resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
+        
+        logging.debug('Result file: ' + resultfile)
+        
+        #load the result file and display info.
+#       tree.parse('/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg_result.xml')
+        tree = etree.ElementTree()
+        tree.parse(resultfile)
+        rootNode = tree.getroot()
+#         
+        logging.debug('Root node: ' + rootNode.tag)
+#          
+        # # look for the Tips Output tag
+        tipDetectionNode = rootNode.findall("./Output/TipsDetected")
+        totalAttrib = tipDetectionNode[0].get('total')
+        
+        logging.debug('tipDetectionNode : ' + totalAttrib)
+         
         outputTag = etree.Element('tag', name='outputs')
         outputSubTag = etree.SubElement(outputTag, 'tag', name='summary')
         
-        #etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
-        etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+        
+        ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
+        #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+        
+        
+        etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
+        
+        
+        #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
         
         #just for testing
-        self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
-        etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
+       
+        outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
+        gObjectValue = ""
+        gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+        
+        for tip in tipDetectionNode[0]:
+            gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
+            etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
+        
+        
+        
+        #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        
+        #etree.SubElement(outputTag, 'tag', name='OutputImage', value='file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        
         #or using # self.bq.addTag()
         self.bq.finish_mex(tags = [outputTag])
         #self.bq.finish_mex('Finished')
@@ -255,7 +306,7 @@ class RootNavLinux(object):
 	  #  commands = ['setup', 'start', 'teardown']
 	  #else:
 	  #  commands = [ args ]
-            
+            l
 	  for command in commands:
 	    command = getattr(self, str(command))
             r = command()
