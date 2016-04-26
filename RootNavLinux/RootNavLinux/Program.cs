@@ -53,6 +53,15 @@ namespace RootNavLinux
 						mainRoot.CustomEMConfiguration = options.CreateConfiguration ();
 
 					}
+					//only update the input and output paths if they are provided and not are the current directory
+					if (options.InputPath != null && !options.InputPath.Equals("."))
+					{
+						mainRoot.InputPath = options.InputPath;
+					}
+					if (options.OutputPath != null && !options.OutputPath.Equals("."))
+					{
+						mainRoot.OutputPath = options.OutputPath;
+					}
 
 					//process the task
 					mainRoot.Process ();
