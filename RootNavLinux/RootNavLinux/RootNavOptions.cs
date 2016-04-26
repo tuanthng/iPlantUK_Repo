@@ -104,14 +104,14 @@ namespace RootNavLinux
 
 		public override string ToString()
 		{
-			string line = String.Format ("InitialClassCount: %d " +
-				"\nMaximumClassCount: %d " +
-				"\nExpectedRootClassCount: %d " +
-				"\nPatchSize: %d " +
-				"\nBackgroundPercentage: %f " +
-				"\nBackgroundExcessSigma: %f " +
-				"\nInput path: %s " +
-				"\nOutput path: %s", 
+			string line = String.Format ("InitialClassCount: {0} " +
+				"\nMaximumClassCount: {1} " +
+				"\nExpectedRootClassCount: {2} " +
+				"\nPatchSize: {3} " +
+				"\nBackgroundPercentage: {4} " +
+				"\nBackgroundExcessSigma: {5} " +
+				"\nInput path: {6} " +
+				"\nOutput path: {7}", 
 				this.InitialClassCount, 
 				this.MaximumClassCount, 
 				this.ExpectedRootClassCount, 

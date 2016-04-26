@@ -94,16 +94,41 @@ namespace RootNavLinux
 
 				//File node
 				XmlNode fileNode = doc.CreateNode (XmlNodeType.Element, "File", "");
-				XmlNode imageFileNode = doc.CreateNode (XmlNodeType.Element, "ImageFile", "");
+				XmlNode imageFileNode = doc.CreateNode (XmlNodeType.Element, "ProbabilityImageFile", "");
 				imageFileNode.InnerText = outputFilename;
 
 				fileNode.AppendChild (imageFileNode);
+				outputNode.AppendChild (fileNode);
 
 				//Tip node
+				XmlNode tipsNode = doc.CreateNode (XmlNodeType.Element, "TipsDetected", "");
+
+				if (tipsDetected != null) {
+					XmlAttribute totalAtt = doc.CreateAttribute("total");
+					totalAtt.Value = tipsDetected.Count.ToString ();
+					tipsNode.Attributes.Append (totalAtt);
+
+					for(int index  = 0 ; index < tipsDetected.Count; index++) {
+						XmlNode point = doc.CreateNode(XmlNodeType.Element, "Tip" , "");
+						XmlAttribute idAtt = doc.CreateAttribute("id");
+						idAtt.Value = index.ToString ();
+						point.Attributes.Append (idAtt);
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = tipsDetected [index].X.ToString ();
+						point.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = tipsDetected [index].Y.ToString ();
+						point.Attributes.Append (yAtt);
+
+						tipsNode.AppendChild (point);
+					}
+				}
+
+				outputNode.AppendChild (tipsNode);
 
 				//patch node
 
-				outputNode.AppendChild (fileNode);
+
 				dataProcessedNode.AppendChild(outputNode);
 
 				//save changes to the file

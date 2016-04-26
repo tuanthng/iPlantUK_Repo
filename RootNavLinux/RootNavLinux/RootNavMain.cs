@@ -12,6 +12,8 @@ using Emgu.CV.UI;
 using Emgu.CV.Structure;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace RootNavLinux
 {
@@ -81,9 +83,9 @@ namespace RootNavLinux
 			EMProcessing ();
 
 			//writing input data
-			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+			//OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
 
-			OutputResultXML.writeOutputData (this.ProbabilityFilename, null);
+			//OutputResultXML.writeOutputData (this.ProbabilityFilename, null);
 
 
 		}
@@ -103,7 +105,8 @@ namespace RootNavLinux
 			try
 			{
 				//intialise the input/output as the current directory
-				InputPath = System.IO.Directory.GetCurrentDirectory();
+				//InputPath = System.IO.Directory.GetCurrentDirectory();
+				InputPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				OutputPath = InputPath;
 
 				this.configurations = EMConfiguration.LoadFromXML();
@@ -276,6 +279,9 @@ namespace RootNavLinux
 			this.emManager.ProgressCompleted += new RunWorkerCompletedEventHandler(EMManagerProgressCompleted);
 
 //			this.UpdateStatusText("Status: Processing " + (GMMArrayHeight * GMMArrayWidth).ToString() + " patches");
+
+			//store some input value to the result xml file
+			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
 
 			this.emManager.Run();
 //
@@ -539,6 +545,8 @@ namespace RootNavLinux
 //					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
 				}
 			}
+
+			OutputResultXML.writeOutputData (this.ProbabilityFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());
