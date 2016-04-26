@@ -12,6 +12,8 @@ using Emgu.CV.UI;
 using Emgu.CV.Structure;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace RootNavLinux
 {
@@ -55,38 +57,70 @@ namespace RootNavLinux
 		private double[] probabilityMapSecondClass = null;
 		private double[,] distanceProbabilityMap = null;
 
-		private string FileName { get; set; }
+		private string ImageFileName { get; set; }
+		private string ResultXMLFileName{ get; set; } //the xml file containing result processed
+		public string OutputPath{ get; set; } //output and input path will be passed from outside. By default, they should be the current directory of the program
+		public string InputPath{ get; set; }
+
+		private string ProbabilityFilename{ get; set; }
 
 		public RootNavMain (string filePathImg)
 		{
-			this.FileName = filePathImg;
+			this.ImageFileName = filePathImg;
 
 			initConfiguration ();
+			createResultFilename ();
+			createProbabilityFilename ();
 
+			//store the xml file into the global
+			OutputResultXML.FullOutputFileName = ResultXMLFileName;
 		}
 
 		public void Process()
 		{
-			LoadImage (this.FileName);
-			EMProcessing ();
-		}
+			LoadImage (this.ImageFileName);
 
+			EMProcessing ();
+
+			//writing input data
+			//OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+
+			//OutputResultXML.writeOutputData (this.ProbabilityFilename, null);
+
+
+		}
+		private void createResultFilename()
+		{
+			
+			ResultXMLFileName = this.ImageFileName + "_result.xml";
+
+		}
+		private void createProbabilityFilename()
+		{
+			string name = System.IO.Path.GetFileNameWithoutExtension (this.ImageFileName);
+			ProbabilityFilename = name + "_map.png";
+		}
 		private int initConfiguration()
 		{
 			try
 			{
+				//intialise the input/output as the current directory
+				//InputPath = System.IO.Directory.GetCurrentDirectory();
+				InputPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+				OutputPath = InputPath;
+
 				this.configurations = EMConfiguration.LoadFromXML();
 
 				this.currentEMConfiguration = EMConfiguration.DefaultIndex(configurations);
 
 			}
-			catch
+			catch(Exception e)
 			{
 				Console.WriteLine("Configuration XML Error: An invalid value has been found in the E-M configuration XML file. Please correct this before running RootNav.");
 				//Application.Current.Shutdown();
-
+				throw e;
 				//if error
-				return -1;
+				//return -1;
 			}
 
 			return 0;
@@ -137,7 +171,7 @@ namespace RootNavLinux
 			try
 			{
 				String filePath = filePaths[0];
-				this.FileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+				this.ImageFileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
 
 
 //				// For TIF files, extract header information
@@ -245,6 +279,9 @@ namespace RootNavLinux
 			this.emManager.ProgressCompleted += new RunWorkerCompletedEventHandler(EMManagerProgressCompleted);
 
 //			this.UpdateStatusText("Status: Processing " + (GMMArrayHeight * GMMArrayWidth).ToString() + " patches");
+
+			//store some input value to the result xml file
+			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
 
 			this.emManager.Run();
 //
@@ -508,6 +545,8 @@ namespace RootNavLinux
 //					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
 				}
 			}
+
+			OutputResultXML.writeOutputData (this.ProbabilityFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());

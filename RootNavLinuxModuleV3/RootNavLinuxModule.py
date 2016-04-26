@@ -14,16 +14,23 @@ import itertools
 #import BQSession
 from os import sys, path
 
+
+
+from lxml import etree
+
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 sys.path.append('/home/tuan/bisque/bqapi/')
 
 from bqapi.comm import BQSession
+from bqapi import BQTag
 
-from bqapi.util import fetch_image_planes, AttrDict
+from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels
 #from lxml.builder import E
 
 #img_url_tag = 'image_url'
+
+imageDownloaded = '';
 
 #named_args = {}
 #staging_path = None
@@ -64,7 +71,7 @@ class RootNavLinux(object):
         #if not os.path.exists(self.images):
         #    os.makedirs(self.images)
 
-        self.bq.update_mex('initializing')
+        self.bq.update_mex('initialising')
         #results = fetch_image_planes(self.bq, self.resource_url, '.')
 	
         #self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
@@ -89,7 +96,28 @@ class RootNavLinux(object):
         
         logging.debug('start/ final options: ' + str(self.options))
         
-        parasRootNav = ' -PresetName="' + self.options.PresetName + '"' + \
+        
+        #image_xml = self.bq.fetchxml(self.options.image_url)
+        #logging.debug('image_xml: ' + str(image_xml))
+        
+        #image_url = self.bq.service_url('image_service',path=image_xml.attrib['resource_uniq'])
+        #logging.debug('image_url: ' + str(image_url))
+        
+        #results = fetch_image_planes(self.bq, self.options.image_url, self.options.stagingPath)
+        results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
+#         image = self.bq.load(self.options.image_url)
+#         pixels = image.pixels() #.fetch()
+#         dest = os.path.join(self.options.stagingPath, image.name)
+#         f = open(dest, 'wb')
+#         f.write(pixels)
+#         f.close()
+        logging.debug('results fetching image: ' + str(results))
+        #logging.debug('results fetching image: ' + str(image))
+        #logging.debug('image name: ' + str(image.name))
+        imageDownloaded = results[self.options.image_url];
+        
+        parasRootNav = ' -ImageFile="' +  results[self.options.image_url] + '"' + \
+            ' -PresetName="' + self.options.PresetName + '"' + \
 			' -InitialClassCount=' + self.options.InitialClassCount + \
 			' -MaximumClassCount=' + self.options.MaximumClassCount + \
 			' -ExpectedRootClassCount=' + self.options.ExpectedRootClassCount + \
@@ -97,23 +125,26 @@ class RootNavLinux(object):
 			' -BackgroundPercentage=' + self.options.BackgroundPercentage + \
 			' -BackgroundExcessSigma=' + self.options.BackgroundExcessSigma + \
 			' -Weights="' + self.options.Weights + '"'
-        
+         
         #parasRootNav = str(parasRootNav)
-        
+         
         logging.debug('parasRootNav: ' + parasRootNav)
-        
+         
         fullPath = os.path.join(self.options.stagingPath, EXEC)
         logging.debug('fullPath: ' + fullPath)
-        
+         
         #fullExec = fullPath + ' ' + parasRootNav
         #logging.debug('Execute: ' + fullExec)
-        
+         
         #r = subprocess.call(['/home/tuan/bisque/modules/RootNavLinuxModuleV2/', EXEC])
         r = subprocess.call([fullPath, parasRootNav])
+        #r = 0
         
+        #self.bq.update_mex('Collecting result...')
         return r;
 
     def teardown(self):
+        self.bq.update_mex('Collecting result...')
         # Post all submex for files and return xml list of results
         #gobjects = self._read_results()
         #tags = [{ 'name': 'outputs',
@@ -121,7 +152,80 @@ class RootNavLinux(object):
         #                    'gobject' : [{ 'name': 'root_tips', 'type': 'root_tips', 'gobject' : gobjects }] }]
         #          }]
         #self.bq.finish_mex(tags = tags)
-        self.bq.finish_mex('Finished')
+        
+#         mex_outputs = self.bq.mex.xmltree.xpath('tag[@name="outputs"]')
+#         logging.debug('Outputs mex:' + str(mex_outputs))
+#         if mex_outputs:
+#             logging.debug('Outputs mex:' + str(mex_outputs))
+#             
+#             for tag in mex_outputs[0]:
+#                 if tag.tag == 'tag' and tag.attrib['name'] == 'TipDetection':
+#                     tag.attrib['value'] = "390"
+# #                 if tag.tag == 'tag' and tag.attrib['type'] != 'system-input':
+# #                     logging.debug('Set options with %s as %s'%(tag.attrib['name'],tag.attrib['value']))
+#                     setattr(options,tag.attrib['name'],tag.attrib['value'])
+#         else:
+#             logging.debug('No Outputs Found on MEX!')
+        
+        #load result data from the xml file. For testing, just use the fix xml i.e. will be changed later time
+        #resultfile = os.path.join(self.options.stagingPath, '0002.jpg_result.xml')
+        #reload parameters
+        self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
+        #get the image downloaded
+        image = self.bq.load(self.options.image_url)
+        imageDownloaded = image.name + ".tif"
+        
+        resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
+        
+        logging.debug('Result file: ' + resultfile)
+        
+        #load the result file and display info.
+#       tree.parse('/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg_result.xml')
+        tree = etree.ElementTree()
+        tree.parse(resultfile)
+        rootNode = tree.getroot()
+#         
+        logging.debug('Root node: ' + rootNode.tag)
+#          
+        # # look for the Tips Output tag
+        tipDetectionNode = rootNode.findall("./Output/TipsDetected")
+        totalAttrib = tipDetectionNode[0].get('total')
+        
+        logging.debug('tipDetectionNode : ' + totalAttrib)
+         
+        outputTag = etree.Element('tag', name='outputs')
+        outputSubTag = etree.SubElement(outputTag, 'tag', name='summary')
+        
+        
+        ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
+        #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+        
+        
+        etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
+        
+        
+        #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
+        
+        #just for testing
+       
+        outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
+        gObjectValue = ""
+        gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+        
+        for tip in tipDetectionNode[0]:
+            gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
+            etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
+        
+        
+        
+        #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        
+        #etree.SubElement(outputTag, 'tag', name='OutputImage', value='file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        
+        #or using # self.bq.addTag()
+        self.bq.finish_mex(tags = [outputTag])
+        #self.bq.finish_mex('Finished')
+        self.bq.close()
         return;
    
     def run(self):
@@ -202,7 +306,7 @@ class RootNavLinux(object):
 	  #  commands = ['setup', 'start', 'teardown']
 	  #else:
 	  #  commands = [ args ]
-            
+            l
 	  for command in commands:
 	    command = getattr(self, str(command))
             r = command()

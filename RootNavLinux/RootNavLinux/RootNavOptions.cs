@@ -66,6 +66,12 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Specifies the Weights", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string Weights { get; set; }
 
+		[CommandLineOption(Description = "Specifies the input path", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string InputPath { get; set; }
+
+		[CommandLineOption(Description = "Specifies the output path", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string OutputPath { get; set; }
+
 		public EMConfiguration CreateConfiguration()
 		{
 			//create custom configuration
@@ -98,15 +104,24 @@ namespace RootNavLinux
 
 		public override string ToString()
 		{
-			string line = String.Format ("InitialClassCount: %d MaximumClassCount: %d ExpectedRootClassCount: %d PatchSize: %d " +
-			              "BackgroundPercentage: %f BackgroundExcessSigma: %f", this.InitialClassCount, this.MaximumClassCount, this.ExpectedRootClassCount, this.PatchSize,
-				              this.BackgroundPercentage, this.BackgroundExcessSigma);
+			string line = String.Format ("InitialClassCount: {0} " +
+				"\nMaximumClassCount: {1} " +
+				"\nExpectedRootClassCount: {2} " +
+				"\nPatchSize: {3} " +
+				"\nBackgroundPercentage: {4} " +
+				"\nBackgroundExcessSigma: {5} " +
+				"\nInput path: {6} " +
+				"\nOutput path: {7}", 
+				this.InitialClassCount, 
+				this.MaximumClassCount, 
+				this.ExpectedRootClassCount, 
+				this.PatchSize,
+				this.BackgroundPercentage, 
+				this.BackgroundExcessSigma, 
+				this.InputPath != null ? this.InputPath : " ", 
+				this.OutputPath != null ? this.InputPath : " ");
 
-			string weight = "Weights: " + Weights;
-
-			//foreach (double w in this.Weights) {
-			//	weight += w.ToString() + " ";
-			//}
+			string weight = "Weights: " + Weights != null? this.Weights : " ";
 
 			line += weight;
 
