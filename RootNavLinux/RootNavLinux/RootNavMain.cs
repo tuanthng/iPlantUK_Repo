@@ -560,7 +560,43 @@ namespace RootNavLinux
 //			this.screenOverlay.InvalidateVisual();
 		}
 
+		public void AnalysePrimaryRoots()
+		{
+//			if (this.screenOverlay.IsBusy
+//				|| this.screenOverlay.Terminals.Sources.Count() == 0
+//				|| this.screenOverlay.Terminals.Primaries.Count() == 0)
+//			{
+//				return;
+//			}
 
+			//this.statusText.Text = "Status: Generating probability map";
+			//this.screenOverlay.IsBusy = true;
+
+			int width = this.emManager.Width;
+			int height = this.emManager.Height;
+
+
+
+//			this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
+//
+//			int combinations = this.screenOverlay.Terminals.UnlinkedSources.Count() * this.screenOverlay.Terminals.UnlinkedPrimaries.Count() + this.screenOverlay.Terminals.TerminalLinks.Count();
+//
+//			int threadCount = Math.Min(Core.Threading.ThreadParams.LiveWireThreadCount, combinations);
+//
+//			this.statusText.Text = "Status: Examining " + combinations.ToString() + " potential" + (combinations == 1 ? " root" : " roots");
+//
+//			this.primaryLiveWireManager = new LiveWirePrimaryManager()
+//			{
+//				DistanceMap = this.distanceProbabilityMap,
+//				Graph = this.currentGraph,
+//				Terminals = this.screenOverlay.Terminals,
+//				ThreadCount = threadCount
+//			};
+//
+//			primaryLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+//			primaryLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
+//			primaryLiveWireManager.Run();
+		}
 	} //end class
 } //end namespace
 

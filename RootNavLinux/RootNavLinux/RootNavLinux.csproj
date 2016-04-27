@@ -80,6 +80,20 @@
     <Compile Include="Core\Tips\TipDetectionThread.cs" />
     <Compile Include="RootNavOptions.cs" />
     <Compile Include="IO\OutputResultXML.cs" />
+    <Compile Include="Core\LiveWires\LiveWireGraph.cs" />
+    <Compile Include="Core\LiveWires\LiveWireGraphResolution.cs" />
+    <Compile Include="Core\LiveWires\LiveWireManager.cs" />
+    <Compile Include="Core\LiveWires\LiveWirePath.cs" />
+    <Compile Include="Core\LiveWires\LiveWirePathCollection.cs" />
+    <Compile Include="Core\LiveWires\LiveWirePathWeights.cs" />
+    <Compile Include="Core\LiveWires\LiveWireRootAssociation.cs" />
+    <Compile Include="Core\LiveWires\LiveWireSegmentation.cs" />
+    <Compile Include="Core\LiveWires\LiveWireWorkers.cs" />
+    <Compile Include="Core\LiveWires\RootTerminalCollection.cs" />
+    <Compile Include="Core\DataStructures\ConvexHull.cs" />
+    <Compile Include="Core\DataStructures\FibonacciHeap.cs" />
+    <Compile Include="Core\DataStructures\FibonacciHeap2.cs" />
+    <Compile Include="Core\DataStructures\Shape.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
