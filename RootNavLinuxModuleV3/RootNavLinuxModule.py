@@ -178,7 +178,7 @@ class RootNavLinux(object):
         resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
         
         logging.debug('Result file: ' + resultfile)
-        
+    
         #load the result file and display info.
 #       tree.parse('/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg_result.xml')
         tree = etree.ElementTree()
@@ -189,34 +189,35 @@ class RootNavLinux(object):
 #          
         # # look for the Tips Output tag
         tipDetectionNode = rootNode.findall("./Output/TipsDetected")
-        totalAttrib = tipDetectionNode[0].get('total')
         
-        logging.debug('tipDetectionNode : ' + totalAttrib)
-         
         outputTag = etree.Element('tag', name='outputs')
         outputSubTag = etree.SubElement(outputTag, 'tag', name='summary')
         
-        
-        ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
-        #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
-        
-        
-        etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
-        
-        
-        #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
-        
-        #just for testing
-       
-        outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
-        gObjectValue = ""
-        gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
-        
-        for tip in tipDetectionNode[0]:
-            gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
-            etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
-        
-        
+        if len(tipDetectionNode) > 0:
+            
+            totalAttrib = tipDetectionNode[0].get('total')
+            
+            logging.debug('tipDetectionNode : ' + totalAttrib)
+            
+            ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
+            #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+            
+            
+            etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
+            
+            
+            #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
+            
+            #just for testing
+           
+            outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
+            gObjectValue = ""
+            gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+            
+            for tip in tipDetectionNode[0]:
+                gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
+                etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
+                
         
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         
