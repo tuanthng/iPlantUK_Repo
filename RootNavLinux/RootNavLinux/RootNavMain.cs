@@ -309,7 +309,7 @@ namespace RootNavLinux
 //			WriteableBitmap wbmp = new WriteableBitmap(this.emManager.Width, this.emManager.Height, 96.0, 96.0, PixelFormats.Bgr32, null);
 			Mat wbmp = new Mat(this.emManager.Height, this.emManager.Width, Emgu.CV.CvEnum.DepthType.Cv32S, 3);
 //			this.featureBitmap = new WriteableBitmap(this.emManager.Width, this.emManager.Height, 96.0, 96.0, PixelFormats.Gray8, null);
-			this.featureBitmap = new Mat(this.emManager.Height, this.emManager.Width, Emgu.CV.CvEnum.DepthType.Cv8S, 1);
+			this.featureBitmap = new Mat(this.emManager.Height, this.emManager.Width, Emgu.CV.CvEnum.DepthType.Cv8U, 1);
 
 			this.probabilityMapBestClass = new double[this.emManager.Width * this.emManager.Height];
 			this.probabilityMapBrightestClass = new double[this.emManager.Width * this.emManager.Height];
@@ -347,8 +347,10 @@ namespace RootNavLinux
 //			this.screenOverlay.IsBusy = false;
 //
 			//this.probabilityBitmap = wbmp;
-			this.probabilityBitmap = imgScreen.Mat;
-			this.featureBitmap = featureScreen.Mat;
+			//this.probabilityBitmap = imgScreen.Mat;
+			this.probabilityBitmap = new Mat(imgScreen.Mat, imgScreen.ROI);
+			//this.featureBitmap = featureScreen.Mat; //changed to below code, because it causes error when later time using this variable. Not sure why?
+			this.featureBitmap = new Mat(featureScreen.Mat, featureScreen.ROI);
 
 			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
 
