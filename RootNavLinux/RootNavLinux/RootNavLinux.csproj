@@ -94,6 +94,17 @@
     <Compile Include="Core\DataStructures\FibonacciHeap.cs" />
     <Compile Include="Core\DataStructures\FibonacciHeap2.cs" />
     <Compile Include="Core\DataStructures\Shape.cs" />
+    <Compile Include="Interface\Controls\ScreenOverlay.cs" />
+    <Compile Include="Core\Measurement\BindablePlantComponent.cs" />
+    <Compile Include="Core\Measurement\LateralRoot.cs" />
+    <Compile Include="Core\Measurement\Plant.cs" />
+    <Compile Include="Core\Measurement\PlantComponent.cs" />
+    <Compile Include="Core\Measurement\PrimaryRoot.cs" />
+    <Compile Include="Core\Measurement\RootBase.cs" />
+    <Compile Include="Core\Measurement\RootCollection.cs" />
+    <Compile Include="Core\Measurement\RootFormatConverter.cs" />
+    <Compile Include="Core\Measurement\RootGroup.cs" />
+    <Compile Include="Core\Measurement\RootMeasurement.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -107,6 +118,10 @@
     <ProjectReference Include="..\plossum-commandline\src\Plossum\Plossum.csproj">
       <Project>{156BF637-7F50-4EC8-8476-D4E162335364}</Project>
       <Name>Plossum</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataConnections\DataConnections.csproj">
+      <Project>{72B53656-016D-4BB7-A6CB-9402A1A5E956}</Project>
+      <Name>DataConnections</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

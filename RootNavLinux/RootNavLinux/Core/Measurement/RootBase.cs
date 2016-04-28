@@ -9,6 +9,8 @@ using System.Linq;
 using RootNav.Core.LiveWires;
 //using RootNav.Measurement;
 //using RootNav.Data;
+using DataConnections;
+using RootNav.Data;
 
 namespace RootNav.Core.Measurement
 {
@@ -642,8 +644,8 @@ namespace RootNav.Core.Measurement
 
     }
 
-    [ValueConversion(typeof(Color), typeof(SolidColorBrush))]
-    public class UIColorConverter : IValueConverter
+    //[ValueConversion(typeof(Color), typeof(SolidColorBrush))]
+    public class UIColorConverter //: IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -658,8 +660,8 @@ namespace RootNav.Core.Measurement
         }
     }
 
-    [ValueConversion(typeof(Point), typeof(String))]
-    public class PointStringConverter : IValueConverter
+    //[ValueConversion(typeof(Point), typeof(String))]
+    public class PointStringConverter //: IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -673,8 +675,8 @@ namespace RootNav.Core.Measurement
         }
     }
 
-    [ValueConversion(typeof(double), typeof(double))]
-    public class RoundDoubleConverter : DependencyObject, IValueConverter
+    //[ValueConversion(typeof(double), typeof(double))]
+    public class RoundDoubleConverter : DependencyObject//, IValueConverter
     {
         public static readonly DependencyProperty DPProperty =
          DependencyProperty.Register("DP", typeof(int), typeof(RoundDoubleConverter), new PropertyMetadata(2));

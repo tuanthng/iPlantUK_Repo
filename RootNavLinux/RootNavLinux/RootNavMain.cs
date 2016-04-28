@@ -14,6 +14,8 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using RootNav.Core.LiveWires;
+using RootNav.Interface.Controls;
 
 namespace RootNavLinux
 {
@@ -21,11 +23,18 @@ namespace RootNavLinux
 	{
 		public static double BackgroundPenalty = 0.1;
 
+		public delegate void StatusTextUpdateDelegate(String s);
+		//public delegate void ScreenImageUpdateDelegate(WriteableBitmap wbmp);
+		public delegate void EMCompletedDelegate();
+		public delegate void LiveWireLateralCompletedDelegate(List<LiveWireLateralPath> paths);
+		public delegate void LiveWirePrimaryCompletedDelegate(List<LiveWirePrimaryPath> paths);
+		public delegate void LiveWireReCompletedDelegate();
+
 		private EMManagerThread emManager = null;
 		private byte[] intensityBuffer = null;
 		private GaussianMixtureModel highlightedMixture = null;
-		//private LiveWirePrimaryManager primaryLiveWireManager = null;
-		//private LiveWireLateralManager lateralLiveWireManager = null;
+		private LiveWirePrimaryManager primaryLiveWireManager = null;
+		private LiveWireLateralManager lateralLiveWireManager = null;
 
 		private EMConfiguration[] configurations;
 		private EMConfiguration customConfiguration = null;
@@ -56,6 +65,20 @@ namespace RootNavLinux
 		private double[] probabilityMapBrightestClass = null;
 		private double[] probabilityMapSecondClass = null;
 		private double[,] distanceProbabilityMap = null;
+
+		private RootDetectionScreenOverlay screenOverlay = null;
+
+		private LiveWireGraph currentGraph = null;
+
+		private List<LiveWireWeightDescriptor> baseWeightDescriptors = null;
+
+		public List<LiveWireWeightDescriptor> BaseWeightDescriptors
+		{
+			get { return baseWeightDescriptors; }
+			set { baseWeightDescriptors = value; }
+		}
+
+		private RootTerminalCollection terminalCollection = new RootTerminalCollection();
 
 		private string ImageFileName { get; set; }
 		private string ResultXMLFileName{ get; set; } //the xml file containing result processed
@@ -536,9 +559,9 @@ namespace RootNavLinux
 
 			if (points != null)
 			{
-				//this.screenOverlay.TipAnchorPoints.Clear();
+				this.screenOverlay.TipAnchorPoints.Clear();
 
-				////this.screenOverlay.ResetAll();
+				this.screenOverlay.ResetAll();
 
 				foreach (Int32Point p in points)
 				{
@@ -577,25 +600,25 @@ namespace RootNavLinux
 
 
 
-//			this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
-//
-//			int combinations = this.screenOverlay.Terminals.UnlinkedSources.Count() * this.screenOverlay.Terminals.UnlinkedPrimaries.Count() + this.screenOverlay.Terminals.TerminalLinks.Count();
-//
-//			int threadCount = Math.Min(Core.Threading.ThreadParams.LiveWireThreadCount, combinations);
+			this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
+
+			int combinations = this.screenOverlay.Terminals.UnlinkedSources.Count() * this.screenOverlay.Terminals.UnlinkedPrimaries.Count() + this.screenOverlay.Terminals.TerminalLinks.Count();
+
+			int threadCount = Math.Min(RootNav.Core.Threading.ThreadParams.LiveWireThreadCount, combinations);
 //
 //			this.statusText.Text = "Status: Examining " + combinations.ToString() + " potential" + (combinations == 1 ? " root" : " roots");
 //
-//			this.primaryLiveWireManager = new LiveWirePrimaryManager()
-//			{
-//				DistanceMap = this.distanceProbabilityMap,
-//				Graph = this.currentGraph,
-//				Terminals = this.screenOverlay.Terminals,
-//				ThreadCount = threadCount
-//			};
-//
-//			primaryLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
-//			primaryLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
-//			primaryLiveWireManager.Run();
+			this.primaryLiveWireManager = new LiveWirePrimaryManager()
+			{
+				DistanceMap = this.distanceProbabilityMap,
+				Graph = this.currentGraph,
+				Terminals = this.screenOverlay.Terminals,
+				ThreadCount = threadCount
+			};
+
+			primaryLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+			primaryLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
+			primaryLiveWireManager.Run();
 		}
 	} //end class
 } //end namespace
