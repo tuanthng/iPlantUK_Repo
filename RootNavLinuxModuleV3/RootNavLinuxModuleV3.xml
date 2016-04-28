@@ -7,9 +7,20 @@
       <tag name="image_url" type="image">
 	  <template>
 	      <tag name="label" value="Image to process the root" />
+	       <tag name="description" value="Use Circle for source nodes and Square for tip nodes." />
 	  </template>
-      </tag> 
-      
+	  <gobject name="sources">
+	    <template>
+	      <tag name="gobject" value="circle" />
+	      <tag name="gobject" value="square" />
+	      <tag name="require_gobjects">
+		<tag name="amount" value=">=1" />
+		  <tag name="fail_message" value="Requires select of at least one source and tips (optional)" />
+	      </tag>
+	    </template>
+	  </gobject>
+      </tag>
+                  
       <tag name="PresetName" value="Wheat" type="combo" >
 	  <template>
 	      <tag name="label" value="Present Name" />
@@ -104,7 +115,7 @@
       
     </tag>
     
-    <tag name="help" value="No help yet...Coming soon" /> 
+    <tag name="help" value="Select Circle for sources and Square for tips. The centre of each shape will be used as the initial points. Use Annotation tool to manage (i.e. resize/move/delete etc.) the shapes as you desire...More help Coming soon" /> 
     <tag name="thumbnail" type="file" value="public/roots.png" />   
     <tag name="title" value="RootNav version 3" />
     <tag name="authors" value="Tuan Nguyen - iPlantUK" /> 
