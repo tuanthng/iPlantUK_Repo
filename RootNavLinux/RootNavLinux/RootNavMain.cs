@@ -91,6 +91,8 @@ namespace RootNavLinux
 
 		private string ProbabilityFilename{ get; set; }
 
+		public string InputNodePath{ get; set; }
+
 		public RootNavMain (string filePathImg)
 		{
 			this.ImageFileName = filePathImg;
@@ -740,6 +742,47 @@ namespace RootNavLinux
 		private void UpdateScreenImage(Mat wbmp)
 		{
 			//ScreenImage.ImageSource = wbmp;
+		}
+
+		private void AddSourcePoint(Point source, bool createLink)
+		{
+			this.screenOverlay.Terminals.Add (source, TerminalType.Source, createLink);
+		}
+
+		private void AddLateralPoint(Point source, bool createLink)
+		{
+			this.screenOverlay.Terminals.Add (source, TerminalType.Lateral, createLink);
+
+		}
+
+		private void AddPrimaryPoint(Point source, bool createLink)
+		{
+			this.screenOverlay.Terminals.Add (source, TerminalType.Primary, createLink);
+		}
+
+		private void AddPoint(Point newpoint, TerminalType type, bool createLink)
+		{
+			switch (type)
+			{
+			case TerminalType.Source:
+				AddSourcePoint (newpoint, createLink);
+				break;
+			case TerminalType.Lateral:
+				AddLateralPoint (newpoint, createLink);
+				break;
+			case TerminalType.Primary:
+				AddPrimaryPoint (newpoint, createLink);
+				break;
+			}
+		}
+
+		private void parseInputNodes()
+		{
+			if (this.InputNodePath != null && this.InputNodePath.Length > 0) {
+				if (File.Exists (this.InputNodePath)) {
+					
+				}
+			}
 		}
 
 	} //end class

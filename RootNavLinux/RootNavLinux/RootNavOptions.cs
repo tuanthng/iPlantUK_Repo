@@ -72,6 +72,9 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Specifies the output path", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string OutputPath { get; set; }
 
+		[CommandLineOption(Description = "Specifies the input nodes (primary, source, lateral)", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string InputNodePath { get; set; }
+
 		public EMConfiguration CreateConfiguration()
 		{
 			//create custom configuration
