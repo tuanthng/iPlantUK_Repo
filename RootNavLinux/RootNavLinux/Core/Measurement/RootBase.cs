@@ -149,7 +149,7 @@ namespace RootNav.Core.Measurement
             {
                 double area = PixelConvexHullArea;
                 if (this.UnitConversionFactor != 0)
-				{System.Windows.Point async;
+				{
                     area *= (this.UnitConversionFactor * this.UnitConversionFactor);
                 }
                 return area;
@@ -360,7 +360,7 @@ namespace RootNav.Core.Measurement
                 MarkConvexHulls(plant.Children);
 
                 // Plant settings
-                plant.Color = Color.FromArgb(255, 200, 200, 200);
+                plant.Color = System.Drawing.Color.FromArgb(255, 200, 200, 200);
 
                 // Plant hull
                 SetPlantHullPoints(plant);
@@ -650,14 +650,15 @@ namespace RootNav.Core.Measurement
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            Color c = (Color)value;
-            Color output = new Color() { A = 255, R = c.R, G = c.G, B = c.B };
-            return new SolidColorBrush(output);
+			System.Drawing.Color c = (System.Drawing.Color)value;
+			//System.Drawing.Color output = new System.Drawing.Color() { A = 255, R = c.R, G = c.G, B = c.B };
+			System.Drawing.Color output = System.Drawing.Color.FromArgb(255, c.R, c.G, c.B);
+			return new System.Drawing.SolidBrush(output);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return Colors.Black;
+			return System.Drawing.Color.Black;
         }
     }
 

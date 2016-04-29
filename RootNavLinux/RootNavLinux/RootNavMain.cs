@@ -28,6 +28,7 @@ namespace RootNavLinux
 
 		public delegate void StatusTextUpdateDelegate(String s);
 		//public delegate void ScreenImageUpdateDelegate(WriteableBitmap wbmp);
+		public delegate void ScreenImageUpdateDelegate(Mat wbmp);
 		public delegate void EMCompletedDelegate();
 		public delegate void LiveWireLateralCompletedDelegate(List<LiveWireLateralPath> paths);
 		public delegate void LiveWirePrimaryCompletedDelegate(List<LiveWirePrimaryPath> paths);
@@ -664,7 +665,7 @@ namespace RootNavLinux
 				}
 
 				// UI
-				this.Dispatcher.BeginInvoke(new LiveWirePrimaryCompletedDelegate(this.LiveWirePrimaryWorkCompletedUI), paths);
+				//this.Dispatcher.BeginInvoke(new LiveWirePrimaryCompletedDelegate(this.LiveWirePrimaryWorkCompletedUI), paths);
 			}
 
 			if (sender == this.lateralLiveWireManager)
@@ -679,7 +680,7 @@ namespace RootNavLinux
 				}
 
 				// UI
-				this.Dispatcher.BeginInvoke(new LiveWireLateralCompletedDelegate(this.LiveWireLateralWorkCompletedUI), paths);
+				//this.Dispatcher.BeginInvoke(new LiveWireLateralCompletedDelegate(this.LiveWireLateralWorkCompletedUI), paths);
 			}
 		}
 
@@ -696,8 +697,9 @@ namespace RootNavLinux
 			// Create gray image the first time only
 			if (this.screenOverlay.Paths.Count == 0)
 			{
-				WriteableBitmap gray = RootNav.IO.ImageConverter.ConvertToGrayScaleUniform(this.ScreenImage.ImageSource as WriteableBitmap);
-				this.Dispatcher.Invoke(new ScreenImageUpdateDelegate(this.UpdateScreenImage), gray);
+				//WriteableBitmap gray = RootNav.IO.ImageConverter.ConvertToGrayScaleUniform(this.ScreenImage.ImageSource as WriteableBitmap);
+				//Mat gray = RootNav.IO.ImageConverter.ConvertGrayScaleImage(this.ScreenImage.ImageSource as WriteableBitmap);
+				//this.Dispatcher.Invoke(new ScreenImageUpdateDelegate(this.UpdateScreenImage), gray);
 			}
 			else
 			{
@@ -709,10 +711,10 @@ namespace RootNavLinux
 			{
 				this.screenOverlay.Paths.Add(path);
 			}
-			this.detectionToolbox.UncheckToggleButtons(null);
-			this.screenOverlay.IsBusy = false;
-			this.statusText.Text = "Status: Idle";
-			this.preMeasurementToolbox.MeasurementButton.IsEnabled = true;
+			//this.detectionToolbox.UncheckToggleButtons(null);
+			//this.screenOverlay.IsBusy = false;
+			//this.statusText.Text = "Status: Idle";
+			//this.preMeasurementToolbox.MeasurementButton.IsEnabled = true;
 		}
 
 		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
@@ -730,10 +732,16 @@ namespace RootNavLinux
 				}
 			}
 
-			this.detectionToolbox.UncheckToggleButtons(null);
-			this.screenOverlay.IsBusy = false;
-			this.statusText.Text = "Status: Idle";
+			//this.detectionToolbox.UncheckToggleButtons(null);
+			//this.screenOverlay.IsBusy = false;
+			//this.statusText.Text = "Status: Idle";
 		}
+
+		private void UpdateScreenImage(Mat wbmp)
+		{
+			//ScreenImage.ImageSource = wbmp;
+		}
+
 	} //end class
 } //end namespace
 
