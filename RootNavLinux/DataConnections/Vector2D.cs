@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using System.Windows;
 
 namespace RootNav.Data
 {
@@ -98,45 +98,45 @@ namespace RootNav.Data
 			return new Vector2D (-u.x, -u.y);
 		}
 
-		public static double GetAngle (PointF c)
+		public static double GetAngle (Point c)
 		{
 			// angolo retta passante per l'origine
-			return GetAngle (c, new PointF (0, 0));
+			return GetAngle (c, new Point (0, 0));
 		}
 
-		public static double GetAngle (PointF c, PointF f)
+		public static double GetAngle (Point c, Point f)
 		{
 			// angolo in gradi tra i due punti c ed f - gradi
 			//            return Math.Atan((f.X - c.X) / (f.Y - c.Y) / Math.PI * 180 );
 			return (180 * (1 + Math.Atan2 ((c.Y - f.Y), (c.X - f.X)) / Math.PI));
 		}
 
-		public static double Distance (PointF a, PointF b)
+		public static double Distance (Point a, Point b)
 		{
 			return Math.Sqrt (Math.Pow ((a.X - b.X), 2) + Math.Pow ((a.Y - b.Y), 2));
 		}
 
-		public static PointF Rotate (PointF point, PointF origin, double angle)
+		public static Point Rotate (Point point, Point origin, double angle)
 		{
 			double X = origin.X + ((point.X - origin.X) * Math.Cos (angle) -
 			           (point.Y - origin.Y) * Math.Sin (angle));
 			double Y = origin.Y + ((point.X - origin.X) * Math.Sin (angle) +
 			           (point.Y - origin.Y) * Math.Cos (angle));
-			return new PointF ((float)X, (float)Y);
+			return new Point (X, Y);
 		}
 
-		public static PointF GetPoint (PointF origin, double length, double angle)
+		public static Point GetPoint (Point origin, double length, double angle)
 		{
-			return new PointF ((float)(origin.X + length * Math.Cos (angle)),
-				(float)(origin.Y + length * Math.Sin (angle)));
+			return new Point ((origin.X + length * Math.Cos (angle)),
+				(origin.Y + length * Math.Sin (angle)));
 		}
 
-		public static explicit operator PointF (Vector2D u)
+		public static explicit operator Point (Vector2D u)
 		{
-			return new PointF ((float)u.x, (float)u.y);
+			return new Point (u.x, u.y);
 		}
 
-		public static implicit operator Vector2D (PointF p)
+		public static implicit operator Vector2D (Point p)
 		{
 			return new Vector2D (p.X, p.Y);
 		}

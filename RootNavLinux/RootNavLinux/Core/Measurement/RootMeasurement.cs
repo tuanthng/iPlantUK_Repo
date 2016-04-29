@@ -142,36 +142,36 @@ namespace RootNav.Core.Measurement
             return outputData;
         }
 
-        public static bool WriteToDatabase(RootNav.Data.IO.Databases.DatabaseManager manager, string tag, bool alllaterals, List<RootBase> roots, BitmapSource sourceImage = null)
-        {
-            List<Dictionary<String, object>> records = new List<Dictionary<string, object>>();
-            foreach (RootBase r in roots)
-            {
-                records.Add(GetData(r));
-            }
-
-            if (manager.IsOpen)
-            {
-                // Write bitmap if available
-                byte[] imageData = null;
-                if (sourceImage != null)
-                {
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        JpegBitmapEncoder encoder = new JpegBitmapEncoder() { QualityLevel = 98 };
-                        MemoryStream MS = new MemoryStream();
-                        encoder.Frames.Add(BitmapFrame.Create(sourceImage));
-                        encoder.Save(MS);
-                        imageData = MS.ToArray();
-                    }
-                }
-
-                bool success = manager.Write(tag, alllaterals, records, imageData);
-                return success;
-            }
-
-            return false;
-        }
+//        public static bool WriteToDatabase(RootNav.Data.IO.Databases.DatabaseManager manager, string tag, bool alllaterals, List<RootBase> roots, BitmapSource sourceImage = null)
+//        {
+//            List<Dictionary<String, object>> records = new List<Dictionary<string, object>>();
+//            foreach (RootBase r in roots)
+//            {
+//                records.Add(GetData(r));
+//            }
+//
+//            if (manager.IsOpen)
+//            {
+//                // Write bitmap if available
+//                byte[] imageData = null;
+//                if (sourceImage != null)
+//                {
+//                    using (MemoryStream ms = new MemoryStream())
+//                    {
+//                        JpegBitmapEncoder encoder = new JpegBitmapEncoder() { QualityLevel = 98 };
+//                        MemoryStream MS = new MemoryStream();
+//                        encoder.Frames.Add(BitmapFrame.Create(sourceImage));
+//                        encoder.Save(MS);
+//                        imageData = MS.ToArray();
+//                    }
+//                }
+//
+//                bool success = manager.Write(tag, alllaterals, records, imageData);
+//                return success;
+//            }
+//
+//            return false;
+//        }
 
         private static byte[] ObjectToBinary(object o)
         {

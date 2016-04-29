@@ -87,7 +87,8 @@ namespace RootNav.Data
                     if (sortedRoots.ContainsKey(r.RelativeID))
                     {
                         // This should not happen anymore, duplicate tags are handled before PlantInfo objects are created.
-                        System.Windows.MessageBox.Show("The tag " + tag + " has been found twice. The second plant has been ignored. This should be fixed in the database.", "Duplicate plant tag found");
+                        //System.Windows.MessageBox.Show("The tag " + tag + " has been found twice. The second plant has been ignored. This should be fixed in the database.", "Duplicate plant tag found");
+						System.Console.WriteLine("The tag " + tag + " has been found twice. The second plant has been ignored. This should be fixed in the database.", "Duplicate plant tag found");
                         break;
                     }
                     else

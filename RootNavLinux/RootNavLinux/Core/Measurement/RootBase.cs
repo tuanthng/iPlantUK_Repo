@@ -5,11 +5,12 @@ using System.Windows;
 //using System.Windows.Media;
 using System.Collections;
 using System.Linq;
+//using System.Drawing;
 
 using RootNav.Core.LiveWires;
 //using RootNav.Measurement;
 //using RootNav.Data;
-using DataConnections;
+//using DataConnections;
 using RootNav.Data;
 
 namespace RootNav.Core.Measurement
@@ -25,12 +26,12 @@ namespace RootNav.Core.Measurement
             set { rootIndex = value; }
         }
 
-        public Point Start
+		public System.Windows.Point Start
         {
             get { return spline.Start; }
         }
 
-        public Point End
+		public System.Windows.Point End
         {
             get { return spline.End; }
         }
@@ -59,10 +60,10 @@ namespace RootNav.Core.Measurement
             set { primaryParent = value; }
         }
 
-        private Color color;
+		private System.Drawing.Color color;
 
-        public Color Color
-        {
+		public System.Drawing.Color Color
+		{
             get { return color; }
             set { color = value; }
         }
@@ -148,7 +149,7 @@ namespace RootNav.Core.Measurement
             {
                 double area = PixelConvexHullArea;
                 if (this.UnitConversionFactor != 0)
-                {
+				{System.Windows.Point async;
                     area *= (this.UnitConversionFactor * this.UnitConversionFactor);
                 }
                 return area;
@@ -214,13 +215,13 @@ namespace RootNav.Core.Measurement
                 double parentIntersectionDistance = parentSpline.GetLength(this.startReference);
                 double angleDistanceRadius = 20.0;
 
-                Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance - angleDistanceRadius));
-                Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance + angleDistanceRadius));
+				System.Windows.Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance - angleDistanceRadius));
+				System.Windows.Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance + angleDistanceRadius));
                 return parentEnd - parentStart;
             }
         }
 
-        public Tuple<Point, Point> ParentVectorPoints
+		public Tuple<System.Windows.Point, System.Windows.Point> ParentVectorPoints
         {
             get
             {
@@ -236,9 +237,9 @@ namespace RootNav.Core.Measurement
                 double parentIntersectionDistance = parentSpline.GetLength(this.startReference);
                 double angleDistanceRadius = 20.0;
 
-                Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Max(0, parentIntersectionDistance - angleDistanceRadius)));
-                Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Min(parentSpline.Length, parentIntersectionDistance + angleDistanceRadius)));
-                return new Tuple<Point, Point> (parentStart, parentEnd);
+				System.Windows.Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Max(0, parentIntersectionDistance - angleDistanceRadius)));
+				System.Windows.Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Min(parentSpline.Length, parentIntersectionDistance + angleDistanceRadius)));
+				return new Tuple<System.Windows.Point, System.Windows.Point> (parentStart, parentEnd);
             }
         }
 
@@ -267,7 +268,7 @@ namespace RootNav.Core.Measurement
             get;
         }
 
-        public static RootCollection CreateRootSystem(LiveWirePathCollection pathCollection, RootTerminalCollection terminals, List<Color> colors, int splineResolution, double unitConversion)
+        public static RootCollection CreateRootSystem(LiveWirePathCollection pathCollection, RootTerminalCollection terminals, List<System.Drawing.Color> colors, int splineResolution, double unitConversion)
         {
             Dictionary<int, Tuple<RootBase, int, int>> indexedRoots = new Dictionary<int, Tuple<RootBase, int, int>>();
             double tension = 0.5;
