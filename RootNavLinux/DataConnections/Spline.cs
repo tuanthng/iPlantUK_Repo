@@ -18,17 +18,17 @@ namespace RootNav.Data
             set { tension = value; }
         }
 
-        private List<Point> controlPoints = new List<Point>();
+        private List<PointF> controlPoints = new List<PointF>();
 
-        public List<Point> ControlPoints
+        public List<PointF> ControlPoints
         {
             get { return controlPoints; }
             set { controlPoints = value; }
         }
 
-        private List<Point> sampledPoints = new List<Point>();
+        private List<PointF> sampledPoints = new List<PointF>();
 
-        public List<Point> SampledPoints
+        public List<PointF> SampledPoints
         {
             get { return sampledPoints; }
             set { sampledPoints = value; }
@@ -42,7 +42,7 @@ namespace RootNav.Data
             set { controlPointLengths = value; }
         }
 
-        public Point Start
+        public PointF Start
         {
             get
             {
@@ -50,7 +50,7 @@ namespace RootNav.Data
             }
         }
 
-        public Point End
+        public PointF End
         {
             get
             {
@@ -72,7 +72,7 @@ namespace RootNav.Data
             {
                 double left = double.MaxValue, right = double.MinValue, top = double.MaxValue, bottom = double.MinValue;
 
-                foreach (Point p in this.sampledPoints)
+                foreach (PointF p in this.sampledPoints)
                 {
                     if (p.X < left)
                     {
@@ -95,12 +95,12 @@ namespace RootNav.Data
                     }
                 }
 
-				//return new Rectangle(new Point(left, top), new Point(right, bottom));
+				//return new Rectangle(new PointF(left, top), new PointF(right, bottom));
 				return new RectangleF((float)left, (float)top, (float)(right - left), (float)(bottom - top));
             }
         }
 
-        public Spline(int controlPointSeparation, List<Point> basePath, double tension)
+        public Spline(int controlPointSeparation, List<PointF> basePath, double tension)
         {
             this.tension = tension;
             this.controlPoints = CreateControlPoints(controlPointSeparation, basePath);
@@ -108,9 +108,9 @@ namespace RootNav.Data
             this.controlPointLengths = MeasureCardinalSpline(tension, this.controlPoints.ToArray());
         }
 
-        public static List<Point> CreateControlPoints(int separation, List<Point> points)
+        public static List<PointF> CreateControlPoints(int separation, List<PointF> points)
         {
-            List<Point> outputPoints = new List<Point>();
+            List<PointF> outputPoints = new List<PointF>();
             outputPoints.Add(points[0]);
 
             int controlPointCount = (int)Math.Round(points.Count / (double)separation);
@@ -171,22 +171,22 @@ namespace RootNav.Data
             return this.controlPointLengths[index] * (1 - t) + this.controlPointLengths[index + 1] * t;
         }
 
-        public SplinePositionReference GetPositionReference(Point p)
+        public SplinePositionReference GetPositionReference(PointF p)
         {
             double s = (1 - this.tension) / 2;
-            Point[] points = this.controlPoints.ToArray();
+            PointF[] points = this.controlPoints.ToArray();
 
             int cpIndex = 0;
             double tIndex = 0;
             double distanceSquared = double.MaxValue;
 
-            Point reflectedStart = new Point(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
-            Point reflectedEnd = new Point(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
+            PointF reflectedStart = new PointF(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
+            PointF reflectedEnd = new PointF(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
                                            points[points.Length - 1].Y - (points[points.Length - 2].Y - points[points.Length - 1].Y));
 
-            List<Point> outputPoints = new List<Point>();
+            List<PointF> outputPoints = new List<PointF>();
 
-            Point p1, p2, p3, p4;
+            PointF p1, p2, p3, p4;
 
             for (int pointIndex = 0; pointIndex < points.Length - 1; pointIndex++)
             {
@@ -236,7 +236,7 @@ namespace RootNav.Data
                 for (int i = 0; i < 100; i++)
                 {
                     double t = (i + 1.0) / (100 + 1.0);
-                    Point cardinalPoint = CalculateCardinalSplinePoint(s, t, p1, p2, p3, p4);
+                    PointF cardinalPoint = CalculateCardinalSplinePoint(s, t, p1, p2, p3, p4);
 
 					dis = ExtentionMath.SquareDistance (cardinalPoint, p);
 
@@ -264,36 +264,36 @@ namespace RootNav.Data
             return new SplinePositionReference(cpIndex, tIndex);
         }
 
-        public Point GetPoint(SplinePositionReference positionReference)
+        public PointF GetPoint(SplinePositionReference positionReference)
         {
             double s = (1 - this.tension) / 2;
-            Point[] points = this.controlPoints.ToArray();
+            PointF[] points = this.controlPoints.ToArray();
 
             int cpIndex = positionReference.ControlPoint;
             double t = positionReference.T;
         
             if (cpIndex < 0 || cpIndex >= points.Length - 1 || t < 0 || t > 1)
             {
-                return default(Point);
+                return default(PointF);
             }
 
-            Point p1, p2, p3, p4;
+            PointF p1, p2, p3, p4;
 
             if (cpIndex == 0)
             {
                 if (points.Length > 2)
                 {
-                    p1 = new Point(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
+                    p1 = new PointF(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
                     p2 = points[0];
                     p3 = points[1];
                     p4 = points[2];
                 }
                 else
                 {
-                    p1 = new Point(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
+                    p1 = new PointF(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
                     p2 = points[0];
                     p3 = points[1];
-                    p4 = new Point(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
+                    p4 = new PointF(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
                                    points[points.Length - 1].Y - (points[points.Length - 2].Y - points[points.Length - 1].Y));
                 }
             }
@@ -309,24 +309,24 @@ namespace RootNav.Data
                 p1 = points[points.Length - 3];
                 p2 = points[points.Length - 2];
                 p3 = points[points.Length - 1];
-                p4 = new Point(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
+                p4 = new PointF(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
                                points[points.Length - 1].Y - (points[points.Length - 2].Y - points[points.Length - 1].Y));
             }
             
             return CalculateCardinalSplinePoint(s, t, p1, p2, p3, p4);
         }
         
-        private static List<Point> CreateCardinalSpline(int intermediatePointCount, double tension, params Point[] points)
+        private static List<PointF> CreateCardinalSpline(int intermediatePointCount, double tension, params PointF[] points)
         {
             double s = (1 - tension) / 2;
 
-            Point reflectedStart = new Point(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
-            Point reflectedEnd = new Point(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
+            PointF reflectedStart = new PointF(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
+            PointF reflectedEnd = new PointF(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
                                            points[points.Length - 1].Y - (points[points.Length - 2].Y - points[points.Length - 1].Y));
             
-            List<Point> outputPoints = new List<Point>();
+            List<PointF> outputPoints = new List<PointF>();
 
-            Point p1, p2, p3, p4;
+            PointF p1, p2, p3, p4;
 
             for (int pointIndex = 0; pointIndex < points.Length - 1; pointIndex++)
             {
@@ -376,18 +376,18 @@ namespace RootNav.Data
             return outputPoints;
         }
 
-        private static List<double> MeasureCardinalSpline(double tension, Point[] controlPoints)
+        private static List<double> MeasureCardinalSpline(double tension, PointF[] controlPoints)
         {
             double s = (1 - tension) / 2;
 
-            Point reflectedStart = new Point(controlPoints[0].X - (controlPoints[1].X - controlPoints[0].X), controlPoints[0].Y - (controlPoints[1].Y - controlPoints[0].Y));
-            Point reflectedEnd = new Point(controlPoints[controlPoints.Length - 1].X - (controlPoints[controlPoints.Length - 2].X - controlPoints[controlPoints.Length - 1].X),
+            PointF reflectedStart = new PointF(controlPoints[0].X - (controlPoints[1].X - controlPoints[0].X), controlPoints[0].Y - (controlPoints[1].Y - controlPoints[0].Y));
+            PointF reflectedEnd = new PointF(controlPoints[controlPoints.Length - 1].X - (controlPoints[controlPoints.Length - 2].X - controlPoints[controlPoints.Length - 1].X),
                                            controlPoints[controlPoints.Length - 1].Y - (controlPoints[controlPoints.Length - 2].Y - controlPoints[controlPoints.Length - 1].Y));
 
             List<double> outputDistances = new List<double>();
 
-            Point p1, p2, p3, p4;
-            Point previousPoint = controlPoints.First();
+            PointF p1, p2, p3, p4;
+            PointF previousPoint = controlPoints.First();
             double cumulativeDistance = 0.0;
 
             for (int pointIndex = 0; pointIndex < controlPoints.Length - 1; pointIndex++)
@@ -434,7 +434,7 @@ namespace RootNav.Data
                 for (int i = 0; i < 50; i++)
                 {
                     double t = (i + 1.0) / (50 + 1.0);
-                    Point newPoint = CalculateCardinalSplinePoint(s, t, p1, p2, p3, p4);
+                    PointF newPoint = CalculateCardinalSplinePoint(s, t, p1, p2, p3, p4);
                     //cumulativeDistance += (previousPoint - newPoint).Length;
 					len = ExtentionMath.Lenght(previousPoint, newPoint);
 					cumulativeDistance += len;
@@ -450,10 +450,10 @@ namespace RootNav.Data
             return outputDistances;
         }
 
-        private static Point CalculateCardinalSplinePoint(double s, double t, Point p1, Point p2, Point p3, Point p4)
+        private static PointF CalculateCardinalSplinePoint(double s, double t, PointF p1, PointF p2, PointF p3, PointF p4)
         {
             double t2 = t * t, t3 = t * t * t;
-            return new Point(
+            return new PointF(
                         // x
 				(int)(s * (-t3 + 2 * t2 - t) * p1.X +
                         s * (-t3 + t2) * p2.X +

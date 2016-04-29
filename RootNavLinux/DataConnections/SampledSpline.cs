@@ -34,9 +34,9 @@ namespace RootNav.Data
             set { controlPointSeparation = value; }
         }
 
-        private Point[] sampledPoints;
+        private PointF[] sampledPoints;
 
-        public Point[] SampledPoints
+        public PointF[] SampledPoints
         {
             get { return sampledPoints; }
             set { sampledPoints = value; }
@@ -48,7 +48,7 @@ namespace RootNav.Data
             {
                 double left = double.MaxValue, right = double.MinValue, top = double.MaxValue, bottom = double.MinValue;
 
-                foreach (Point p in this.sampledPoints)
+                foreach (PointF p in this.sampledPoints)
                 {
                     if (p.X < left)
                     {
@@ -71,7 +71,7 @@ namespace RootNav.Data
                     }
                 }
 
-                //return new RectangleF(new Point(left, top), new Point(right, bottom));
+                //return new RectangleF(new PointF(left, top), new PointF(right, bottom));
 				return new RectangleF((float)left, (float)top, (float)(right-left), (float)(bottom-top));
             }
         }
@@ -85,7 +85,7 @@ namespace RootNav.Data
         }
 
         
-        public Point Start
+        public PointF Start
         {
             get
             {
@@ -93,7 +93,7 @@ namespace RootNav.Data
             }
         }
 
-        public Point End
+        public PointF End
         {
             get
             {
@@ -110,7 +110,7 @@ namespace RootNav.Data
             }
         }
 
-        public List<Point> ControlPoints
+        public List<PointF> ControlPoints
         {
             get
             {
@@ -118,7 +118,7 @@ namespace RootNav.Data
             }
         }
 
-        public void Initialise(List<Point> basePath)
+        public void Initialise(List<PointF> basePath)
         {
             // Calculate the necessary number of points to represent the curves at a given resolution, to a minimum of 3
             int intermediatePointCount = Math.Max(3,(int)Math.Round(controlPointSeparation * this.SampleResolution));
@@ -127,7 +127,7 @@ namespace RootNav.Data
             this.sampledPointsLengths = SampledSpline.MeasurePoints(this.sampledPoints);
         }
 
-        public void InitialiseFromControlPoints(List<Point> controlPoints, double tension, int controlPointSeparation)
+        public void InitialiseFromControlPoints(List<PointF> controlPoints, double tension, int controlPointSeparation)
         {
             this.tension = tension;
             this.controlPointSeparation = controlPointSeparation;
@@ -138,7 +138,7 @@ namespace RootNav.Data
             this.sampledPointsLengths = SampledSpline.MeasurePoints(this.sampledPoints);
         }
 
-        public void InitialiseWithVectorList(List<Point> basePath)
+        public void InitialiseWithVectorList(List<PointF> basePath)
         {
             this.sampledPoints = basePath.ToArray();
             this.sampledPointsLengths = SampledSpline.MeasurePoints(this.sampledPoints);
@@ -150,9 +150,9 @@ namespace RootNav.Data
             this.sampledPointsLengths = SampledSpline.MeasurePoints(this.sampledPoints);
         }
 
-        public static List<Point> CreateControlPoints(int separation, List<Point> points)
+        public static List<PointF> CreateControlPoints(int separation, List<PointF> points)
         {
-            List<Point> outputPoints = new List<Point>();
+            List<PointF> outputPoints = new List<PointF>();
             outputPoints.Add(points[0]);
 
             int controlPointCount = (int)Math.Round(points.Count / (double)separation);
@@ -213,7 +213,7 @@ namespace RootNav.Data
             return this.sampledPointsLengths[index] * (1 - t) + this.sampledPointsLengths[index + 1] * t;
         }
 
-        public SplinePositionReference GetPositionReference(Point p)
+        public SplinePositionReference GetPositionReference(PointF p)
         {
             int cpIndex = 0;
             double distanceSquared = double.MaxValue;
@@ -232,8 +232,8 @@ namespace RootNav.Data
 
             // Next find the closest point on the two lines i-1 <> i and i <> i + 1
             double leftT, rightT;
-            Point leftClosest = GetClosestPoint(sampledPoints[cpIndex - 1], sampledPoints[cpIndex], p, true, out leftT);
-            Point rightClosest = GetClosestPoint(sampledPoints[cpIndex], sampledPoints[cpIndex + 1], p, true, out rightT);
+            PointF leftClosest = GetClosestPoint(sampledPoints[cpIndex - 1], sampledPoints[cpIndex], p, true, out leftT);
+            PointF rightClosest = GetClosestPoint(sampledPoints[cpIndex], sampledPoints[cpIndex + 1], p, true, out rightT);
 
             // If we are closer to the left side
 			float len1 = ExtentionMath.SquareDistance(p, leftClosest);
@@ -258,10 +258,12 @@ namespace RootNav.Data
         /// <param name="P">The point to compare with vector AB.</param>
         /// <param name="segmentClamp">A boolean signalling whether to clamp any result between AB, or to allow the point to lie elsewhere along that line.</param>
         /// <returns></returns>
-        Point GetClosestPoint(Point A, Point B, Point P, bool segmentClamp, out double t)
+        PointF GetClosestPoint(PointF A, PointF B, PointF P, bool segmentClamp, out double t)
         {
-            Vector AP = P - A;
-            Vector AB = B - A;
+            //Vector AP = P - A;
+			Vector2D AP = new Vector2D(P.X - A.X, P.Y - A.X);
+            //Vector AB = B - A;
+			Vector2D AB = new Vector2D(B.X - A.X, B.Y - A.Y);
             double ab2 = AB.X * AB.X + AB.Y * AB.Y;
             double ap_ab = AP.X * AB.X + AP.Y * AB.Y;
             t = ap_ab / ab2;
@@ -274,10 +276,10 @@ namespace RootNav.Data
                     t = 1.0f;
             }
 
-            return A + AB * t;
+			return (PointF)(A + AB * t);
         }
 
-        public Point GetPoint(SplinePositionReference positionReference)
+        public PointF GetPoint(SplinePositionReference positionReference)
         {
             if (positionReference.ControlPoint < 0)
             {
@@ -292,21 +294,21 @@ namespace RootNav.Data
             double t = positionReference.T;
             int index = positionReference.ControlPoint;
 
-            return new Point(this.sampledPoints[index].X * (1 - t) + this.sampledPoints[index + 1].X * t,
-                             this.sampledPoints[index].Y * (1 - t) + this.sampledPoints[index + 1].Y * t);
+			return new PointF((float)(this.sampledPoints[index].X * (1 - t) + this.sampledPoints[index + 1].X * t),
+				(float)(this.sampledPoints[index].Y * (1 - t) + this.sampledPoints[index + 1].Y * t));
         }
                 
-        private static List<Point> SampleCardinalSpline(int intermediatePointCount, double tension, params Point[] points)
+        private static List<PointF> SampleCardinalSpline(int intermediatePointCount, double tension, params PointF[] points)
         {
             double s = (1 - tension) / 2;
 
-            Point reflectedStart = new Point(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
-            Point reflectedEnd = new Point(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
+            PointF reflectedStart = new PointF(points[0].X - (points[1].X - points[0].X), points[0].Y - (points[1].Y - points[0].Y));
+            PointF reflectedEnd = new PointF(points[points.Length - 1].X - (points[points.Length - 2].X - points[points.Length - 1].X),
                                            points[points.Length - 1].Y - (points[points.Length - 2].Y - points[points.Length - 1].Y));
             
-            List<Point> outputPoints = new List<Point>();
+            List<PointF> outputPoints = new List<PointF>();
 
-            Point p1, p2, p3, p4;
+            PointF p1, p2, p3, p4;
 
             for (int pointIndex = 0; pointIndex < points.Length - 1; pointIndex++)
             {
@@ -356,15 +358,15 @@ namespace RootNav.Data
             return outputPoints;
         }
 
-        private static double[] MeasurePoints(Point[] points)
+        private static double[] MeasurePoints(PointF[] points)
         {
             double[] outputDistances = new double[points.Length];
             outputDistances[0] = 0.0;
 
             for (int i = 1; i < points.Length; i++)
             {
-                Point a = points[i - 1];
-                Point b = points[i];
+                PointF a = points[i - 1];
+                PointF b = points[i];
 
                 // Distance between a and b
                 double d = Math.Sqrt(Math.Pow(a.X - b.X, 2.0) + Math.Pow(a.Y - b.Y, 2.0));
@@ -375,34 +377,34 @@ namespace RootNav.Data
             return outputDistances;
         }
 
-        private static Point CalculateCardinalSplinePoint(double s, double t, Point p1, Point p2, Point p3, Point p4)
+        private static PointF CalculateCardinalSplinePoint(double s, double t, PointF p1, PointF p2, PointF p3, PointF p4)
         {
             double t2 = t * t, t3 = t * t * t;
-            return new Point(
+            return new PointF(
                         // x
-                        s * (-t3 + 2 * t2 - t) * p1.X +
+				(float)(s * (-t3 + 2 * t2 - t) * p1.X +
                         s * (-t3 + t2) * p2.X +
                         (2 * t3 - 3 * t2 + 1) * p2.X +
                         s * (t3 - 2 * t2 + t) * p3.X +
                         (-2 * t3 + 3 * t2) * p3.X +
-                        s * (t3 - t2) * p4.X,
+					s * (t3 - t2) * p4.X),
                         // y
-                        s * (-t3 + 2 * t2 - t) * p1.Y +
+				(float)(s * (-t3 + 2 * t2 - t) * p1.Y +
                         s * (-t3 + t2) * p2.Y +
                         (2 * t3 - 3 * t2 + 1) * p2.Y +
                         s * (t3 - 2 * t2 + t) * p3.Y +
                         (-2 * t3 + 3 * t2) * p3.Y +
-                        s * (t3 - t2) * p4.Y
+					s * (t3 - t2) * p4.Y)
                         );
         }
 
-        public Point[] Rasterise()
+        public PointF[] Rasterise()
         {
-            List<Point> points = new List<Point>();
+            List<PointF> points = new List<PointF>();
             for (int i = 0; i < sampledPoints.Length - 1; i++)
             {
-                Point currentPoint = new Point((int)sampledPoints[i].X, (int)sampledPoints[i].Y);
-                Point destinationPoint = new Point((int)sampledPoints[i + 1].X, (int)sampledPoints[i + 1].Y);
+                PointF currentPoint = new PointF((int)sampledPoints[i].X, (int)sampledPoints[i].Y);
+                PointF destinationPoint = new PointF((int)sampledPoints[i + 1].X, (int)sampledPoints[i + 1].Y);
 
                 double dx = Math.Abs(destinationPoint.X - currentPoint.X);
                 double dy = Math.Abs(destinationPoint.Y - currentPoint.Y);
@@ -422,7 +424,7 @@ namespace RootNav.Data
                         break;
                  
                     // Use (x, y) Position
-                    points.Add(new Point(x, y));
+                    points.Add(new PointF(x, y));
 
                     double err2 = 2 * err;
                     if (err2 > -dy)
