@@ -1,4 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Linq;
+
 using RootNav;
 using RootNav.Core;
 using RootNav.Core.Imaging;
@@ -6,16 +13,12 @@ using RootNav.Core.MixtureModels;
 using RootNav.Core.Threading;
 using RootNav.IO;
 using RootNav.Core.Tips;
+using RootNav.Core.LiveWires;
+using RootNav.Interface.Controls;
 
 using Emgu.CV;
 using Emgu.CV.UI;
 using Emgu.CV.Structure;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using RootNav.Core.LiveWires;
-using RootNav.Interface.Controls;
 
 namespace RootNavLinux
 {
@@ -307,7 +310,7 @@ namespace RootNavLinux
 			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
 
 			this.emManager.Run();
-//
+
 //			this.StartScreenLabel.Visibility = System.Windows.Visibility.Hidden;
 //
 //			this.screenOverlay.IsBusy = true;
@@ -565,7 +568,7 @@ namespace RootNavLinux
 
 				foreach (Int32Point p in points)
 				{
-//					this.screenOverlay.TipAnchorPoints.Add((Point)p);
+					this.screenOverlay.TipAnchorPoints.Add((Point)p);
 
 //					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
 				}
@@ -619,6 +622,117 @@ namespace RootNavLinux
 			primaryLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
 			primaryLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
 			primaryLiveWireManager.Run();
+		}
+
+		private void LiveWireManagerProgressChanged(object sender, ProgressChangedEventArgs args)
+		{
+			//this.Dispatcher.Invoke(new TaskProgressChangedHandler(TaskProgressChanged), new object[] { args.ProgressPercentage });
+		}
+
+		private void TaskProgressChanged(int progress)
+		{
+			//this.mainProgressBar.Value = progress;
+		}
+
+		private void LiveWireManagerProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
+		{
+			LiveWireManager manager = sender as LiveWireManager;
+
+			if (manager == null)
+			{
+				return;
+			}
+
+			if (sender == this.primaryLiveWireManager)
+			{
+				if (this.baseWeightDescriptors != null)
+				{
+					this.baseWeightDescriptors.Clear();
+				}
+
+				List<LiveWirePrimaryPath> paths = new List<LiveWirePrimaryPath>();
+				foreach (KeyValuePair<Tuple<int, int>, List<Point>> pointPath in this.primaryLiveWireManager.Paths)
+				{
+					paths.Add(new LiveWirePrimaryPath(pointPath.Key.Item1, pointPath.Key.Item2, pointPath.Value, this.primaryLiveWireManager.ControlPointIndices[pointPath.Key]));
+				}
+
+				// Weightings
+				this.baseWeightDescriptors = new List<LiveWireWeightDescriptor>();
+				foreach (LiveWirePrimaryPath pointPath in paths)
+				{
+					this.baseWeightDescriptors.Add(new LiveWireWeightDescriptor(pointPath, probabilityMapBestClass, this.emManager.Width, this.emManager.Height));
+				}
+
+				// UI
+				this.Dispatcher.BeginInvoke(new LiveWirePrimaryCompletedDelegate(this.LiveWirePrimaryWorkCompletedUI), paths);
+			}
+
+			if (sender == this.lateralLiveWireManager)
+			{
+				List<LiveWireLateralPath> paths = new List<LiveWireLateralPath>();
+				foreach (var item in this.lateralLiveWireManager.Paths)
+				{
+					List<Point> path = item.Value;
+					TargetPathPoint target = this.lateralLiveWireManager.TargetPathIndices[item.Key];
+					List<int> indices = this.lateralLiveWireManager.ControlPointIndices[item.Key];
+					paths.Add(new LiveWireLateralPath(item.Key, target, path, indices));
+				}
+
+				// UI
+				this.Dispatcher.BeginInvoke(new LiveWireLateralCompletedDelegate(this.LiveWireLateralWorkCompletedUI), paths);
+			}
+		}
+
+		private void LiveWirePrimaryWorkCompletedUI(List<LiveWirePrimaryPath> paths)
+		{
+			List<LiveWirePrimaryPath> basePaths;
+
+			LiveWireRootAssociation.FindRoots(this.screenOverlay.Terminals,
+				paths,
+				this.baseWeightDescriptors,
+				out basePaths,
+				out this.baseWeightDescriptors);
+
+			// Create gray image the first time only
+			if (this.screenOverlay.Paths.Count == 0)
+			{
+				WriteableBitmap gray = RootNav.IO.ImageConverter.ConvertToGrayScaleUniform(this.ScreenImage.ImageSource as WriteableBitmap);
+				this.Dispatcher.Invoke(new ScreenImageUpdateDelegate(this.UpdateScreenImage), gray);
+			}
+			else
+			{
+				// Clear old paths
+				this.screenOverlay.ClearAll();
+			}
+
+			foreach (LiveWirePrimaryPath path in basePaths)
+			{
+				this.screenOverlay.Paths.Add(path);
+			}
+			this.detectionToolbox.UncheckToggleButtons(null);
+			this.screenOverlay.IsBusy = false;
+			this.statusText.Text = "Status: Idle";
+			this.preMeasurementToolbox.MeasurementButton.IsEnabled = true;
+		}
+
+		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
+		{
+			if (paths.Count > 0)
+			{
+				if (this.screenOverlay.Paths.Laterals.Count() > 0)
+				{
+					this.screenOverlay.ClearLaterals();
+				}
+
+				foreach (LiveWireLateralPath path in paths)
+				{
+					this.screenOverlay.Paths.Add(path);
+				}
+			}
+
+			this.detectionToolbox.UncheckToggleButtons(null);
+			this.screenOverlay.IsBusy = false;
+			this.statusText.Text = "Status: Idle";
 		}
 	} //end class
 } //end namespace

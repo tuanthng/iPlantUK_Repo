@@ -15,9 +15,9 @@ using System.ComponentModel;
 
 //using RootNav.Interface.Windows;
 using RootNav.Core.LiveWires;
-//using RootNav.Core.Measurement;
+using RootNav.Core.Measurement;
 //using RootNav.Measurement;
-//using RootNav.Data;
+using RootNav.Data;
 
 namespace RootNav.Interface.Controls
 {
@@ -153,32 +153,32 @@ namespace RootNav.Interface.Controls
 //        private bool isControlPointDragInProgress = false;
 //        private bool isTerminalPointDragInProgress = false;
 //        private bool isRootDragInProgress = false;
-//
-//        private LiveWirePathCollection paths = new LiveWirePathCollection();
-//
-//        public LiveWirePathCollection Paths
-//        {
-//            get { return paths; }
-//            set { paths = value; }
-//        }
-//
-//        private RootBase currentHighlightedRoot = null;
-//
-//        public RootBase CurrentHighlightedRoot
-//        {
-//            get { return currentHighlightedRoot; }
-//            set { currentHighlightedRoot = value; }
-//        }
-//
-//        private List<List<Point>> sampledRoots = new List<List<Point>>();
-//
-//        private RootCollection roots = new RootCollection();
-//
-//        public RootCollection Roots
-//        {
-//            get { return roots; }
-//            set { roots = value; }
-//        }
+
+        private LiveWirePathCollection paths = new LiveWirePathCollection();
+
+        public LiveWirePathCollection Paths
+        {
+            get { return paths; }
+            set { paths = value; }
+        }
+
+        private RootBase currentHighlightedRoot = null;
+
+        public RootBase CurrentHighlightedRoot
+        {
+            get { return currentHighlightedRoot; }
+            set { currentHighlightedRoot = value; }
+        }
+
+        private List<List<Point>> sampledRoots = new List<List<Point>>();
+
+        private RootCollection roots = new RootCollection();
+
+        public RootCollection Roots
+        {
+            get { return roots; }
+            set { roots = value; }
+        }
 //
 //        RootInfo.DragType? measurementAnglePointType = null;
 //        double measurementAngleDualDragMinimumOffset = 0;
@@ -200,29 +200,29 @@ namespace RootNav.Interface.Controls
 //        private int currentHighlightedControlPointIndex = -1;
 //        private int currentHighlightedTerminalIndex = -1;
 //
-//        private const int SampleRate = 1;
+        private const int SampleRate = 1;
 //
-//        private SplinePositionReference rootPositionReference = null;
-//        private Point rootPoint = default(Point);
-//
-//        public Point RootPoint
-//        {
-//            get { return rootPoint; }
-//            set { rootPoint = value; }
-//        }
-//
-//        public void ClearAll()
-//        {
-//            this.paths.Clear();
-//            this.sampledRoots.Clear();
-//        }
-//
-//        public void ClearLaterals()
-//        {
-//            this.paths.ClearLaterals();
-//            this.RecalculateAllSamples();
-//        }
-//
+        private SplinePositionReference rootPositionReference = null;
+        private Point rootPoint = default(Point);
+
+        public Point RootPoint
+        {
+            get { return rootPoint; }
+            set { rootPoint = value; }
+        }
+
+        public void ClearAll()
+        {
+            this.paths.Clear();
+            this.sampledRoots.Clear();
+        }
+
+        public void ClearLaterals()
+        {
+            this.paths.ClearLaterals();
+            this.RecalculateAllSamples();
+        }
+
         public void ResetAll()
         {
 //            this.ResetCalled = true;
@@ -293,32 +293,32 @@ namespace RootNav.Interface.Controls
 //            this.Stage = OverlayStage.Detection;
 //            this.InvalidateVisual();
 //        }
-//
-//        public void RecalculateAllSamples()
-//        {
-//            this.sampledRoots.Clear();
-//            for (int index = 0; index < this.paths.Count; index++)
-//            {
-//                LiveWirePath path = this.paths[index];
-//                List<Point> newPath = new List<Point>();
-//                for (int i = 0; i < path.Path.Count; i += SampleRate)
-//                {
-//                    newPath.Add(path.Path[i]);
-//                }
-//                sampledRoots.Add(newPath);
-//            }
-//            
+
+        public void RecalculateAllSamples()
+        {
+            this.sampledRoots.Clear();
+            for (int index = 0; index < this.paths.Count; index++)
+            {
+                LiveWirePath path = this.paths[index];
+                List<Point> newPath = new List<Point>();
+                for (int i = 0; i < path.Path.Count; i += SampleRate)
+                {
+                    newPath.Add(path.Path[i]);
+                }
+                sampledRoots.Add(newPath);
+            }
+            
 //            this.InvalidateVisual();
-//        }
-//
-//        private int patchSize = 0;
-//
-//        public int PatchSize
-//        {
-//            get { return patchSize; }
-//            set { patchSize = value; }
-//        }
-//
+        }
+
+        private int patchSize = 0;
+
+        public int PatchSize
+        {
+            get { return patchSize; }
+            set { patchSize = value; }
+        }
+
         private List<Point> tipAnchorPoints = new List<Point>();
 
         public List<Point> TipAnchorPoints
