@@ -106,6 +106,7 @@
     <Compile Include="Core\Measurement\RootGroup.cs" />
     <Compile Include="Core\Measurement\RootMeasurement.cs" />
     <Compile Include="Core\LiveWires\LiveWireThread.cs" />
+    <Compile Include="Core\LiveWires\LiveWireManagerThread.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
