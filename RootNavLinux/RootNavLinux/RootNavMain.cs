@@ -37,8 +37,10 @@ namespace RootNavLinux
 		private EMManagerThread emManager = null;
 		private byte[] intensityBuffer = null;
 		private GaussianMixtureModel highlightedMixture = null;
-		private LiveWirePrimaryManager primaryLiveWireManager = null;
-		private LiveWireLateralManager lateralLiveWireManager = null;
+		//private LiveWirePrimaryManager primaryLiveWireManager = null;
+		//private LiveWireLateralManager lateralLiveWireManager = null;
+		private LiveWirePrimaryManagerThread primaryLiveWireManager = null;
+		private LiveWireLateralManagerThread lateralLiveWireManager = null;
 
 		private EMConfiguration[] configurations;
 		private EMConfiguration customConfiguration = null;
@@ -103,6 +105,8 @@ namespace RootNavLinux
 
 			//store the xml file into the global
 			OutputResultXML.FullOutputFileName = ResultXMLFileName;
+
+			this.screenOverlay = new RootDetectionScreenOverlay ();
 		}
 
 		public void Process()
@@ -573,7 +577,8 @@ namespace RootNavLinux
 				{
 					this.screenOverlay.TipAnchorPoints.Add((Point)p);
 
-//					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
+					//TODO: for testing
+					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Primary, false);
 				}
 			}
 
@@ -587,6 +592,11 @@ namespace RootNavLinux
 //			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
 //			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
 //			this.screenOverlay.InvalidateVisual();
+
+			//TODO: testing by adding 1 or more source points and using all tips detected
+			AddSourcePoint(new Point(675.6, 29.34), false);
+
+			AnalysePrimaryRoots ();
 		}
 
 		public void AnalysePrimaryRoots()
@@ -614,7 +624,7 @@ namespace RootNavLinux
 //
 //			this.statusText.Text = "Status: Examining " + combinations.ToString() + " potential" + (combinations == 1 ? " root" : " roots");
 //
-			this.primaryLiveWireManager = new LiveWirePrimaryManager()
+			this.primaryLiveWireManager = new LiveWirePrimaryManagerThread()
 			{
 				DistanceMap = this.distanceProbabilityMap,
 				Graph = this.currentGraph,
@@ -639,7 +649,7 @@ namespace RootNavLinux
 
 		private void LiveWireManagerProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
 		{
-			LiveWireManager manager = sender as LiveWireManager;
+			LiveWireManagerThread manager = sender as LiveWireManagerThread;
 
 			if (manager == null)
 			{

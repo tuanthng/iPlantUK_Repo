@@ -225,12 +225,12 @@ namespace RootNav.Interface.Controls
 
         public void ResetAll()
         {
-//            this.ResetCalled = true;
+            this.ResetCalled = true;
 //
-//            this.rootPoint = default(Point);
+            this.rootPoint = default(Point);
 //
 //            this.Stage = OverlayStage.Detection;
-//            this.terminalCollection = new RootTerminalCollection();
+            this.terminalCollection = new RootTerminalCollection();
 //            this.HighlightedSplineRootInfo = null;
 //            
 //            this.terminalRootAdorners.Clear();
@@ -239,9 +239,9 @@ namespace RootNav.Interface.Controls
 //            this.isControlPointDragInProgress = false;
 //            this.isTerminalPointDragInProgress = false;
 //            this.isRootDragInProgress = false;
-//            this.paths.Clear();
+            this.paths.Clear();
 //            this.currentHighlightedRoot = null;
-//            this.sampledRoots.Clear();
+            this.sampledRoots.Clear();
             this.roots = new RootCollection();
 //            this.isMeasurementAngleDragInProgress = false;
 //            this.measurementAnglePointType = null;
@@ -714,7 +714,7 @@ namespace RootNav.Interface.Controls
 //            this.currentRenderDrawingContext = null;
 //        }
 //
-//        private bool ResetCalled { get; set; }
+        private bool ResetCalled { get; set; }
 //
 //        protected override void OnRender(DrawingContext drawingContext)
 //        {

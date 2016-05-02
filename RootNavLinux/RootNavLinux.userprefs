@@ -1,12 +1,13 @@
 ﻿<Properties StartupItem="RootNavLinux/RootNavLinux.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="RootNavLinux/Core/LiveWires/LiveWireWorkers.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="RootNavLinux/Core/LiveWires/LiveWireManagerThread.cs">
     <Files>
-      <File FileName="RootNavLinux/RootNavMain.cs" Line="627" Column="28" />
-      <File FileName="RootNavLinux/Interface/Controls/ScreenOverlay.cs" Line="122" Column="42" />
-      <File FileName="RootNavLinux/RootNavOptions.cs" Line="85" Column="64" />
-      <File FileName="RootNavLinux/Core/LiveWires/LiveWireManager.cs" Line="30" Column="34" />
-      <File FileName="RootNavLinux/Core/LiveWires/LiveWireWorkers.cs" Line="17" Column="10" />
+      <File FileName="RootNavLinux/RootNavMain.cs" Line="307" Column="80" />
+      <File FileName="RootNavLinux/Interface/Controls/ScreenOverlay.cs" Line="1" Column="1" />
+      <File FileName="RootNavLinux/RootNavOptions.cs" Line="1" Column="1" />
+      <File FileName="RootNavLinux/Core/LiveWires/LiveWireThread.cs" Line="121" Column="47" />
+      <File FileName="RootNavLinux/Core/MixtureModels/EMThread.cs" Line="18" Column="59" />
+      <File FileName="RootNavLinux/Core/LiveWires/LiveWireManagerThread.cs" Line="408" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
