@@ -35,6 +35,14 @@ namespace RootNav.Core.LiveWires
 				this.ProgressChanged (this, e);
 			}
         }
+
+		protected void OnProgressCompleted(LiveWireThread sender, RunWorkerCompletedEventArgs args)
+		{
+			if (this.ProgressCompleted != null)
+			{
+				this.ProgressCompleted(sender, args);
+			}
+		}
 		protected virtual void  OnDoWork ()
 		{
 			//subclass should implement this function
@@ -122,6 +130,14 @@ namespace RootNav.Core.LiveWires
                     base.OnProgressChanged(new ProgressChangedEventArgs((int)(++current * 100.0 / total), null));
                 }
             }
+
+			//base.OnDoWork ();
+			base.OnProgressCompleted(this, new RunWorkerCompletedEventArgs(null, null, false));
+
+			//if (base..ProgressCompleted != null) 
+			//{
+			//	this.ProgressCompleted(this, );
+			//}
         }
     }
 
@@ -203,6 +219,8 @@ namespace RootNav.Core.LiveWires
                     base.OnProgressChanged(new ProgressChangedEventArgs((int)(++current * 100.0 / total), null));
                 }
             }
+
+			base.OnDoWork ();
         }
     }
 }

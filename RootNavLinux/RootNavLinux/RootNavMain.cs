@@ -578,8 +578,11 @@ namespace RootNavLinux
 					this.screenOverlay.TipAnchorPoints.Add((Point)p);
 
 					//TODO: for testing
-					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Primary, false);
+					//this.screenOverlay.Terminals.Add((Point)p, TerminalType.Primary, false);
+
 				}
+				//TODO: for testing
+				this.screenOverlay.Terminals.Add((Point)points[0], TerminalType.Primary, false);
 			}
 
 			OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
