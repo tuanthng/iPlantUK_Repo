@@ -73,7 +73,7 @@ namespace RootNavLinux
 		public string OutputPath { get; set; }
 
 		[CommandLineOption(Description = "Specifies the input nodes (primary, source, lateral)", RequireExplicitAssignment= true, MinOccurs = 0)]
-		public string InputNodePath { get; set; }
+		public string InputPointsFile { get; set; }
 
 		public EMConfiguration CreateConfiguration()
 		{

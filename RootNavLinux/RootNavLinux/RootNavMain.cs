@@ -19,6 +19,7 @@ using RootNav.Interface.Controls;
 using Emgu.CV;
 using Emgu.CV.UI;
 using Emgu.CV.Structure;
+using System.Xml;
 
 namespace RootNavLinux
 {
@@ -93,7 +94,7 @@ namespace RootNavLinux
 
 		private string ProbabilityFilename{ get; set; }
 
-		public string InputNodePath{ get; set; }
+		public string InputPointsFilename{ get; set; }
 
 		public RootNavMain (string filePathImg)
 		{
@@ -582,7 +583,7 @@ namespace RootNavLinux
 
 				}
 				//TODO: for testing
-				this.screenOverlay.Terminals.Add((Point)points[0], TerminalType.Primary, false);
+				//this.screenOverlay.Terminals.Add((Point)points[0], TerminalType.Primary, false);
 			}
 
 			OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
@@ -597,7 +598,10 @@ namespace RootNavLinux
 //			this.screenOverlay.InvalidateVisual();
 
 			//TODO: testing by adding 1 or more source points and using all tips detected
-			AddSourcePoint(new Point(675.6, 29.34), false);
+			//AddSourcePoint(new Point(675.6, 29.34), false);
+
+			//parse the input points
+			parseInputNodes();
 
 			AnalysePrimaryRoots ();
 		}
@@ -740,6 +744,12 @@ namespace RootNavLinux
 			//Now, this is the time to write the output paths
 			OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
 
+			if (this.screenOverlay.Paths.Count () > 0) {
+				System.Console.WriteLine ("Total points of the 1st path the primary point: " + this.screenOverlay.Paths [0].Path.Count.ToString ());
+
+			} else {
+				System.Console.WriteLine ("No path.");
+			}
 		}
 
 		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
@@ -803,12 +813,33 @@ namespace RootNavLinux
 
 		private void parseInputNodes()
 		{
-			if (this.InputNodePath != null && this.InputNodePath.Length > 0) {
-				if (File.Exists (this.InputNodePath)) {
-					
-				}
+			if (this.InputPointsFilename != null && this.InputPointsFilename.Length > 0) {
+				if (File.Exists (this.InputPointsFilename)) {
+					//this code used to append new node to the existing xml file
+					XmlTextReader reader = new XmlTextReader (InputPointsFilename);
+					XmlDocument doc = new XmlDocument ();
+					doc.Load (reader);
+					reader.Close ();
+
+					//select the 1st node
+					XmlElement root = doc.DocumentElement;
+					XmlNode pointsNode = root.SelectSingleNode ("/Points");
+
+					foreach (XmlNode node in pointsNode.ChildNodes) {
+						if (node.Attributes ["type"].Value.CompareTo ("Source") == 0) {
+							AddSourcePoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
+						} else if (node.Attributes ["type"].Value.CompareTo ("Primary") == 0) {
+							AddPrimaryPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
+						} else if (node.Attributes ["type"].Value.CompareTo ("Lateral") == 0) {
+							AddLateralPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
+						}
+					} //end for each
+				} //end if
+			} //end if
+			else {
+				System.Console.WriteLine ("No point input");
 			}
-		}
+		} //end parseInputNodes
 
 	} //end class
 } //end namespace

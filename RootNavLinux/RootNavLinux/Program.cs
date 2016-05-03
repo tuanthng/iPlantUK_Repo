@@ -63,6 +63,11 @@ namespace RootNavLinux
 						mainRoot.OutputPath = options.OutputPath;
 					}
 
+					if (options.InputPointsFile != null && options.InputPointsFile.Length > 0)
+					{
+						mainRoot.InputPointsFilename = options.InputPointsFile;
+					}
+
 					//process the task
 					mainRoot.Process ();
 				} else {
