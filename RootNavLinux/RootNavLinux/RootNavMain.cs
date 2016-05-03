@@ -582,7 +582,7 @@ namespace RootNavLinux
 				}
 			}
 
-			OutputResultXML.writeOutputData (this.ProbabilityFilename, points);
+			OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());
@@ -678,6 +678,8 @@ namespace RootNavLinux
 
 				// UI
 				//this.Dispatcher.BeginInvoke(new LiveWirePrimaryCompletedDelegate(this.LiveWirePrimaryWorkCompletedUI), paths);
+				//probably, dont need to use thread here because there is no UI
+				this.LiveWirePrimaryWorkCompletedUI (paths);
 			}
 
 			if (sender == this.lateralLiveWireManager)
@@ -693,6 +695,9 @@ namespace RootNavLinux
 
 				// UI
 				//this.Dispatcher.BeginInvoke(new LiveWireLateralCompletedDelegate(this.LiveWireLateralWorkCompletedUI), paths);
+				//probably, dont need to use thread here because there is no UI
+				this.LiveWireLateralWorkCompletedUI (paths);
+
 			}
 		}
 
@@ -723,10 +728,15 @@ namespace RootNavLinux
 			{
 				this.screenOverlay.Paths.Add(path);
 			}
+
 			//this.detectionToolbox.UncheckToggleButtons(null);
 			//this.screenOverlay.IsBusy = false;
 			//this.statusText.Text = "Status: Idle";
 			//this.preMeasurementToolbox.MeasurementButton.IsEnabled = true;
+
+			//Now, this is the time to write the output paths
+			OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
+
 		}
 
 		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
@@ -747,6 +757,8 @@ namespace RootNavLinux
 			//this.detectionToolbox.UncheckToggleButtons(null);
 			//this.screenOverlay.IsBusy = false;
 			//this.statusText.Text = "Status: Idle";
+
+			//Now, this is the time to write the output paths
 		}
 
 		private void UpdateScreenImage(Mat wbmp)

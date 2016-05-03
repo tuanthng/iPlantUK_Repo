@@ -47,7 +47,7 @@ namespace RootNavLinux
 					mainRoot.PresetRootName = options.PresetName;
 
 					if (options.PresetName.Equals ("Custom")) {
-						System.Console.WriteLine ("In custome");
+						System.Console.WriteLine ("In custom");
 						System.Console.WriteLine (options.ToString ());
 
 						mainRoot.CustomEMConfiguration = options.CreateConfiguration ();

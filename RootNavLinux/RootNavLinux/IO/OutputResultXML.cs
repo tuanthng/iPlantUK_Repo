@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using RootNav.Core;
 using System.IO;
 using RootNav.Core.MixtureModels;
-using System.Xml.XPath; 
+using System.Xml.XPath;
+using RootNav.Core.LiveWires; 
 
 namespace RootNavLinux
 {
@@ -63,7 +64,7 @@ namespace RootNavLinux
 
 		}
 
-		public static void writeOutputData(string outputFilename, List<Int32Point> tipsDetected)
+		public static void writeTipsDetectedData(string outputFilename, List<Int32Point> tipsDetected)
 		{
 			//System.IO.Stream s = new FileStream(FullOutputFileName, FileMode.OpenOrCreate);
 			//System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer();
@@ -135,7 +136,56 @@ namespace RootNavLinux
 				doc.Save (FullOutputFileName);
 			}
 
-		}
-	}
+		} //end write tip detected
+
+		public static void writePrimaryPathsData(LiveWirePathCollection paths)
+		{
+			if (File.Exists (FullOutputFileName)) {
+
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
+
+				XmlNode primaryPathsNode = doc.CreateNode (XmlNodeType.Element, "PrimaryPaths", "");
+
+				foreach (LiveWirePrimaryPath path in paths.Primaries)
+				{
+					//Path node
+					XmlNode eachPathNode = doc.CreateNode (XmlNodeType.Element, "Path", "");
+
+					foreach (System.Windows.Point point in path.Path) {
+
+						XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "Point", "");
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = point.X.ToString ();
+						pointNode.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = point.Y.ToString ();
+						pointNode.Attributes.Append (yAtt);
+
+						eachPathNode.AppendChild (pointNode);
+					} //end for each
+
+					primaryPathsNode.AppendChild (eachPathNode);
+				} //end for each
+
+				dataProcessedNode.AppendChild(primaryPathsNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+
+			} //end if
+
+		} //end write Primary Paths
+
+
+	} //end class
 }
 
