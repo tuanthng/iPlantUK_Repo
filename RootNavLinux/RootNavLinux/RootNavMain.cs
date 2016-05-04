@@ -126,7 +126,7 @@ namespace RootNavLinux
 		private void createResultFilename()
 		{
 			
-			ResultXMLFileName = this.ImageFileName + "_result.xml";
+			ResultXMLFileName = Path.Combine(OutputPath, this.ImageFileName + "_result.xml");
 
 		}
 		private void createProbabilityFilename()
@@ -814,7 +814,7 @@ namespace RootNavLinux
 		private void parseInputNodes()
 		{
 			if (this.InputPointsFilename != null && this.InputPointsFilename.Length > 0) {
-				if (File.Exists (this.InputPointsFilename)) {
+				if (File.Exists (Path.Combine(this.InputPath, this.InputPointsFilename))) {
 					//this code used to append new node to the existing xml file
 					XmlTextReader reader = new XmlTextReader (InputPointsFilename);
 					XmlDocument doc = new XmlDocument ();
