@@ -96,6 +96,12 @@ namespace RootNavLinux
 
 		public string InputPointsFilename{ get; set; }
 
+		//these flags are used to notify whether to find the shortest from Primary node to Source node or from Lateral node to Source Node.
+		//Finding the shortest paths only if there is any source node and either at least one primary node or lateral node.
+		private bool hasSourceNode = false; 
+		private bool hasPrimaryNode = false;
+		private bool hasLateralNode = false;
+
 		public RootNavMain (string filePathImg)
 		{
 			this.ImageFileName = filePathImg;
@@ -603,7 +609,12 @@ namespace RootNavLinux
 			//parse the input points
 			parseInputNodes();
 
-			AnalysePrimaryRoots ();
+			if (this.hasSourceNode && this.hasPrimaryNode) {
+				AnalysePrimaryRoots ();	
+			}
+			if (this.hasSourceNode && this.hasPrimaryNode) {
+				AnalyseLateralRoots ();
+			}
 		}
 
 		public void AnalysePrimaryRoots()
@@ -744,11 +755,12 @@ namespace RootNavLinux
 			//Now, this is the time to write the output paths
 			OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
 
-			if (this.screenOverlay.Paths.Count () > 0) {
-				System.Console.WriteLine ("Total points of the 1st path the primary point: " + this.screenOverlay.Paths [0].Path.Count.ToString ());
+			if (this.screenOverlay.Paths.Primaries.Count () > 0) {
+				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
+				System.Console.WriteLine ("Total points of the 1st path the primary point: " + path.Path.Count.ToString ());
 
 			} else {
-				System.Console.WriteLine ("No path.");
+				System.Console.WriteLine ("No primary path.");
 			}
 		}
 
@@ -772,6 +784,15 @@ namespace RootNavLinux
 			//this.statusText.Text = "Status: Idle";
 
 			//Now, this is the time to write the output paths
+			OutputResultXML.writeLateralPathsData( this.screenOverlay.Paths);
+
+			if (this.screenOverlay.Paths.Laterals.Count () > 0) {
+				LiveWireLateralPath path = this.screenOverlay.Paths.Laterals.First ();
+				System.Console.WriteLine ("Total points of the 1st path the lateral point: " + path.Path.Count.ToString ());
+
+			} else {
+				System.Console.WriteLine ("No lateral path.");
+			}
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
@@ -779,20 +800,57 @@ namespace RootNavLinux
 			//ScreenImage.ImageSource = wbmp;
 		}
 
+		public void AnalyseLateralRoots()
+		{
+			//if (this.screenOverlay.IsBusy
+			//	|| this.screenOverlay.Paths.Primaries.Count() == 0
+			//	|| this.screenOverlay.Terminals.Laterals.Count() == 0)
+			//{
+			//	return;
+			//}
+
+			//this.screenOverlay.IsBusy = true;
+
+			int width = this.emManager.Width;
+			int height = this.emManager.Height;
+
+			int threadCount = RootNav.Core.Threading.ThreadParams.LiveWireThreadCount;
+
+			if (this.currentGraph == null)
+				this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
+
+			int lateralCount = this.screenOverlay.Terminals.Laterals.Count();
+			//this.statusText.Text = "Status: Examining " + lateralCount.ToString() + " lateral" + (lateralCount == 1 ? " root" : " roots");
+
+			this.lateralLiveWireManager = new LiveWireLateralManagerThread()
+			{
+				Graph = currentGraph,
+				Terminals = this.screenOverlay.Terminals,
+				CurrentPaths = this.screenOverlay.Paths.Primaries.ToList(),
+				ThreadCount = Math.Min(lateralCount, threadCount),
+				DistanceMap = this.distanceProbabilityMap
+			};
+			lateralLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+			lateralLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
+			lateralLiveWireManager.Run();
+		}
+
 		private void AddSourcePoint(Point source, bool createLink)
 		{
 			this.screenOverlay.Terminals.Add (source, TerminalType.Source, createLink);
+			this.hasSourceNode = true;
 		}
 
 		private void AddLateralPoint(Point source, bool createLink)
 		{
 			this.screenOverlay.Terminals.Add (source, TerminalType.Lateral, createLink);
-
+			this.hasLateralNode = true;
 		}
 
 		private void AddPrimaryPoint(Point source, bool createLink)
 		{
 			this.screenOverlay.Terminals.Add (source, TerminalType.Primary, createLink);
+			this.hasPrimaryNode = true;
 		}
 
 		private void AddPoint(Point newpoint, TerminalType type, bool createLink)

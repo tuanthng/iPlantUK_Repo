@@ -185,7 +185,52 @@ namespace RootNavLinux
 
 		} //end write Primary Paths
 
+		public static void writeLateralPathsData(LiveWirePathCollection paths)
+		{
+			if (File.Exists (FullOutputFileName)) {
 
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
+
+				XmlNode lateralPathsNode = doc.CreateNode (XmlNodeType.Element, "LateralPaths", "");
+
+				foreach (LiveWireLateralPath path in paths.Laterals)
+				{
+					//Path node
+					XmlNode eachPathNode = doc.CreateNode (XmlNodeType.Element, "Path", "");
+
+					foreach (System.Windows.Point point in path.Path) {
+
+						XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "Point", "");
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = point.X.ToString ();
+						pointNode.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = point.Y.ToString ();
+						pointNode.Attributes.Append (yAtt);
+
+						eachPathNode.AppendChild (pointNode);
+					} //end for each
+
+					lateralPathsNode.AppendChild (eachPathNode);
+				} //end for each
+
+				dataProcessedNode.AppendChild(lateralPathsNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+
+			} //end if
+
+		} //end write Primary Paths
 	} //end class
 }
 
