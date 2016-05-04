@@ -826,11 +826,11 @@ namespace RootNavLinux
 					XmlNode pointsNode = root.SelectSingleNode ("/Points");
 
 					foreach (XmlNode node in pointsNode.ChildNodes) {
-						if (node.Attributes ["type"].Value.CompareTo ("Source") == 0) {
+						if (node.Attributes ["type"].Value.ToUpper().CompareTo ("SOURCE") == 0) {
 							AddSourcePoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
-						} else if (node.Attributes ["type"].Value.CompareTo ("Primary") == 0) {
+						} else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("PRIMARY") == 0) {
 							AddPrimaryPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
-						} else if (node.Attributes ["type"].Value.CompareTo ("Lateral") == 0) {
+						} else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("LATERAL") == 0) {
 							AddLateralPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
 						}
 					} //end for each
