@@ -11,8 +11,9 @@
 	  </template>
 	  <gobject name="sources">
 	    <template>
-	      <tag name="gobject" value="circle" />
-	      <tag name="gobject" value="square" />
+	      <tag name="gobject" value="point" type="point"/>
+	      <tag name="gobject" value="circle" type="circle"/>
+	      <tag name="gobject" value="square" type="square"/>
 	      <tag name="require_gobjects">
 		<tag name="amount" value=">=1" />
 		  <tag name="fail_message" value="Requires select of at least one source and tips (optional)" />
