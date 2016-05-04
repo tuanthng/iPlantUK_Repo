@@ -47,7 +47,7 @@ namespace RootNavLinux
 					mainRoot.PresetRootName = options.PresetName;
 
 					if (options.PresetName.Equals ("Custom")) {
-						System.Console.WriteLine ("In custome");
+						System.Console.WriteLine ("In custom");
 						System.Console.WriteLine (options.ToString ());
 
 						mainRoot.CustomEMConfiguration = options.CreateConfiguration ();
@@ -61,6 +61,11 @@ namespace RootNavLinux
 					if (options.OutputPath != null && !options.OutputPath.Equals("."))
 					{
 						mainRoot.OutputPath = options.OutputPath;
+					}
+
+					if (options.InputPointsFile != null && options.InputPointsFile.Length > 0)
+					{
+						mainRoot.InputPointsFilename = options.InputPointsFile;
 					}
 
 					//process the task

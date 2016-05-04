@@ -1,4 +1,6 @@
 #!/usr/bin/python
+from __future__ import division #shoud place this at the beginning of the file
+
 import os
 import sys
 import optparse
@@ -13,8 +15,6 @@ import itertools
 
 #import BQSession
 from os import sys, path
-
-
 
 from lxml import etree
 
@@ -78,11 +78,57 @@ class RootNavLinux(object):
 	
         #logging.debug('setup/ final options: ' + str(self.options))
         
+        self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
+        #get the image downloaded
+        image = self.bq.load(self.options.image_url)
+        inputDataFile = image.name + "_InputData.xml"
+        
+        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
+        
+        logging.debug('Result file: ' + inputDataFileFullPath)
+        
+        #build the input data file
+        pointsRoot = etree.Element("Points")
+        
         # extract gobject inputs
-        #tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('tips', 'gobject')
+        tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('sources', 'gobject')
         #with open('inputtips.csv', 'w') as TIPS:
-        #    for point in tips.gobjects:
-        #        print >>TIPS, "%(y)s, %(x)s" % dict(x=point.vertices[0].x,y=point.vertices[0].y)
+            #for point in tips.gobjects:
+            #    print >>TIPS, "%(y)s, %(x)s" % dict(x=point.vertices[0].x,y=point.vertices[0].y)
+                
+            #for ob in tips.gobjects:
+            #    print >> TIPS, "%(y)s, %(x)s" % dict(x=circle. .vertices[0].x,y=point.vertices[0].y)
+            #    logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
+        
+        for ob in tips.gobjects:
+            logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
+            
+            if ob.xmltag == 'point':
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source"})
+                
+            elif ob.xmltag == 'circle':
+                xL = float(ob.vertices[0].x)
+                yT = float(ob.vertices[0].y)
+                
+                x =  xL + (float(ob.vertices[1].x) - xL)//2.0 #use // to get float number
+                y = yT + (float(ob.vertices[1].y) - yT)//2.0
+                
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary"})
+                
+            elif ob.xmltag == 'square':
+                xL = float(ob.vertices[0].x)
+                yT = float(ob.vertices[0].y)
+                
+                x =  xL + (float(ob.vertices[1].x) - xL)//2.0
+                y = yT + (float(ob.vertices[1].y) - yT)//2.0
+                
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral"})
+        
+        tree = etree.ElementTree(pointsRoot)
+        
+        with open(inputDataFileFullPath, "w") as id:
+            tree.write(id, encoding="utf-8", xml_declaration=True)
+        
 	return;
 
 
@@ -115,8 +161,17 @@ class RootNavLinux(object):
         #logging.debug('results fetching image: ' + str(image))
         #logging.debug('image name: ' + str(image.name))
         imageDownloaded = results[self.options.image_url];
+        #imageDownloadedFullPath = os.path.join(self.options.stagingPath, imageDownloaded)
         
-        parasRootNav = ' -ImageFile="' +  results[self.options.image_url] + '"' + \
+        #get input data xml file
+        image = self.bq.load(self.options.image_url)
+        inputDataFile = image.name + "_InputData.xml"
+        
+        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
+        
+        #construct the parameters for the tool
+        #' -ImageFile="' +  os.path.basename(imageDownloaded) + '"'
+        parasRootNav = ' -ImageFile="' +  imageDownloaded + '"' + \
             ' -PresetName="' + self.options.PresetName + '"' + \
 			' -InitialClassCount=' + self.options.InitialClassCount + \
 			' -MaximumClassCount=' + self.options.MaximumClassCount + \
@@ -124,7 +179,8 @@ class RootNavLinux(object):
 			' -PatchSize=' + self.options.PatchSize + \
 			' -BackgroundPercentage=' + self.options.BackgroundPercentage + \
 			' -BackgroundExcessSigma=' + self.options.BackgroundExcessSigma + \
-			' -Weights="' + self.options.Weights + '"'
+			' -Weights="' + self.options.Weights + '"' + \
+            ' -InputPointsFile="' + inputDataFile + '"'
          
         #parasRootNav = str(parasRootNav)
          
@@ -178,7 +234,7 @@ class RootNavLinux(object):
         resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
         
         logging.debug('Result file: ' + resultfile)
-        
+    
         #load the result file and display info.
 #       tree.parse('/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg_result.xml')
         tree = etree.ElementTree()
@@ -189,34 +245,35 @@ class RootNavLinux(object):
 #          
         # # look for the Tips Output tag
         tipDetectionNode = rootNode.findall("./Output/TipsDetected")
-        totalAttrib = tipDetectionNode[0].get('total')
         
-        logging.debug('tipDetectionNode : ' + totalAttrib)
-         
         outputTag = etree.Element('tag', name='outputs')
         outputSubTag = etree.SubElement(outputTag, 'tag', name='summary')
         
-        
-        ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
-        #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
-        
-        
-        etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
-        
-        
-        #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
-        
-        #just for testing
-       
-        outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
-        gObjectValue = ""
-        gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
-        
-        for tip in tipDetectionNode[0]:
-            gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
-            etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
-        
-        
+        if len(tipDetectionNode) > 0:
+            
+            totalAttrib = tipDetectionNode[0].get('total')
+            
+            logging.debug('tipDetectionNode : ' + totalAttrib)
+            
+            ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
+            #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+            
+            
+            etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
+            
+            
+            #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
+            
+            #just for testing
+           
+            outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
+            gObjectValue = ""
+            gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+            
+            for tip in tipDetectionNode[0]:
+                gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
+                etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
+                
         
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         

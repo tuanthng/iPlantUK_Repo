@@ -80,6 +80,33 @@
     <Compile Include="Core\Tips\TipDetectionThread.cs" />
     <Compile Include="RootNavOptions.cs" />
     <Compile Include="IO\OutputResultXML.cs" />
+    <Compile Include="Core\LiveWires\LiveWireGraph.cs" />
+    <Compile Include="Core\LiveWires\LiveWireGraphResolution.cs" />
+    <Compile Include="Core\LiveWires\LiveWireManager.cs" />
+    <Compile Include="Core\LiveWires\LiveWirePath.cs" />
+    <Compile Include="Core\LiveWires\LiveWirePathCollection.cs" />
+    <Compile Include="Core\LiveWires\LiveWirePathWeights.cs" />
+    <Compile Include="Core\LiveWires\LiveWireRootAssociation.cs" />
+    <Compile Include="Core\LiveWires\LiveWireSegmentation.cs" />
+    <Compile Include="Core\LiveWires\LiveWireWorkers.cs" />
+    <Compile Include="Core\LiveWires\RootTerminalCollection.cs" />
+    <Compile Include="Core\DataStructures\ConvexHull.cs" />
+    <Compile Include="Core\DataStructures\FibonacciHeap.cs" />
+    <Compile Include="Core\DataStructures\FibonacciHeap2.cs" />
+    <Compile Include="Core\DataStructures\Shape.cs" />
+    <Compile Include="Interface\Controls\ScreenOverlay.cs" />
+    <Compile Include="Core\Measurement\BindablePlantComponent.cs" />
+    <Compile Include="Core\Measurement\LateralRoot.cs" />
+    <Compile Include="Core\Measurement\Plant.cs" />
+    <Compile Include="Core\Measurement\PlantComponent.cs" />
+    <Compile Include="Core\Measurement\PrimaryRoot.cs" />
+    <Compile Include="Core\Measurement\RootBase.cs" />
+    <Compile Include="Core\Measurement\RootCollection.cs" />
+    <Compile Include="Core\Measurement\RootFormatConverter.cs" />
+    <Compile Include="Core\Measurement\RootGroup.cs" />
+    <Compile Include="Core\Measurement\RootMeasurement.cs" />
+    <Compile Include="Core\LiveWires\LiveWireThread.cs" />
+    <Compile Include="Core\LiveWires\LiveWireManagerThread.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -93,6 +120,10 @@
     <ProjectReference Include="..\plossum-commandline\src\Plossum\Plossum.csproj">
       <Project>{156BF637-7F50-4EC8-8476-D4E162335364}</Project>
       <Name>Plossum</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataConnections\DataConnections.csproj">
+      <Project>{72B53656-016D-4BB7-A6CB-9402A1A5E956}</Project>
+      <Name>DataConnections</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
