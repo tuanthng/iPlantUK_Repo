@@ -220,7 +220,8 @@ namespace RootNav.Core.LiveWires
                 }
             }
 
-			base.OnDoWork ();
+			//base.OnDoWork ();
+			base.OnProgressCompleted(this, new RunWorkerCompletedEventArgs(null, null, false));
         }
     }
 }
