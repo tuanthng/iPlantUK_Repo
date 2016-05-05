@@ -7,7 +7,7 @@
       <tag name="image_url" type="image">
 	  <template>
 	      <tag name="label" value="Image to process the root" />
-	       <tag name="description" value="Use Circle for source nodes and Square for tip nodes." />
+	       <tag name="description" value="Use Point tool for source nodes, Circle for primary nodes and Square for lateral nodes." />
 	  </template>
 	  <gobject name="sources">
 	    <template>
@@ -116,7 +116,7 @@
       
     </tag>
     
-    <tag name="help" value="Select Circle for sources and Square for tips. The centre of each shape will be used as the initial points. Use Annotation tool to manage (i.e. resize/move/delete etc.) the shapes as you desire...More help Coming soon" /> 
+    <tag name="help" value="Use Point tool for source nodes, Circle for primary nodes and Square for lateral nodes. The centre of each shape will be used as the initial points. Use Annotation tool to manage (i.e. resize/move/delete etc.) the shapes as you desire...More help Coming soon" /> 
     <tag name="thumbnail" type="file" value="public/roots.png" />   
     <tag name="title" value="RootNav version 3" />
     <tag name="authors" value="Tuan Nguyen - iPlantUK" /> 
