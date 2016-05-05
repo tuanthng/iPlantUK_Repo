@@ -1,4 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Linq;
+
 using RootNav;
 using RootNav.Core;
 using RootNav.Core.Imaging;
@@ -6,12 +13,13 @@ using RootNav.Core.MixtureModels;
 using RootNav.Core.Threading;
 using RootNav.IO;
 using RootNav.Core.Tips;
+using RootNav.Core.LiveWires;
+using RootNav.Interface.Controls;
 
 using Emgu.CV;
 using Emgu.CV.UI;
 using Emgu.CV.Structure;
-using System.ComponentModel;
-using System.Collections.Generic;
+using System.Xml;
 
 namespace RootNavLinux
 {
@@ -19,15 +27,34 @@ namespace RootNavLinux
 	{
 		public static double BackgroundPenalty = 0.1;
 
+		public delegate void StatusTextUpdateDelegate(String s);
+		//public delegate void ScreenImageUpdateDelegate(WriteableBitmap wbmp);
+		public delegate void ScreenImageUpdateDelegate(Mat wbmp);
+		public delegate void EMCompletedDelegate();
+		public delegate void LiveWireLateralCompletedDelegate(List<LiveWireLateralPath> paths);
+		public delegate void LiveWirePrimaryCompletedDelegate(List<LiveWirePrimaryPath> paths);
+		public delegate void LiveWireReCompletedDelegate();
+
 		private EMManagerThread emManager = null;
 		private byte[] intensityBuffer = null;
 		private GaussianMixtureModel highlightedMixture = null;
 		//private LiveWirePrimaryManager primaryLiveWireManager = null;
 		//private LiveWireLateralManager lateralLiveWireManager = null;
+		private LiveWirePrimaryManagerThread primaryLiveWireManager = null;
+		private LiveWireLateralManagerThread lateralLiveWireManager = null;
 
 		private EMConfiguration[] configurations;
 		private EMConfiguration customConfiguration = null;
 		private int currentEMConfiguration = 0;
+
+		public string PresetRootName{ get; set; }
+
+		public EMConfiguration CustomEMConfiguration
+		{
+			set{
+				customConfiguration = value;
+			}
+		}
 
 //		private bool connectionExists = false;
 
@@ -46,38 +73,94 @@ namespace RootNavLinux
 		private double[] probabilityMapSecondClass = null;
 		private double[,] distanceProbabilityMap = null;
 
-		private string FileName { get; set; }
+		private RootDetectionScreenOverlay screenOverlay = null;
+
+		private LiveWireGraph currentGraph = null;
+
+		private List<LiveWireWeightDescriptor> baseWeightDescriptors = null;
+
+		public List<LiveWireWeightDescriptor> BaseWeightDescriptors
+		{
+			get { return baseWeightDescriptors; }
+			set { baseWeightDescriptors = value; }
+		}
+
+		private RootTerminalCollection terminalCollection = new RootTerminalCollection();
+
+		private string ImageFileName { get; set; }
+		private string ResultXMLFileName{ get; set; } //the xml file containing result processed
+		public string OutputPath{ get; set; } //output and input path will be passed from outside. By default, they should be the current directory of the program
+		public string InputPath{ get; set; }
+
+		private string ProbabilityFilename{ get; set; }
+
+		public string InputPointsFilename{ get; set; }
+
+		//these flags are used to notify whether to find the shortest from Primary node to Source node or from Lateral node to Source Node.
+		//Finding the shortest paths only if there is any source node and either at least one primary node or lateral node.
+		private bool hasSourceNode = false; 
+		private bool hasPrimaryNode = false;
+		private bool hasLateralNode = false;
 
 		public RootNavMain (string filePathImg)
 		{
-			this.FileName = filePathImg;
+			this.ImageFileName = filePathImg;
 
 			initConfiguration ();
+			createResultFilename ();
+			createProbabilityFilename ();
 
+			//store the xml file into the global
+			OutputResultXML.FullOutputFileName = ResultXMLFileName;
+
+			this.screenOverlay = new RootDetectionScreenOverlay ();
 		}
 
 		public void Process()
 		{
-			LoadImage (this.FileName);
-			EMProcessing ();
-		}
+			LoadImage (this.ImageFileName);
 
+			EMProcessing ();
+
+			//writing input data
+			//OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+
+			//OutputResultXML.writeOutputData (this.ProbabilityFilename, null);
+
+
+		}
+		private void createResultFilename()
+		{
+			
+			ResultXMLFileName = Path.Combine(OutputPath, this.ImageFileName + "_result.xml");
+
+		}
+		private void createProbabilityFilename()
+		{
+			string name = System.IO.Path.GetFileNameWithoutExtension (this.ImageFileName);
+			ProbabilityFilename = name + "_map.png";
+		}
 		private int initConfiguration()
 		{
 			try
 			{
+				//intialise the input/output as the current directory
+				//InputPath = System.IO.Directory.GetCurrentDirectory();
+				InputPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+				OutputPath = InputPath;
+
 				this.configurations = EMConfiguration.LoadFromXML();
 
 				this.currentEMConfiguration = EMConfiguration.DefaultIndex(configurations);
 
 			}
-			catch
+			catch(Exception e)
 			{
 				Console.WriteLine("Configuration XML Error: An invalid value has been found in the E-M configuration XML file. Please correct this before running RootNav.");
 				//Application.Current.Shutdown();
-
+				throw e;
 				//if error
-				return -1;
+				//return -1;
 			}
 
 			return 0;
@@ -116,6 +199,8 @@ namespace RootNavLinux
 			catch(Exception ex)
 			{
 				Console.WriteLine (ex.Message);
+
+				throw ex;
 			}
 
 			return img;
@@ -126,7 +211,7 @@ namespace RootNavLinux
 			try
 			{
 				String filePath = filePaths[0];
-				this.FileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
+				this.ImageFileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
 
 
 //				// For TIF files, extract header information
@@ -235,8 +320,11 @@ namespace RootNavLinux
 
 //			this.UpdateStatusText("Status: Processing " + (GMMArrayHeight * GMMArrayWidth).ToString() + " patches");
 
+			//store some input value to the result xml file
+			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+
 			this.emManager.Run();
-//
+
 //			this.StartScreenLabel.Visibility = System.Windows.Visibility.Hidden;
 //
 //			this.screenOverlay.IsBusy = true;
@@ -261,7 +349,7 @@ namespace RootNavLinux
 //			WriteableBitmap wbmp = new WriteableBitmap(this.emManager.Width, this.emManager.Height, 96.0, 96.0, PixelFormats.Bgr32, null);
 			Mat wbmp = new Mat(this.emManager.Height, this.emManager.Width, Emgu.CV.CvEnum.DepthType.Cv32S, 3);
 //			this.featureBitmap = new WriteableBitmap(this.emManager.Width, this.emManager.Height, 96.0, 96.0, PixelFormats.Gray8, null);
-			this.featureBitmap = new Mat(this.emManager.Height, this.emManager.Width, Emgu.CV.CvEnum.DepthType.Cv8S, 1);
+			this.featureBitmap = new Mat(this.emManager.Height, this.emManager.Width, Emgu.CV.CvEnum.DepthType.Cv8U, 1);
 
 			this.probabilityMapBestClass = new double[this.emManager.Width * this.emManager.Height];
 			this.probabilityMapBrightestClass = new double[this.emManager.Width * this.emManager.Height];
@@ -299,8 +387,10 @@ namespace RootNavLinux
 //			this.screenOverlay.IsBusy = false;
 //
 			//this.probabilityBitmap = wbmp;
-			this.probabilityBitmap = imgScreen.Mat;
-			this.featureBitmap = featureScreen.Mat;
+			//this.probabilityBitmap = imgScreen.Mat;
+			this.probabilityBitmap = new Mat(imgScreen.Mat, imgScreen.ROI);
+			//this.featureBitmap = featureScreen.Mat; //changed to below code, because it causes error when later time using this variable. Not sure why?
+			this.featureBitmap = new Mat(featureScreen.Mat, featureScreen.ROI);
 
 			this.distanceProbabilityMap = DistanceMap.CreateDistanceMap(featureBitmap);
 
@@ -335,7 +425,7 @@ namespace RootNavLinux
 		unsafe private void UpdateImageOnPatchChange(EMPatch patch, GaussianMixtureModel model, ref Image<Bgr, Byte> screenBitmap, ref Image<Gray, Byte>  featureBitmap)
 		{
 
-			Console.WriteLine ("UpdateImageOnPatchChange");
+			//Console.WriteLine ("UpdateImageOnPatchChange");
 
 			int width = emManager.Width;
 			int height = emManager.Height;
@@ -486,17 +576,23 @@ namespace RootNavLinux
 
 			if (points != null)
 			{
-				//this.screenOverlay.TipAnchorPoints.Clear();
+				this.screenOverlay.TipAnchorPoints.Clear();
 
-				////this.screenOverlay.ResetAll();
+				this.screenOverlay.ResetAll();
 
 				foreach (Int32Point p in points)
 				{
-//					this.screenOverlay.TipAnchorPoints.Add((Point)p);
+					this.screenOverlay.TipAnchorPoints.Add((Point)p);
 
-//					 this.screenOverlay.Terminals.Add((Point)p, TerminalType.Undefined, false);
+					//TODO: for testing
+					//this.screenOverlay.Terminals.Add((Point)p, TerminalType.Primary, false);
+
 				}
+				//TODO: for testing
+				//this.screenOverlay.Terminals.Add((Point)points[0], TerminalType.Primary, false);
 			}
+
+			OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());
@@ -506,7 +602,303 @@ namespace RootNavLinux
 //			this.detectionToolbox.cornerDetectionBorder.Visibility = System.Windows.Visibility.Visible;
 //			this.detectionToolbox.cornerProcessingBorder.Visibility = System.Windows.Visibility.Hidden;
 //			this.screenOverlay.InvalidateVisual();
+
+			//TODO: testing by adding 1 or more source points and using all tips detected
+			//AddSourcePoint(new Point(675.6, 29.34), false);
+
+			//parse the input points
+			parseInputNodes();
+
+			if (this.hasSourceNode && this.hasPrimaryNode) {
+				AnalysePrimaryRoots ();	
+			}
+			if (this.hasSourceNode && this.hasPrimaryNode) {
+				AnalyseLateralRoots ();
+			}
 		}
+
+		public void AnalysePrimaryRoots()
+		{
+//			if (this.screenOverlay.IsBusy
+//				|| this.screenOverlay.Terminals.Sources.Count() == 0
+//				|| this.screenOverlay.Terminals.Primaries.Count() == 0)
+//			{
+//				return;
+//			}
+
+			//this.statusText.Text = "Status: Generating probability map";
+			//this.screenOverlay.IsBusy = true;
+
+			int width = this.emManager.Width;
+			int height = this.emManager.Height;
+
+
+
+			this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
+
+			int combinations = this.screenOverlay.Terminals.UnlinkedSources.Count() * this.screenOverlay.Terminals.UnlinkedPrimaries.Count() + this.screenOverlay.Terminals.TerminalLinks.Count();
+
+			int threadCount = Math.Min(RootNav.Core.Threading.ThreadParams.LiveWireThreadCount, combinations);
+//
+//			this.statusText.Text = "Status: Examining " + combinations.ToString() + " potential" + (combinations == 1 ? " root" : " roots");
+//
+			this.primaryLiveWireManager = new LiveWirePrimaryManagerThread()
+			{
+				DistanceMap = this.distanceProbabilityMap,
+				Graph = this.currentGraph,
+				Terminals = this.screenOverlay.Terminals,
+				ThreadCount = threadCount
+			};
+
+			primaryLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+			primaryLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
+			primaryLiveWireManager.Run();
+		}
+
+		private void LiveWireManagerProgressChanged(object sender, ProgressChangedEventArgs args)
+		{
+			//this.Dispatcher.Invoke(new TaskProgressChangedHandler(TaskProgressChanged), new object[] { args.ProgressPercentage });
+		}
+
+		private void TaskProgressChanged(int progress)
+		{
+			//this.mainProgressBar.Value = progress;
+		}
+
+		private void LiveWireManagerProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
+		{
+			LiveWireManagerThread manager = sender as LiveWireManagerThread;
+
+			if (manager == null)
+			{
+				return;
+			}
+
+			if (sender == this.primaryLiveWireManager)
+			{
+				if (this.baseWeightDescriptors != null)
+				{
+					this.baseWeightDescriptors.Clear();
+				}
+
+				List<LiveWirePrimaryPath> paths = new List<LiveWirePrimaryPath>();
+				foreach (KeyValuePair<Tuple<int, int>, List<Point>> pointPath in this.primaryLiveWireManager.Paths)
+				{
+					paths.Add(new LiveWirePrimaryPath(pointPath.Key.Item1, pointPath.Key.Item2, pointPath.Value, this.primaryLiveWireManager.ControlPointIndices[pointPath.Key]));
+				}
+
+				// Weightings
+				this.baseWeightDescriptors = new List<LiveWireWeightDescriptor>();
+				foreach (LiveWirePrimaryPath pointPath in paths)
+				{
+					this.baseWeightDescriptors.Add(new LiveWireWeightDescriptor(pointPath, probabilityMapBestClass, this.emManager.Width, this.emManager.Height));
+				}
+
+				// UI
+				//this.Dispatcher.BeginInvoke(new LiveWirePrimaryCompletedDelegate(this.LiveWirePrimaryWorkCompletedUI), paths);
+				//probably, dont need to use thread here because there is no UI
+				this.LiveWirePrimaryWorkCompletedUI (paths);
+			}
+
+			if (sender == this.lateralLiveWireManager)
+			{
+				List<LiveWireLateralPath> paths = new List<LiveWireLateralPath>();
+				foreach (var item in this.lateralLiveWireManager.Paths)
+				{
+					List<Point> path = item.Value;
+					TargetPathPoint target = this.lateralLiveWireManager.TargetPathIndices[item.Key];
+					List<int> indices = this.lateralLiveWireManager.ControlPointIndices[item.Key];
+					paths.Add(new LiveWireLateralPath(item.Key, target, path, indices));
+				}
+
+				// UI
+				//this.Dispatcher.BeginInvoke(new LiveWireLateralCompletedDelegate(this.LiveWireLateralWorkCompletedUI), paths);
+				//probably, dont need to use thread here because there is no UI
+				this.LiveWireLateralWorkCompletedUI (paths);
+
+			}
+		}
+
+		private void LiveWirePrimaryWorkCompletedUI(List<LiveWirePrimaryPath> paths)
+		{
+			List<LiveWirePrimaryPath> basePaths;
+
+			LiveWireRootAssociation.FindRoots(this.screenOverlay.Terminals,
+				paths,
+				this.baseWeightDescriptors,
+				out basePaths,
+				out this.baseWeightDescriptors);
+
+			// Create gray image the first time only
+			if (this.screenOverlay.Paths.Count == 0)
+			{
+				//WriteableBitmap gray = RootNav.IO.ImageConverter.ConvertToGrayScaleUniform(this.ScreenImage.ImageSource as WriteableBitmap);
+				//Mat gray = RootNav.IO.ImageConverter.ConvertGrayScaleImage(this.ScreenImage.ImageSource as WriteableBitmap);
+				//this.Dispatcher.Invoke(new ScreenImageUpdateDelegate(this.UpdateScreenImage), gray);
+			}
+			else
+			{
+				// Clear old paths
+				this.screenOverlay.ClearAll();
+			}
+
+			foreach (LiveWirePrimaryPath path in basePaths)
+			{
+				this.screenOverlay.Paths.Add(path);
+			}
+
+			//this.detectionToolbox.UncheckToggleButtons(null);
+			//this.screenOverlay.IsBusy = false;
+			//this.statusText.Text = "Status: Idle";
+			//this.preMeasurementToolbox.MeasurementButton.IsEnabled = true;
+
+			//Now, this is the time to write the output paths
+			OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
+
+			if (this.screenOverlay.Paths.Primaries.Count () > 0) {
+				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
+				System.Console.WriteLine ("Total points of the 1st path the primary point: " + path.Path.Count.ToString ());
+
+			} else {
+				System.Console.WriteLine ("No primary path.");
+			}
+		}
+
+		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
+		{
+			if (paths.Count > 0)
+			{
+				if (this.screenOverlay.Paths.Laterals.Count() > 0)
+				{
+					this.screenOverlay.ClearLaterals();
+				}
+
+				foreach (LiveWireLateralPath path in paths)
+				{
+					this.screenOverlay.Paths.Add(path);
+				}
+			}
+
+			//this.detectionToolbox.UncheckToggleButtons(null);
+			//this.screenOverlay.IsBusy = false;
+			//this.statusText.Text = "Status: Idle";
+
+			//Now, this is the time to write the output paths
+			OutputResultXML.writeLateralPathsData( this.screenOverlay.Paths);
+
+			if (this.screenOverlay.Paths.Laterals.Count () > 0) {
+				LiveWireLateralPath path = this.screenOverlay.Paths.Laterals.First ();
+				System.Console.WriteLine ("Total points of the 1st path the lateral point: " + path.Path.Count.ToString ());
+
+			} else {
+				System.Console.WriteLine ("No lateral path.");
+			}
+		}
+
+		private void UpdateScreenImage(Mat wbmp)
+		{
+			//ScreenImage.ImageSource = wbmp;
+		}
+
+		public void AnalyseLateralRoots()
+		{
+			//if (this.screenOverlay.IsBusy
+			//	|| this.screenOverlay.Paths.Primaries.Count() == 0
+			//	|| this.screenOverlay.Terminals.Laterals.Count() == 0)
+			//{
+			//	return;
+			//}
+
+			//this.screenOverlay.IsBusy = true;
+
+			int width = this.emManager.Width;
+			int height = this.emManager.Height;
+
+			int threadCount = RootNav.Core.Threading.ThreadParams.LiveWireThreadCount;
+
+			if (this.currentGraph == null)
+				this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
+
+			int lateralCount = this.screenOverlay.Terminals.Laterals.Count();
+			//this.statusText.Text = "Status: Examining " + lateralCount.ToString() + " lateral" + (lateralCount == 1 ? " root" : " roots");
+
+			this.lateralLiveWireManager = new LiveWireLateralManagerThread()
+			{
+				Graph = currentGraph,
+				Terminals = this.screenOverlay.Terminals,
+				CurrentPaths = this.screenOverlay.Paths.Primaries.ToList(),
+				ThreadCount = Math.Min(lateralCount, threadCount),
+				DistanceMap = this.distanceProbabilityMap
+			};
+			lateralLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+			lateralLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerProgressCompleted);
+			lateralLiveWireManager.Run();
+		}
+
+		private void AddSourcePoint(Point source, bool createLink)
+		{
+			this.screenOverlay.Terminals.Add (source, TerminalType.Source, createLink);
+			this.hasSourceNode = true;
+		}
+
+		private void AddLateralPoint(Point source, bool createLink)
+		{
+			this.screenOverlay.Terminals.Add (source, TerminalType.Lateral, createLink);
+			this.hasLateralNode = true;
+		}
+
+		private void AddPrimaryPoint(Point source, bool createLink)
+		{
+			this.screenOverlay.Terminals.Add (source, TerminalType.Primary, createLink);
+			this.hasPrimaryNode = true;
+		}
+
+		private void AddPoint(Point newpoint, TerminalType type, bool createLink)
+		{
+			switch (type)
+			{
+			case TerminalType.Source:
+				AddSourcePoint (newpoint, createLink);
+				break;
+			case TerminalType.Lateral:
+				AddLateralPoint (newpoint, createLink);
+				break;
+			case TerminalType.Primary:
+				AddPrimaryPoint (newpoint, createLink);
+				break;
+			}
+		}
+
+		private void parseInputNodes()
+		{
+			if (this.InputPointsFilename != null && this.InputPointsFilename.Length > 0) {
+				if (File.Exists (Path.Combine(this.InputPath, this.InputPointsFilename))) {
+					//this code used to append new node to the existing xml file
+					XmlTextReader reader = new XmlTextReader (InputPointsFilename);
+					XmlDocument doc = new XmlDocument ();
+					doc.Load (reader);
+					reader.Close ();
+
+					//select the 1st node
+					XmlElement root = doc.DocumentElement;
+					XmlNode pointsNode = root.SelectSingleNode ("/Points");
+
+					foreach (XmlNode node in pointsNode.ChildNodes) {
+						if (node.Attributes ["type"].Value.ToUpper().CompareTo ("SOURCE") == 0) {
+							AddSourcePoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
+						} else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("PRIMARY") == 0) {
+							AddPrimaryPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
+						} else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("LATERAL") == 0) {
+							AddLateralPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
+						}
+					} //end for each
+				} //end if
+			} //end if
+			else {
+				System.Console.WriteLine ("No point input");
+			}
+		} //end parseInputNodes
+
 	} //end class
 } //end namespace
 

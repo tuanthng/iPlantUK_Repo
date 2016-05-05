@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootNavLinux", "RootNavLinu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plossum", "plossum-commandline\src\Plossum\Plossum.csproj", "{156BF637-7F50-4EC8-8476-D4E162335364}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConnections", "DataConnections\DataConnections.csproj", "{72B53656-016D-4BB7-A6CB-9402A1A5E956}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -19,5 +21,9 @@ Global
 		{2810865A-1A5D-4B8F-BB8A-49ED77B85F01}.Debug|x86.Build.0 = Debug|x86
 		{2810865A-1A5D-4B8F-BB8A-49ED77B85F01}.Release|x86.ActiveCfg = Release|x86
 		{2810865A-1A5D-4B8F-BB8A-49ED77B85F01}.Release|x86.Build.0 = Release|x86
+		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Debug|x86.Build.0 = Debug|Any CPU
+		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Release|x86.ActiveCfg = Release|Any CPU
+		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

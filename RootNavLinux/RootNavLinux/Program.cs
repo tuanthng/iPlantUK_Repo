@@ -6,37 +6,19 @@ using Emgu.CV.Structure;
 using System.Windows;
 using Plossum.CommandLine;
 
+using RootNav.Core.MixtureModels;
+
 namespace RootNavLinux
 {
-//	[CommandLineManager(ApplicationName = "RootNavLinux", Copyright = "University of Nottingham")]
-//	class Options
-//	{
-//
-//		[CommandLineOption(Description = "Displays this help text")]
-//		public bool Help = false;
-//
-//		[CommandLineOption(Description = "Specifies the input file", MinOccurs = 0)]
-//		public string Name
-//		{
-//			get { return mName; }
-//			set
-//			{
-//				if (String.IsNullOrEmpty(value))
-//					throw new InvalidOptionValueException("The name must not be empty", false);
-//				mName = value;
-//			}
-//		}
-//
-//		private string mName;
-//	}
-
 	class MainClass
 	{
 		public static void Main (string[] args)
 		{
-			Console.WriteLine ("RootNav started!");
+			try {
 
-			int argc = args.Length;
+				Console.WriteLine ("RootNav started!");
+
+				int argc = args.Length;
 //
 //			Console.WriteLine ("Total argc: " + argc.ToString());
 //
@@ -44,40 +26,61 @@ namespace RootNavLinux
 //				Console.WriteLine (args[i]);
 //			}
 
+				RootNavOptions options = new RootNavOptions ();
+				CommandLineParser parser = new CommandLineParser (options);
+				parser.Parse ();
 
-			/*Options options = new Options();
-			CommandLineParser parser = new CommandLineParser(options);
-			parser.Parse();
+				Console.WriteLine (parser.UsageInfo.GetHeaderAsString (78));
+				if (options.Help) {
+					Console.WriteLine (parser.UsageInfo.GetOptionsAsString (78));
+					//return 0;
+					return;
+				} else if (parser.HasErrors) {
+					Console.WriteLine (parser.UsageInfo.GetErrorsAsString (78));
+					//return -1;
+					return;
+				}
 
-			Console.WriteLine(parser.UsageInfo.GetHeaderAsString(78));
-			if (options.Help)
-			{
-				Console.WriteLine(parser.UsageInfo.GetOptionsAsString(78));
-				//return 0;
-				return;
+				if (argc > 0) {
+					RootNavMain mainRoot = new RootNavMain (options.ImageFile);	
+
+					mainRoot.PresetRootName = options.PresetName;
+
+					if (options.PresetName.Equals ("Custom")) {
+						System.Console.WriteLine ("In custom");
+						System.Console.WriteLine (options.ToString ());
+
+						mainRoot.CustomEMConfiguration = options.CreateConfiguration ();
+
+					}
+					//only update the input and output paths if they are provided and not are the current directory
+					if (options.InputPath != null && !options.InputPath.Equals("."))
+					{
+						mainRoot.InputPath = options.InputPath;
+					}
+					if (options.OutputPath != null && !options.OutputPath.Equals("."))
+					{
+						mainRoot.OutputPath = options.OutputPath;
+					}
+
+					if (options.InputPointsFile != null && options.InputPointsFile.Length > 0)
+					{
+						mainRoot.InputPointsFilename = options.InputPointsFile;
+					}
+
+					//process the task
+					mainRoot.Process ();
+				} else {
+					Console.WriteLine ("Using the default image.");
+
+					RootNavMain mainRoot = new RootNavMain ("0002.jpg");	
+					//process the task
+					mainRoot.Process ();
+
+				}
+			} catch (Exception e) {
+				Console.WriteLine ("Exception: " + e.Message);
 			}
-			else if (parser.HasErrors)
-			{
-				Console.WriteLine(parser.UsageInfo.GetErrorsAsString(78));
-				//return -1;
-				return;
-			}
-			Console.WriteLine("Hello {0}!", options.Name);
-			*/
-
-			if (argc > 0) {
-				RootNavMain mainRoot = new RootNavMain (args [0]);	
-				//process the task
-				mainRoot.Process ();
-			} else {
-				Console.WriteLine ("Using the default image.");
-
-				RootNavMain mainRoot = new RootNavMain ("0002.jpg");	
-				//process the task
-				mainRoot.Process ();
-
-			}
-
 
 		}
 	}

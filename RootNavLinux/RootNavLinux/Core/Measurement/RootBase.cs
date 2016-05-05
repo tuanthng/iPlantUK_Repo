@@ -5,10 +5,13 @@ using System.Windows;
 //using System.Windows.Media;
 using System.Collections;
 using System.Linq;
+//using System.Drawing;
 
 using RootNav.Core.LiveWires;
 //using RootNav.Measurement;
 //using RootNav.Data;
+//using DataConnections;
+using RootNav.Data;
 
 namespace RootNav.Core.Measurement
 {
@@ -23,12 +26,12 @@ namespace RootNav.Core.Measurement
             set { rootIndex = value; }
         }
 
-        public Point Start
+		public System.Windows.Point Start
         {
             get { return spline.Start; }
         }
 
-        public Point End
+		public System.Windows.Point End
         {
             get { return spline.End; }
         }
@@ -57,10 +60,10 @@ namespace RootNav.Core.Measurement
             set { primaryParent = value; }
         }
 
-        private Color color;
+		private System.Drawing.Color color;
 
-        public Color Color
-        {
+		public System.Drawing.Color Color
+		{
             get { return color; }
             set { color = value; }
         }
@@ -146,7 +149,7 @@ namespace RootNav.Core.Measurement
             {
                 double area = PixelConvexHullArea;
                 if (this.UnitConversionFactor != 0)
-                {
+				{
                     area *= (this.UnitConversionFactor * this.UnitConversionFactor);
                 }
                 return area;
@@ -212,13 +215,13 @@ namespace RootNav.Core.Measurement
                 double parentIntersectionDistance = parentSpline.GetLength(this.startReference);
                 double angleDistanceRadius = 20.0;
 
-                Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance - angleDistanceRadius));
-                Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance + angleDistanceRadius));
+				System.Windows.Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance - angleDistanceRadius));
+				System.Windows.Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(parentIntersectionDistance + angleDistanceRadius));
                 return parentEnd - parentStart;
             }
         }
 
-        public Tuple<Point, Point> ParentVectorPoints
+		public Tuple<System.Windows.Point, System.Windows.Point> ParentVectorPoints
         {
             get
             {
@@ -234,9 +237,9 @@ namespace RootNav.Core.Measurement
                 double parentIntersectionDistance = parentSpline.GetLength(this.startReference);
                 double angleDistanceRadius = 20.0;
 
-                Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Max(0, parentIntersectionDistance - angleDistanceRadius)));
-                Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Min(parentSpline.Length, parentIntersectionDistance + angleDistanceRadius)));
-                return new Tuple<Point, Point> (parentStart, parentEnd);
+				System.Windows.Point parentStart = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Max(0, parentIntersectionDistance - angleDistanceRadius)));
+				System.Windows.Point parentEnd = parentSpline.GetPoint(parentSpline.GetPositionReference(Math.Min(parentSpline.Length, parentIntersectionDistance + angleDistanceRadius)));
+				return new Tuple<System.Windows.Point, System.Windows.Point> (parentStart, parentEnd);
             }
         }
 
@@ -265,7 +268,7 @@ namespace RootNav.Core.Measurement
             get;
         }
 
-        public static RootCollection CreateRootSystem(LiveWirePathCollection pathCollection, RootTerminalCollection terminals, List<Color> colors, int splineResolution, double unitConversion)
+        public static RootCollection CreateRootSystem(LiveWirePathCollection pathCollection, RootTerminalCollection terminals, List<System.Drawing.Color> colors, int splineResolution, double unitConversion)
         {
             Dictionary<int, Tuple<RootBase, int, int>> indexedRoots = new Dictionary<int, Tuple<RootBase, int, int>>();
             double tension = 0.5;
@@ -357,7 +360,7 @@ namespace RootNav.Core.Measurement
                 MarkConvexHulls(plant.Children);
 
                 // Plant settings
-                plant.Color = Color.FromArgb(255, 200, 200, 200);
+                plant.Color = System.Drawing.Color.FromArgb(255, 200, 200, 200);
 
                 // Plant hull
                 SetPlantHullPoints(plant);
@@ -642,24 +645,25 @@ namespace RootNav.Core.Measurement
 
     }
 
-    [ValueConversion(typeof(Color), typeof(SolidColorBrush))]
-    public class UIColorConverter : IValueConverter
+    //[ValueConversion(typeof(Color), typeof(SolidColorBrush))]
+    public class UIColorConverter //: IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            Color c = (Color)value;
-            Color output = new Color() { A = 255, R = c.R, G = c.G, B = c.B };
-            return new SolidColorBrush(output);
+			System.Drawing.Color c = (System.Drawing.Color)value;
+			//System.Drawing.Color output = new System.Drawing.Color() { A = 255, R = c.R, G = c.G, B = c.B };
+			System.Drawing.Color output = System.Drawing.Color.FromArgb(255, c.R, c.G, c.B);
+			return new System.Drawing.SolidBrush(output);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return Colors.Black;
+			return System.Drawing.Color.Black;
         }
     }
 
-    [ValueConversion(typeof(Point), typeof(String))]
-    public class PointStringConverter : IValueConverter
+    //[ValueConversion(typeof(Point), typeof(String))]
+    public class PointStringConverter //: IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -673,8 +677,8 @@ namespace RootNav.Core.Measurement
         }
     }
 
-    [ValueConversion(typeof(double), typeof(double))]
-    public class RoundDoubleConverter : DependencyObject, IValueConverter
+    //[ValueConversion(typeof(double), typeof(double))]
+    public class RoundDoubleConverter : DependencyObject//, IValueConverter
     {
         public static readonly DependencyProperty DPProperty =
          DependencyProperty.Register("DP", typeof(int), typeof(RoundDoubleConverter), new PropertyMetadata(2));
