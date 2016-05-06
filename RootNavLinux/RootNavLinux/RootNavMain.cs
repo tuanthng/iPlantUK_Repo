@@ -612,7 +612,7 @@ namespace RootNavLinux
 			if (this.hasSourceNode && this.hasPrimaryNode) {
 				AnalysePrimaryRoots ();	
 			}
-			if (this.hasSourceNode && this.hasPrimaryNode) {
+			if (this.hasSourceNode && this.hasLateralNode) {
 				AnalyseLateralRoots ();
 			}
 		}
