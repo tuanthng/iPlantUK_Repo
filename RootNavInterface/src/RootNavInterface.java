@@ -1,8 +1,11 @@
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.swing.JApplet;
 import javax.swing.JMenu;
@@ -30,13 +33,25 @@ public class RootNavInterface extends JApplet {
 		
 	}
 
-	/*public void paint(Graphics g) {
+	public void paint(Graphics g) {
 		tr = new MediaTracker(this);
 		// just for testing
-		img = getImage(getCodeBase(), "0002.jpg.png");
-		tr.addImage(img, 0);
-		g.drawImage(img, 0, 0, this);
-	}*/
+		
+		//img = getImage(getCodeBase(), "0002.jpg.tif");
+		//img = getImage(getCodeBase(), "/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg");
+//		try {
+			//img = getImage(new URL("file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg"));
+			//img = getImage(getDocumentBase(), "file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg");
+		img = getImage(getCodeBase(), "file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg");
+			
+			tr.addImage(img, 0);
+			g.drawImage(img, 0, 0, this);
+		//} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+//			e.printStackTrace();
+	//	}
+		
+	}
 
 	private void initGUI() {
 		Object f = getParent();
@@ -45,7 +60,7 @@ public class RootNavInterface extends JApplet {
 			f = ((Component) f).getParent();
 		}
 
-		((Frame) f).setTitle("RootNav Interface");
+		((Frame) f).setTitle("RootNav Interface 111");
 		
 		setSize(new Dimension(width, height));
 		
