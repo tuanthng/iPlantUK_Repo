@@ -114,6 +114,12 @@
 	</template>
       </tag>
       
+      <tag name="OutputExtraImage" type="image">
+	<template>
+	    <tag name="label" value="Output image" />
+	</template>
+      </tag>
+      
     </tag>
     
     <tag name="interface">        
