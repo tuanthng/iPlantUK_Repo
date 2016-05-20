@@ -5,10 +5,13 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import javax.swing.JApplet;
 import javax.swing.JMenu;
@@ -20,6 +23,9 @@ import javax.swing.JTextField;
 import javax.swing.JTextArea;
 import java.awt.Color;
 import javax.script.*;
+import javax.swing.BoxLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 
 
 public class RootNavInterface extends JApplet {
@@ -34,6 +40,7 @@ public class RootNavInterface extends JApplet {
 	private JTextField txtCurrentPath;
 	// private MainFrame mainFrame;
 	private JTextArea textArea = new JTextArea();
+	private JTextArea txtLogArea = new JTextArea();
 	
 	private String[] args;
 	
@@ -124,14 +131,22 @@ public class RootNavInterface extends JApplet {
 		getContentPane().add(pnlMainPanel, BorderLayout.CENTER);
 		
 		txtCurrentPath = new JTextField();
-		pnlMainPanel.add(txtCurrentPath);
+		//pnlMainPanel.add(txtCurrentPath);
 		txtCurrentPath.setColumns(10);
 		
 		
 		textArea.setColumns(10);
 		textArea.setRows(20);
 		textArea.setBackground(Color.GRAY);
-		pnlMainPanel.add(textArea);
+		//pnlMainPanel.add(textArea);
+		
+		JPanel pnlLog = new JPanel();
+		getContentPane().add(pnlLog, BorderLayout.SOUTH);
+		pnlLog.setLayout(new BoxLayout(pnlLog, BoxLayout.X_AXIS));
+		
+		
+		txtLogArea.setRows(10);
+		pnlLog.add(txtLogArea);
 
 	}
 
@@ -223,6 +238,22 @@ public class RootNavInterface extends JApplet {
 				// TODO Auto-generated catch block
 				this.txtCurrentPath.setText(e.getMessage());
 			}*/
+			
+			WriteLog("Beginning to find files");
+			
+			String resultPattern = ".*_result.xml";
+			
+			File[] selectedFiles = listFilesMatching(new File("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc"), resultPattern);
+			
+			if (selectedFiles.length > 0)
+			{
+				this.txtCurrentPath.setText(selectedFiles[0].getName());
+			} else
+			{
+				this.txtCurrentPath.setText("No files found. Check again");
+			}
+			
+			WriteLog("End to find files");
 		}
 	}
 	
@@ -254,7 +285,26 @@ public class RootNavInterface extends JApplet {
 			this.txtCurrentPath.setText("Problem: " + e.getMessage());
 		}
 	}
-
+	private void WriteLog(String text)
+	{
+		this.txtLogArea.append(text);
+		this.txtLogArea.append("\n");
+		
+	}
+	public static File[] listFilesMatching(File root, String regex) {
+	    if(!root.isDirectory()) {
+	        throw new IllegalArgumentException(root+" is no directory.");
+	    }
+	    final Pattern p = Pattern.compile(regex); // careful: could also throw an exception!
+	    //return root.listFiles();
+	    return root.listFiles(new FileFilter(){
+	        @Override
+	        public boolean accept(File file) {
+	        	return p.matcher(file.getName()).matches();
+	        }
+	    });
+	}
+	
 	public static void main(String[] args) {
 
 		MainFrame frame = new MainFrame(args);
