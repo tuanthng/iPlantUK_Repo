@@ -309,7 +309,7 @@ class RootNavLinux(object):
             logging.debug('resource: ' + str(resource))
             
             
-            self.uploadFileToServer(filepath)
+            #self.uploadFileToServer(filepath)
             
             logging.debug('self.bq.service_map in teardown: ' + str(self.bq.service_map))
             
@@ -318,7 +318,7 @@ class RootNavLinux(object):
             #url = self.bq.service_url('image_service', 'image') ##couldnt use for upload
             #url = self.bq.service_url('/import/transfer') #not a service
             #url = self.bq.service_url('import', 'transfer') #not a service
-            #url = self.bq.service_url('import') #not a service
+            #url = self.bq.service_url('import', path='transfer') #not a service
             #url = self.bq.service_url('http://127.0.0.1:8080/', '/import/transfer') #not a service
             #response = save_blob(self.bq, resource=resource)
             
