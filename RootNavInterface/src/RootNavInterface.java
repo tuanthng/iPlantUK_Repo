@@ -36,6 +36,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import java.awt.GridLayout;
+import javax.swing.JButton;
 
 
 public class RootNavInterface extends JApplet {
@@ -49,7 +51,7 @@ public class RootNavInterface extends JApplet {
 	protected static String STAGING_FOLDER_ROOT = "/home/tuan/staging/";
 
 	private Image img;
-	private MediaTracker tr;
+	
 	
 	// private JTextField txtCurrentPath;
 	// private MainFrame mainFrame;
@@ -59,6 +61,9 @@ public class RootNavInterface extends JApplet {
 
 	private String[] args;
 
+	//private JPanel pnlImagePanel = new JPanel();
+	private RootImagePanel pnlImagePanel = new RootImagePanel();
+	
 	private String mex;
 	private String staging;
 	private String stagingParentFolder;
@@ -67,7 +72,7 @@ public class RootNavInterface extends JApplet {
 
 	private String resultFile;
 	
-	private String imageFile;
+	private String originalImageFile;
 	
 	public RootNavInterface() {
 		this(null);
@@ -148,6 +153,20 @@ public class RootNavInterface extends JApplet {
 
 		JPanel pnlMainPanel = new JPanel();
 		getContentPane().add(pnlMainPanel, BorderLayout.CENTER);
+		pnlMainPanel.setLayout(new BorderLayout(0, 0));
+		
+		
+		pnlMainPanel.add(pnlImagePanel, BorderLayout.CENTER);
+		
+		JPanel pnlButtonsPanel = new JPanel();
+		pnlMainPanel.add(pnlButtonsPanel, BorderLayout.EAST);
+		pnlButtonsPanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		JButton btnNewButton = new JButton("New button");
+		pnlButtonsPanel.add(btnNewButton);
+		
+		JButton btnNewButton_1 = new JButton("New button");
+		pnlButtonsPanel.add(btnNewButton_1);
 
 		// txtCurrentPath = new JTextField();
 		// pnlMainPanel.add(txtCurrentPath);
@@ -298,6 +317,31 @@ public class RootNavInterface extends JApplet {
 			//writeLog("End finding files", true);
 			
 			readResultXMLFileOrigin();
+			
+			//img = getImage(getCodeBase(), this.originalImageFile);
+			//img = getImage(getCodeBase(), "/home/tuan/bisque/data/imagedir/admin/2016-04-19/0002.jpg");
+						
+			
+			//if (img != null)
+			//{
+				//pnlImagePanel.setOriginalImage(this.img);
+				//pnlImagePanel.setOriginalImage(this.originalImageFile);
+				if (test)
+				{
+					//pnlImagePanel.setOriginalImage("/home/tuan/bisque/data/imagedir/admin/2016-04-19/0002.jpg");
+					pnlImagePanel.setOriginalImage("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc/0002.jpg.tif");
+					
+				}
+				else
+				{
+					pnlImagePanel.setOriginalImage(this.originalImageFile);
+				}
+			//}
+			//else
+			//{
+			//	writeLog("No image read");
+			//}
+			
 		}
 	}
 
@@ -407,9 +451,9 @@ public class RootNavInterface extends JApplet {
 						 if (n.getNodeType() == Node.ELEMENT_NODE)
 						 {
 							 org.w3c.dom.Element el = (Element)n;
-							 this.imageFile = el.getTextContent();
+							 this.originalImageFile = el.getTextContent();
 							 
-							 writeLog("Image file: " + this.imageFile);
+							 writeLog("Image file: " + this.originalImageFile);
 						 }
 						 
 					 }
@@ -434,6 +478,12 @@ public class RootNavInterface extends JApplet {
 		
 		return canRead;
 	}
+	
+	private void displayOriginalImage()
+	{
+		
+	}
+	
 	private void writeLog(String text, boolean newLine) {
 		this.txtLogArea.append(text);
 		if (newLine)
