@@ -7,6 +7,7 @@ import java.awt.MediaTracker;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -21,6 +22,21 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 
 public class RootNavInterface extends JApplet {
 	/**
@@ -50,7 +66,9 @@ public class RootNavInterface extends JApplet {
 	private String imgurl;
 
 	private String resultFile;
-
+	
+	private String imageFile;
+	
 	public RootNavInterface() {
 		this(null);
 
@@ -162,7 +180,7 @@ public class RootNavInterface extends JApplet {
 			}
 
 			// this.txtCurrentPath.setText(strBuff.toString());
-			WriteLog(strBuff.toString());
+			writeLog(strBuff.toString(), true);
 		} else {
 
 			this.mex = this.getParameter("mex");
@@ -211,8 +229,8 @@ public class RootNavInterface extends JApplet {
 			 * "\nFull Staging folder: " + fullStagingFolder );
 			 */
 
-			WriteLog("URL: " + imgurl + "\n" + "Staging Parent folder: " + stagingParentFolder
-					+ "\nFull Staging folder: " + fullStagingFolder);
+			writeLog("URL: " + imgurl + "\n" + "Staging Parent folder: " + stagingParentFolder
+					+ "\nFull Staging folder: " + fullStagingFolder, true);
 
 			/*
 			 * URL location =
@@ -244,28 +262,42 @@ public class RootNavInterface extends JApplet {
 			 * this.txtCurrentPath.setText(e.getMessage()); }
 			 */
 
-			WriteLog("Begin finding xml result files");
+			//writeLog("Begin finding xml result files", true);
 
 			String resultPattern = ".*_result.xml";
 
-			File[] selectedFiles = listFilesMatching(new File("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc"),
-					resultPattern);
+			//File[] selectedFiles = listFilesMatching(new File("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc"),
+			//		resultPattern);
+			
+			boolean test = true;
+			
+			if (test)
+			{
+				this.fullStagingFolder = "/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc";
+			}
+			
+			File[] selectedFiles = listFilesMatching(new File(this.fullStagingFolder), resultPattern);
 			// File[] selectedFiles = listFilesMatching(new
 			// File(this.fullStagingFolder), resultPattern);
 
 			selectedFiles = sortByLastModifiedDate(selectedFiles);
 
 			if (selectedFiles.length > 0) {
-				this.resultFile = selectedFiles[0].getName();
+				//this.resultFile = selectedFiles[0].getName();
+				this.resultFile = selectedFiles[0].getAbsolutePath();
 				
-				WriteLog("Selected file: " + selectedFiles[0].getName());
+				writeLog("Selected xml result file: " + this.resultFile, true);
+				//this.resultFile.concat(this.fullStagingFolder);
+				
 				// this.txtCurrentPath.setText(selectedFiles[0].getName());
 			} else {
-				WriteLog("No file selected");
+				writeLog("No xml result file selected!", true);
 				// this.txtCurrentPath.setText("No files found. Check again");
 			}
 
-			WriteLog("End finding files");
+			//writeLog("End finding files", true);
+			
+			readResultXMLFileOrigin();
 		}
 	}
 
@@ -290,16 +322,126 @@ public class RootNavInterface extends JApplet {
 			}
 
 			// this.txtCurrentPath.setText(strBuff.toString());
-			WriteLog(strBuff.toString());
+			writeLog(strBuff.toString(), true);
 		} catch (Exception e) {
 			// this.txtCurrentPath.setText("Problem: " + e.getMessage());
-			WriteLog("Problem: " + e.getMessage());
+			writeLog("Problem: " + e.getMessage(), true);
 		}
 	}
+	/*
+	 * //this function uses jdom2. and rewritten by the readResultXMLFileOrigin (without using any external libs)
+	 */ 
+	/*boolean readResultXMLFile()
+	{
+		boolean canRead = false;
+		
+		if (this.resultFile != null)
+		{
+			File inputFile = new File(this.resultFile);
+			
+			if (inputFile.exists())
+			{
+				try {
+					SAXBuilder saxBuilder = new SAXBuilder();
 
-	private void WriteLog(String text) {
+				
+					Document document = saxBuilder.build(inputFile);
+					
+					 // use the default implementation
+			        XPathFactory xFactory = XPathFactory.instance();
+					
+			        XPathExpression<Element> expr = xFactory.compile("//DataProcessed/Input/File/ImageFile", Filters.element());
+			        List<Element> imgFile = expr.evaluate(document);
+			        
+			        for(Element el : imgFile)
+			        {
+			        	writeLog("Image file: " + el.getValue());
+			        }
+			        
+					canRead = true;
+				} catch (JDOMException e) {
+					// TODO Auto-generated catch block
+					canRead = false;
+					//e.printStackTrace();
+					writeLog(e.getMessage());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					canRead = false;
+					//e.printStackTrace();
+					writeLog(e.getMessage());
+				}
+				
+			}
+		}
+		
+		return canRead;
+	}*/
+	
+	boolean readResultXMLFileOrigin()
+	{
+		boolean canRead = false;
+		
+		if (this.resultFile != null)
+		{
+			File inputFile = new File(this.resultFile);
+			
+			if (inputFile.exists())
+			{
+				try {
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+					DocumentBuilder builder = factory.newDocumentBuilder();
+					
+					Document doc = builder.parse(inputFile);
+					
+					 XPathFactory xpathFactory = XPathFactory.newInstance();
+					 XPath xpath = xpathFactory.newXPath();
+					 XPathExpression expr = xpath.compile("//DataProcessed/Input/File/ImageFile");
+					 
+					 NodeList nl = (NodeList)expr.evaluate(doc, XPathConstants.NODESET);
+					 
+					 for(int index = 0; index < nl.getLength(); index++)
+					 {
+						 Node n = nl.item(index);
+						 
+						 if (n.getNodeType() == Node.ELEMENT_NODE)
+						 {
+							 org.w3c.dom.Element el = (Element)n;
+							 this.imageFile = el.getTextContent();
+							 
+							 writeLog("Image file: " + this.imageFile);
+						 }
+						 
+					 }
+			        
+					canRead = true;
+				}catch (ParserConfigurationException e) {
+					//e.printStackTrace();
+					writeLog(e.getMessage());
+				} catch (SAXException e) {
+					//e.printStackTrace();
+					writeLog(e.getMessage());
+				} catch (IOException e) {
+					//e.printStackTrace();
+					writeLog(e.getMessage());
+				} catch (XPathExpressionException e) {
+					//e.printStackTrace();
+					writeLog(e.getMessage());
+				}
+				
+			}
+		}
+		
+		return canRead;
+	}
+	private void writeLog(String text, boolean newLine) {
 		this.txtLogArea.append(text);
-		this.txtLogArea.append("\n");
+		if (newLine)
+			this.txtLogArea.append("\n");
+
+	}
+	private void writeLog(String text) {
+		writeLog(text, true);
 
 	}
 
@@ -314,6 +456,7 @@ public class RootNavInterface extends JApplet {
 			@Override
 			public boolean accept(File file) {
 				return p.matcher(file.getName()).matches();
+				//return p.matcher(file.getAbsolutePath()).matches();
 			}
 		});
 	}
