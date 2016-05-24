@@ -107,6 +107,7 @@
     <Compile Include="Core\Measurement\RootMeasurement.cs" />
     <Compile Include="Core\LiveWires\LiveWireThread.cs" />
     <Compile Include="Core\LiveWires\LiveWireManagerThread.cs" />
+    <Compile Include="Interface\Controls\ScreenOverlayRenderInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
