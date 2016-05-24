@@ -299,11 +299,11 @@ public class RootNavInterface extends JApplet {
 			//File[] selectedFiles = listFilesMatching(new File("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc"),
 			//		resultPattern);
 			
-			boolean test = false;
+			boolean test = true;
 			
 			if (test)
 			{
-				this.fullStagingFolder = "/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc";
+				this.fullStagingFolder = "/home/tuan/staging/00-fNbUZCqLU47GxmsbtcgiKk/";
 			}
 			
 			File[] selectedFiles = listFilesMatching(new File(this.fullStagingFolder), resultPattern);
@@ -340,7 +340,7 @@ public class RootNavInterface extends JApplet {
 				if (test)
 				{
 					//pnlImagePanel.setOriginalImage("/home/tuan/bisque/data/imagedir/admin/2016-04-19/0002.jpg");
-					pnlImagePanel.setOriginalImage("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc/0002.jpg.tif");
+					pnlImagePanel.setOriginalImage(this.fullStagingFolder + "0002.jpg.tif");
 					
 				}
 				else
