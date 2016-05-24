@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -73,7 +74,9 @@ public class RootImagePanel extends JPanel {
 		g.drawImage(this.originalImg, 0, 0, this);
 
 	}
-
+	public Dimension getPreferredSize() {
+        return originalImg == null ? new Dimension(400, 400) : new Dimension(originalImg.getWidth(null), originalImg.getHeight(null));
+    }
 	static Image load(byte[] data) {
 		Image image = null;
 		SeekableStream stream;

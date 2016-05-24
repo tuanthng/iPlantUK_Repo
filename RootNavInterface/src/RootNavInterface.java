@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import java.awt.GridLayout;
 import javax.swing.JButton;
+import javax.swing.JScrollPane;
 
 
 public class RootNavInterface extends JApplet {
@@ -45,9 +46,9 @@ public class RootNavInterface extends JApplet {
 	 * 
 	 */
 	private static final long serialVersionUID = -1686644263900653234L;
-	protected static int height = 640;
-	protected static int width = 800;
-
+	protected static int width = 1230;
+	protected static int height = 820;
+	
 	protected static String STAGING_FOLDER_ROOT = "/home/tuan/staging/";
 
 	private Image img;
@@ -155,9 +156,6 @@ public class RootNavInterface extends JApplet {
 		getContentPane().add(pnlMainPanel, BorderLayout.CENTER);
 		pnlMainPanel.setLayout(new BorderLayout(0, 0));
 		
-		
-		pnlMainPanel.add(pnlImagePanel, BorderLayout.CENTER);
-		
 		JPanel pnlButtonsPanel = new JPanel();
 		pnlMainPanel.add(pnlButtonsPanel, BorderLayout.EAST);
 		pnlButtonsPanel.setLayout(new GridLayout(0, 1, 0, 0));
@@ -167,6 +165,19 @@ public class RootNavInterface extends JApplet {
 		
 		JButton btnNewButton_1 = new JButton("New button");
 		pnlButtonsPanel.add(btnNewButton_1);
+		
+		JScrollPane scpImagePane = new JScrollPane(pnlImagePanel);
+		scpImagePane.setAutoscrolls(true);
+		scpImagePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scpImagePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		pnlMainPanel.add(scpImagePane, BorderLayout.CENTER);
+		
+				
+		
+		//scpImagePane.add(pnlImagePanel);
+		
+		pnlMainPanel.add(scpImagePane, BorderLayout.CENTER);
 
 		// txtCurrentPath = new JTextField();
 		// pnlMainPanel.add(txtCurrentPath);
@@ -288,7 +299,7 @@ public class RootNavInterface extends JApplet {
 			//File[] selectedFiles = listFilesMatching(new File("/home/tuan/staging/00-NJqZATtwSAezwX2o53oGyc"),
 			//		resultPattern);
 			
-			boolean test = true;
+			boolean test = false;
 			
 			if (test)
 			{
