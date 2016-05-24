@@ -123,7 +123,7 @@ class RootNavLinux(object):
             logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
             
             if ob.xmltag == 'point':
-                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source"})
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source", "Shape" : "Point"})
                 
             elif ob.xmltag == 'circle':
                 xL = float(ob.vertices[0].x)
@@ -132,7 +132,7 @@ class RootNavLinux(object):
                 x =  xL + (float(ob.vertices[1].x) - xL)//2.0 #use // to get float number
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
-                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary"})
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
                 
             elif ob.xmltag == 'square':
                 xL = float(ob.vertices[0].x)
@@ -141,7 +141,7 @@ class RootNavLinux(object):
                 x =  xL + (float(ob.vertices[1].x) - xL)//2.0
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
-                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral"})
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
         
         tree = etree.ElementTree(pointsRoot)
         
@@ -290,13 +290,17 @@ class RootNavLinux(object):
            
             outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
             #outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=localpath2url(filepath))
-            gObjectValue = ""
-            gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+            #gObjectValue = ""
+            #gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+            logging.debug('appending children to the output image tag')
+            gObjectTag = rootNode.findall("./Output/TipsDetected/gobject")[0]
+            outputImgTag.append(gObjectTag)
             
-            for tip in tipDetectionNode[0]:
-                gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
-                etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
-                
+            #for tip in tipDetectionNode[0]:
+            #    gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
+            #    etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
+             
+              
         
             #outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=self.options.image_url)
             
