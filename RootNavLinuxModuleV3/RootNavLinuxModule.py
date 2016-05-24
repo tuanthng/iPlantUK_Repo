@@ -296,6 +296,9 @@ class RootNavLinux(object):
             gObjectTag = rootNode.findall("./Output/TipsDetected/gobject")[0]
             outputImgTag.append(gObjectTag)
             
+            #test colour (this works for one point, change colour from red to yello)
+            #etree.SubElement(gObjectTag[0], 'tag', name='color', value="#ffff00")
+            
             #for tip in tipDetectionNode[0]:
             #    gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
             #    etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
@@ -360,6 +363,18 @@ class RootNavLinux(object):
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        
+        #output shortest paths
+        outputPathImgTag = etree.SubElement(outputTag, 'tag', name='OutputPathImage', value=self.options.image_url)
+        
+        #get primary paths
+        primaryPathsNode = rootNode.findall("./Output/PrimaryPaths")
+        if (primaryPathsNode is not None) and (len(primaryPathsNode) > 0):
+            for path in primaryPathsNode[0]:
+                outputPathImgTag.append(path)
+        
+        #get lateral paths
+        
         
         #or using # self.bq.addTag()
         self.bq.finish_mex(tags = [outputTag])
