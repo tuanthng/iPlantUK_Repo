@@ -374,8 +374,11 @@ class RootNavLinux(object):
                 outputPathImgTag.append(path)
         
         #get lateral paths
-        
-        
+        lateralPathsNode = rootNode.findall("./Output/LateralPaths")
+        if (lateralPathsNode is not None) and (len(lateralPathsNode) > 0):
+            for path in lateralPathsNode[0]:
+                outputPathImgTag.append(path)
+                
         #or using # self.bq.addTag()
         self.bq.finish_mex(tags = [outputTag])
         #self.bq.finish_mex('Finished')
