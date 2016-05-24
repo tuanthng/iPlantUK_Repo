@@ -592,7 +592,8 @@ namespace RootNavLinux
 				//this.screenOverlay.Terminals.Add((Point)points[0], TerminalType.Primary, false);
 			}
 
-			OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
+			//OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
+			OutputResultXML.writeTipsDetectedDataForBisque (this.ProbabilityFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());
@@ -612,7 +613,7 @@ namespace RootNavLinux
 			if (this.hasSourceNode && this.hasPrimaryNode) {
 				AnalysePrimaryRoots ();	
 			}
-			if (this.hasSourceNode && this.hasPrimaryNode) {
+			if (this.hasSourceNode && this.hasLateralNode) {
 				AnalyseLateralRoots ();
 			}
 		}
@@ -753,7 +754,8 @@ namespace RootNavLinux
 			//this.preMeasurementToolbox.MeasurementButton.IsEnabled = true;
 
 			//Now, this is the time to write the output paths
-			OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
+			//OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
+			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths);
 
 			if (this.screenOverlay.Paths.Primaries.Count () > 0) {
 				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
@@ -784,7 +786,8 @@ namespace RootNavLinux
 			//this.statusText.Text = "Status: Idle";
 
 			//Now, this is the time to write the output paths
-			OutputResultXML.writeLateralPathsData( this.screenOverlay.Paths);
+			//OutputResultXML.writeLateralPathsData( this.screenOverlay.Paths);
+			OutputResultXML.writeLateralPathsDataForBisque( this.screenOverlay.Paths);
 
 			if (this.screenOverlay.Paths.Laterals.Count () > 0) {
 				LiveWireLateralPath path = this.screenOverlay.Paths.Laterals.First ();
