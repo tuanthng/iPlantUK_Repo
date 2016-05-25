@@ -321,7 +321,7 @@ namespace RootNavLinux
 //			this.UpdateStatusText("Status: Processing " + (GMMArrayHeight * GMMArrayWidth).ToString() + " patches");
 
 			//store some input value to the result xml file
-			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration);
+			OutputResultXML.writeInputData(ImageFileName, this.InputPath, this.OutputPath, this.emManager.Configuration, this.InputPointsFilename);
 
 			this.emManager.Run();
 
