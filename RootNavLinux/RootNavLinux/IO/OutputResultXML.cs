@@ -18,7 +18,7 @@ namespace RootNavLinux
 		{
 		}
 
-		public static void writeInputData(string originFilename, string inputPath, string outputPath, EMConfiguration config)
+		public static void writeInputData(string originFilename, string inputPath, string outputPath, EMConfiguration config, string inputDataFile)
 		{
 			//System.IO.Stream s = new FileStream(FullOutputFileName, FileMode.OpenOrCreate);
 			//System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer();
@@ -35,6 +35,7 @@ namespace RootNavLinux
 				writer.WriteElementString("ImageFile", originFilename);
 				writer.WriteElementString("InputPath", inputPath);
 				writer.WriteElementString("OutputPath", outputPath);
+				writer.WriteElementString("InputDataFile", inputDataFile);
 				writer.WriteEndElement(); //end File
 
 				writer.WriteStartElement("EMConfiguration");
