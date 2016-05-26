@@ -11,7 +11,10 @@ import pickle
 import logging
 import re
 import itertools
+import requests
+
 #mport gobject
+#import six
 
 #import BQSession
 from os import sys, path
@@ -25,12 +28,14 @@ sys.path.append('/home/tuan/bisque/bqapi/')
 from bqapi.comm import BQSession
 from bqapi import BQTag
 
-from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels
+from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels, localpath2url,\
+    save_blob
 #from lxml.builder import E
 
 #img_url_tag = 'image_url'
 
 imageDownloaded = '';
+BASE_URL = 'http://127.0.0.1:8080'
 
 #named_args = {}
 #staging_path = None
@@ -66,7 +71,21 @@ class RootNavLinux(object):
         
         logging.debug('mex_parameter_parser/ options: ' + str(options))
         
+    def uploadFileToServer(self, fullFilename):
+        #self.bq.push()
+        uri_pattern = re.compile(ur'uri="(?P<uri>\S+)"') #pattern to extract uri later on from response header.
+         
+        files={'file':(fullFilename,open(fullFilename, "rb"))}
+        response=requests.post('%s/import/transfer'%BASE_URL,files=files,auth=('admin' ,'admin'))
+        file_uri=re.findall(uri_pattern, response.text)
         
+        logging.debug('files: ' + str(files))
+        logging.debug('response: ' + str(response))
+        logging.debug('response.text: ' + response.text)
+        logging.debug('file_uri: ' + str(file_uri))
+       #a = 1
+        #return;
+                
     def setup(self):
         #if not os.path.exists(self.images):
         #    os.makedirs(self.images)
@@ -104,7 +123,7 @@ class RootNavLinux(object):
             logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
             
             if ob.xmltag == 'point':
-                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source"})
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source", "Shape" : "Point"})
                 
             elif ob.xmltag == 'circle':
                 xL = float(ob.vertices[0].x)
@@ -113,7 +132,7 @@ class RootNavLinux(object):
                 x =  xL + (float(ob.vertices[1].x) - xL)//2.0 #use // to get float number
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
-                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary"})
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
                 
             elif ob.xmltag == 'square':
                 xL = float(ob.vertices[0].x)
@@ -122,7 +141,7 @@ class RootNavLinux(object):
                 x =  xL + (float(ob.vertices[1].x) - xL)//2.0
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
-                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral"})
+                pointNode = etree.SubElement(pointsRoot, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
         
         tree = etree.ElementTree(pointsRoot)
         
@@ -199,6 +218,8 @@ class RootNavLinux(object):
         #self.bq.update_mex('Collecting result...')
         return r;
 
+    
+    
     def teardown(self):
         self.bq.update_mex('Collecting result...')
         # Post all submex for files and return xml list of results
@@ -263,22 +284,101 @@ class RootNavLinux(object):
             
             
             #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
-            
+            #filepath = '/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png'
+            filepath = '/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002_copy.jpg'
             #just for testing
            
             outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=self.options.image_url)
-            gObjectValue = ""
-            gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+            #outputImgTag = etree.SubElement(outputTag, 'tag', name='OutputImage', value=localpath2url(filepath))
+            #gObjectValue = ""
+            #gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
+            logging.debug('appending children to the output image tag')
+            gObjectTag = rootNode.findall("./Output/TipsDetected/gobject")[0]
+            outputImgTag.append(gObjectTag)
             
-            for tip in tipDetectionNode[0]:
-                gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
-                etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
-                
+            #test colour (this works for one point, change colour from red to yello)
+            #etree.SubElement(gObjectTag[0], 'tag', name='color', value="#ffff00")
+            
+            #for tip in tipDetectionNode[0]:
+            #    gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
+            #    etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
+             
+              
         
+            #outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=self.options.image_url)
+            
+            resource = etree.Element ('image', name=os.path.basename(filepath), value=localpath2url(filepath))
+            meta = etree.SubElement (resource, 'tag', name='Experimental')
+            etree.SubElement (meta, 'tag', name='numberpoints', value="12")
+            
+            #resource = etree.Element ('image', name='new file %s'%(os.path.basename(filepath)))
+                         
+            logging.debug('resource: ' + str(resource))
+            
+            
+            #self.uploadFileToServer(filepath)
+            
+            logging.debug('self.bq.service_map in teardown: ' + str(self.bq.service_map))
+            
+            #url = self.bq.service_url('data_service', 'image')
+            #url = self.bq.service_url('blob_service')
+            #url = self.bq.service_url('image_service', 'image') ##couldnt use for upload
+            #url = self.bq.service_url('/import/transfer') #not a service
+            #url = self.bq.service_url('import', 'transfer') #not a service
+            #url = self.bq.service_url('import', path='transfer') #not a service
+            #url = self.bq.service_url('http://127.0.0.1:8080/', '/import/transfer') #not a service
+            #response = save_blob(self.bq, resource=resource)
+            
+            #logging.debug('url : ' + str(url))
+            #response_xml = self.bq.postblob(localpath2url(filepath), xml=resource) #post image to bisque and get the response
+            
+            #logging.debug('response_xml: ' + str(response_xml))
+            
+            #r =  self.bq.postxml(url, resource, method='POST')
+            
+            
+            #logging.debug('Response: ' + str(r))
+            
+            #response = self.bq.postblob(filepath, xml=resource)
+            #response = self.bq.postblob(filepath, xml=resource)
+            #blob = etree.XML(response).find('./')
+            
+            
+            # if blob is None or blob.get('uri') is None:
+            #    logging.debug('Could not insert the Histogram file into the system')
+            #    self.bq.fail_mex('Could not insert the Histogram file into the system')
+            # else:
+                # outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+            #    outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=blob.get('uri'), type='image')
+                
+           # if r is None or r.get('uri') is None:
+            #    logging.debug('Could not insert the Histogram file into the system')
+           #     self.bq.fail_mex('Could not insert the Histogram file into the system')
+           # else:
+                # outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+            #    logging.debug('resource id: %s' %r.get('resource_uniq'))
+            #    logging.debug('url: %s' %r.get('uri'))
+            #    outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=r.get('uri'), type='image')
+                # outputExtraImgTag = etree.SubElement(outputImgTag, 'tag', name='OutputExtraImage', value=r.get('value'), type='image')
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         
+        #output shortest paths
+        outputPathImgTag = etree.SubElement(outputTag, 'tag', name='OutputPathImage', value=self.options.image_url)
+        
+        #get primary paths
+        primaryPathsNode = rootNode.findall("./Output/PrimaryPaths")
+        if (primaryPathsNode is not None) and (len(primaryPathsNode) > 0):
+            for path in primaryPathsNode[0]:
+                outputPathImgTag.append(path)
+        
+        #get lateral paths
+        lateralPathsNode = rootNode.findall("./Output/LateralPaths")
+        if (lateralPathsNode is not None) and (len(lateralPathsNode) > 0):
+            for path in lateralPathsNode[0]:
+                outputPathImgTag.append(path)
+                
         #or using # self.bq.addTag()
         self.bq.finish_mex(tags = [outputTag])
         #self.bq.finish_mex('Finished')
@@ -288,86 +388,89 @@ class RootNavLinux(object):
     def run(self):
         try:
 	  
-	  # use regular expressions in order to get the base name
-	  # of the file executing this cide and use it as the log file name
-	  self_name = re.match(r'(.*)\.py$', sys.argv[0]).group(1)
-
-	  # start some logging (DEBUG is verbose, WARNING is not)
-	  log_fn = self_name + '.log'
-	  logging.basicConfig(filename=log_fn , level=logging.WARNING)
-
-	  #logging . basicConfig ( filename=log fn , level=logging .DEBUG)
-	  logging.debug('Script invocation: ' + str(sys.argv))
-	  
-	  parser  = optparse.OptionParser()
-	  #parser.add_option('-d','--debug', action="store_true")
-	  #parser.add_option('-n','--dryrun', action="store_true")
-	  #parser.add_option('--credentials')
-	  #parser.add_option('--image_url')
-	  
-	  parser.add_option('--image_url', dest="image_url")
-	  parser.add_option('--mex_url', dest="mexURL")
-	  parser.add_option('--module_dir', dest="modulePath")
-	  parser.add_option('--staging_path', dest="stagingPath")
-	  parser.add_option('--auth_token', dest="token")
-	  
-	  (options, args) = parser.parse_args()
-
-	  logging.debug('optparse, options: ' + str(options))
-	  
-	  if options.image_url is None:
-	    logging.debug('image_url option needed.')
-	  else:
-	    logging.debug('image_url option: ' + options.image_url)
-	  
-	  self.options = options;
-	  
-	  logging.debug('optparse, args: ' + str(args))
-
-	  named = AttrDict (auth_token=None, mex_url=None, staging_path=None, modulePath=None)
-	  
-	  for arg in list(args):
-	      tag, sep, val = arg.partition('=')
-	      logging.debug('args , tag=' + str(tag) + ' and sep ' + str(sep) + ' and value: ' + str(val))
-	      
-	      if sep == '=':
-		  named[tag] = val
-		  args.remove(arg)
-	  
-	  logging.debug('optparse, named: ' + str(named))
-	  
-	  logging.debug('optparse, final args: ' + str(args))
-	    
-	  #self.bq = BQSession().init_mex(args[0], args[1])  #mex_url, bisque_token
-	  self.bq = BQSession().init_mex(options.mexURL, options.token)
-	  	  
-	  #if named.bisque_token:
-	  #  self.bq = BQSession().init_mex(named.mex_url, named.bisque_token)
-	  #  self.resource_url =  named.image_url
-	  #elif options.credentials:
-	  #  user,pwd = options.credentials.split(':')
-	  #  self.bq = BQSession().init_local(user,pwd)
-	  #  self.resource_url =  options.image_url
-	  #else:
-	  #  parser.error('need bisque_token or user credential')
-
-	  #if self.resource_url is None:
-	  #  parser.error('Need a resource_url')
-      
-	  if len(args) == 1:
-	    commands = [ args.pop(0)]
-	  else:
-            commands =['setup','start', 'teardown']
-      
-	  #if not args :
-	  #  commands = ['setup', 'start', 'teardown']
-	  #else:
-	  #  commands = [ args ]
-            l
-	  for command in commands:
-	    command = getattr(self, str(command))
-            r = command()
+            # use regular expressions in order to get the base name
+            # of the file executing this cide and use it as the log file name
+            self_name = re.match(r'(.*)\.py$', sys.argv[0]).group(1)
             
+            # start some logging (DEBUG is verbose, WARNING is not)
+            log_fn = self_name + '.log'
+            logging.basicConfig(filename=log_fn , level=logging.WARNING)
+            
+            #logging . basicConfig ( filename=log fn , level=logging .DEBUG)
+            logging.debug('Script invocation: ' + str(sys.argv))
+    	  
+            parser  = optparse.OptionParser()
+            #parser.add_option('-d','--debug', action="store_true")
+            #parser.add_option('-n','--dryrun', action="store_true")
+            #parser.add_option('--credentials')
+            #parser.add_option('--image_url')
+            
+            parser.add_option('--image_url', dest="image_url")
+            parser.add_option('--mex_url', dest="mexURL")
+            parser.add_option('--module_dir', dest="modulePath")
+            parser.add_option('--staging_path', dest="stagingPath")
+            parser.add_option('--auth_token', dest="token")
+    	  
+            (options, args) = parser.parse_args()
+            
+            logging.debug('optparse, options: ' + str(options))
+    	  
+            if options.image_url is None:
+                logging.debug('image_url option needed.')
+            else:
+    	           logging.debug('image_url option: ' + options.image_url)
+    	  
+            self.options = options;
+            
+            logging.debug('optparse, args: ' + str(args))
+            
+            named = AttrDict (auth_token=None, mex_url=None, staging_path=None, modulePath=None)
+    	  
+            for arg in list(args):
+                tag, sep, val = arg.partition('=')
+                logging.debug('args , tag=' + str(tag) + ' and sep ' + str(sep) + ' and value: ' + str(val))
+                
+                if sep == '=':
+                  named[tag] = val
+                  args.remove(arg)
+            
+            logging.debug('optparse, named: ' + str(named))
+            
+            logging.debug('optparse, final args: ' + str(args))
+    	    
+            #self.bq = BQSession().init_mex(args[0], args[1])  #mex_url, bisque_token
+            self.bq = BQSession().init_mex(options.mexURL, options.token) # changed to below code for testing
+    	  
+            #self.bq =BQSession().init_local('admin', 'admin', bisque_root='http://127.0.0.1:8080') #initialize local session
+            logging.debug('self.bq.service_map: ' + str(self.bq.service_map))
+                
+            #if named.bisque_token:
+            #  self.bq = BQSession().init_mex(named.mex_url, named.bisque_token)
+            #  self.resource_url =  named.image_url
+            #elif options.credentials:
+            #  user,pwd = options.credentials.split(':')
+            #  self.bq = BQSession().init_local(user,pwd)
+            #  self.resource_url =  options.image_url
+            #else:
+            #  parser.error('need bisque_token or user credential')
+            
+            #if self.resource_url is None:
+            #  parser.error('Need a resource_url')
+          
+            if len(args) == 1:
+                commands = [ args.pop(0)]
+            else:
+                commands =['setup','start', 'teardown']
+          
+            #if not args :
+            #  commands = ['setup', 'start', 'teardown']
+            #else:
+            #  commands = [ args ]
+                
+            for command in commands:
+                command = getattr(self, str(command))
+                r = command()
+              
         except Exception, e:
             #logging.exception ("problem during %s" % command)
             logging.exception ("problem during %s" % e)
@@ -376,7 +479,7 @@ class RootNavLinux(object):
             #bqsession.fail_mex(msg = "Exception during %s: " % ( e))
             self.bq.fail_mex(msg = "Exception during %s: " % ( e))
             sys.exit(1)
-
+        
         sys.exit(r)
 
 

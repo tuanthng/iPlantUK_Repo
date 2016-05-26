@@ -6,7 +6,10 @@ using RootNav.Core;
 using System.IO;
 using RootNav.Core.MixtureModels;
 using System.Xml.XPath;
-using RootNav.Core.LiveWires; 
+using RootNav.Core.LiveWires;
+using System.Drawing;
+using RootNav.Interface.Controls;
+using Emgu.CV; 
 
 namespace RootNavLinux
 {
@@ -18,7 +21,7 @@ namespace RootNavLinux
 		{
 		}
 
-		public static void writeInputData(string originFilename, string inputPath, string outputPath, EMConfiguration config)
+		public static void writeInputData(string originFilename, string inputPath, string outputPath, EMConfiguration config, string inputDataFile)
 		{
 			//System.IO.Stream s = new FileStream(FullOutputFileName, FileMode.OpenOrCreate);
 			//System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer();
@@ -35,6 +38,7 @@ namespace RootNavLinux
 				writer.WriteElementString("ImageFile", originFilename);
 				writer.WriteElementString("InputPath", inputPath);
 				writer.WriteElementString("OutputPath", outputPath);
+				writer.WriteElementString("InputDataFile", inputDataFile);
 				writer.WriteEndElement(); //end File
 
 				writer.WriteStartElement("EMConfiguration");
@@ -138,6 +142,103 @@ namespace RootNavLinux
 
 		} //end write tip detected
 
+		public static void writeTipsDetectedDataForBisque(string outputFilename, List<Int32Point> tipsDetected)
+		{
+			//System.IO.Stream s = new FileStream(FullOutputFileName, FileMode.OpenOrCreate);
+			//System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer();
+
+			if (File.Exists (FullOutputFileName)) {
+				//this code used to query the node from xml file
+				//				XPathDocument doc = new XPathDocument (FullOutputFileName);
+				//				XPathNavigator nav = doc.CreateNavigator ();
+				//
+				//				//Compile a standard XPath expression
+				//				XPathExpression expr;
+				//				expr = nav.Compile ("/DataProcessed"); //find the DataProcessed Node
+				//				XPathNodeIterator iterator = nav.Select(expr);
+				//
+				//				iterator.Current.AppendChild ("New node");
+
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed");
+
+				XmlNode outputNode = doc.CreateNode (XmlNodeType.Element, "Output", "");
+
+				//File node
+				XmlNode fileNode = doc.CreateNode (XmlNodeType.Element, "File", "");
+				XmlNode imageFileNode = doc.CreateNode (XmlNodeType.Element, "ProbabilityImageFile", "");
+				imageFileNode.InnerText = outputFilename;
+
+				fileNode.AppendChild (imageFileNode);
+				outputNode.AppendChild (fileNode);
+
+				//Tip node
+				XmlNode tipsNode = doc.CreateNode (XmlNodeType.Element, "TipsDetected", "");
+
+				if (tipsDetected != null) {
+					XmlAttribute totalAtt = doc.CreateAttribute("total");
+					totalAtt.Value = tipsDetected.Count.ToString ();
+					tipsNode.Attributes.Append (totalAtt);
+
+					XmlNode gObject = doc.CreateNode(XmlNodeType.Element, "gobject" , "");
+					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
+					nameAttgObject.Value = "PointsDetected";
+					gObject.Attributes.Append (nameAttgObject);
+
+					for(int index  = 0 ; index < tipsDetected.Count; index++) {
+						XmlNode point = doc.CreateNode(XmlNodeType.Element, "point" , "");
+						XmlAttribute idAtt = doc.CreateAttribute("name");
+						idAtt.Value = index.ToString ();
+						point.Attributes.Append (idAtt);
+
+						XmlNode vertex = doc.CreateNode(XmlNodeType.Element, "vertex" , "");
+
+						XmlAttribute indexAtt = doc.CreateAttribute("index");
+						indexAtt.Value = "0";
+						vertex.Attributes.Append (indexAtt);
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = tipsDetected [index].X.ToString ();
+						vertex.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = tipsDetected [index].Y.ToString ();
+						vertex.Attributes.Append (yAtt);
+
+						XmlAttribute tAtt = doc.CreateAttribute("t");
+						tAtt.Value = "0";
+						vertex.Attributes.Append (tAtt);
+
+						XmlAttribute zAtt = doc.CreateAttribute("z");
+						zAtt.Value = "0";
+						vertex.Attributes.Append (zAtt);
+
+						point.AppendChild (vertex);
+						gObject.AppendChild (point);
+
+					}
+					tipsNode.AppendChild (gObject);
+				}
+
+				outputNode.AppendChild (tipsNode);
+
+				//patch node
+
+
+				dataProcessedNode.AppendChild(outputNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+			}
+
+		} //end write tip detected
+
 		public static void writePrimaryPathsData(LiveWirePathCollection paths)
 		{
 			if (File.Exists (FullOutputFileName)) {
@@ -184,7 +285,106 @@ namespace RootNavLinux
 			} //end if
 
 		} //end write Primary Paths
+		public static void writePrimaryPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
+		{
+			if (File.Exists (FullOutputFileName)) {
 
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
+
+				XmlNode primaryPathsNode = doc.CreateNode (XmlNodeType.Element, "PrimaryPaths", "");
+
+				int index = 0;
+				foreach (LiveWirePrimaryPath path in paths.Primaries)
+				{
+					//LiveWirePrimaryPath path = paths.Primaries [index];
+					Pen rootPen = render.RootPens[index];
+
+					// Render lateral path in source primary colour
+					//if (this.paths[i] is LiveWireLateralPath)
+					//{
+					//	rootPen = renderInfo.RootPens[(this.paths[i] as LiveWireLateralPath).TargetPoint.ParentIndex];
+					//}
+
+					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
+					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
+					nameAttgObject.Value = index.ToString();
+					gObjectNode.Attributes.Append (nameAttgObject);
+
+					//Path node
+					XmlNode eachPathNode = doc.CreateNode (XmlNodeType.Element, "polyline", "");
+					XmlAttribute nameAtt = doc.CreateAttribute("name");
+					nameAtt.Value = index.ToString ();
+					eachPathNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (rootPen.Color);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					eachPathNode.AppendChild (colourNode);
+
+					index ++;
+
+					int totalPoints = path.Path.Count;
+
+					for (int p = 0; p < totalPoints; p++) {
+						System.Windows.Point point = path.Path[p];
+						XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "vertex", "");
+
+						XmlAttribute indexAtt = doc.CreateAttribute("index");
+						indexAtt.Value = p.ToString();
+						pointNode.Attributes.Append (indexAtt);
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = point.X.ToString ();
+						pointNode.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = point.Y.ToString ();
+						pointNode.Attributes.Append (yAtt);
+
+						XmlAttribute tAtt = doc.CreateAttribute("t");
+						tAtt.Value = "0";
+						pointNode.Attributes.Append (tAtt);
+
+						XmlAttribute zAtt = doc.CreateAttribute("z");
+						zAtt.Value = "0";
+						pointNode.Attributes.Append (zAtt);
+
+						eachPathNode.AppendChild (pointNode);
+					}
+					//foreach (System.Windows.Point point in path.Path) {
+						
+					//} //end for each
+
+					gObjectNode.AppendChild (eachPathNode);
+					primaryPathsNode.AppendChild (gObjectNode);
+				}
+
+				//foreach (LiveWirePrimaryPath path in paths.Primaries)
+				//{
+
+				//} //end for each
+
+				dataProcessedNode.AppendChild(primaryPathsNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+
+			} //end if
+
+		} //end write Primary Paths
 		public static void writeLateralPathsData(LiveWirePathCollection paths)
 		{
 			if (File.Exists (FullOutputFileName)) {
@@ -230,7 +430,226 @@ namespace RootNavLinux
 
 			} //end if
 
-		} //end write Primary Paths
+		} //end write Lateral Paths
+		public static void writeLateralPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
+		{
+			if (File.Exists (FullOutputFileName)) {
+
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
+
+				XmlNode lateralPathsNode = doc.CreateNode (XmlNodeType.Element, "LateralPaths", "");
+
+				//int totalPath = paths.Laterals;
+				int index = 0;
+				foreach (LiveWireLateralPath path in paths.Laterals)
+				{
+					//LiveWirePrimaryPath path = paths.Laterals [index];
+					Pen rootPen = render.RootPens[index];
+					//rootPen = render.RootPens[path.TargetPoint.ParentIndex];
+
+					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
+					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
+					nameAttgObject.Value = index.ToString();
+					gObjectNode.Attributes.Append (nameAttgObject);
+
+					//Path node
+					XmlNode eachPathNode = doc.CreateNode (XmlNodeType.Element, "polyline", "");
+					XmlAttribute nameAtt = doc.CreateAttribute("name");
+					nameAtt.Value = index.ToString ();
+					eachPathNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (rootPen.Color);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					eachPathNode.AppendChild (colourNode);
+
+					index ++;
+
+					int totalPoints = path.Path.Count;
+
+					for (int p = 0; p < totalPoints; p++) {
+						System.Windows.Point point = path.Path [p];
+
+						XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "vertex", "");
+
+						XmlAttribute indexAtt = doc.CreateAttribute("index");
+						indexAtt.Value = p.ToString();
+						pointNode.Attributes.Append (indexAtt);
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = point.X.ToString ();
+						pointNode.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = point.Y.ToString ();
+						pointNode.Attributes.Append (yAtt);
+
+						XmlAttribute tAtt = doc.CreateAttribute("t");
+						tAtt.Value = "0";
+						pointNode.Attributes.Append (tAtt);
+
+						XmlAttribute zAtt = doc.CreateAttribute("z");
+						zAtt.Value = "0";
+						pointNode.Attributes.Append (zAtt);
+
+						eachPathNode.AppendChild (pointNode);
+					}
+					//foreach (System.Windows.Point point in path.Path) {
+
+					//} //end for each
+
+					gObjectNode.AppendChild (eachPathNode);
+					lateralPathsNode.AppendChild (gObjectNode);
+				}
+
+				//foreach (LiveWireLateralPath path in paths.Laterals)
+				//{
+					
+				//} //end for each
+
+				dataProcessedNode.AppendChild(lateralPathsNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+
+			} //end if
+		} //end write Lateral Paths
+
+		public static string convertColourToHexString(Color colour)
+		{
+			//return "#" + colour.R.ToString ("X") + colour.G.ToString ("X") + colour.B.ToString ("X");
+			return System.Drawing.ColorTranslator.ToHtml(colour);
+		}
+
+		public static Color convertHexStringToColor(string hex)
+		{
+			//hex string has a format: #FFDF0A
+			//System.Drawing.ColorConverter c = new ColorConverter();
+			//return c.ConvertFromString(hex);
+			return System.Drawing.ColorTranslator.FromHtml (hex);
+		}
+
+		public static void writeMatToFile(string filename, Mat data)
+		{
+			FileStorage fs = new FileStorage (filename, FileStorage.Mode.Write);
+
+			fs.Write (data, "MyData");
+			fs.ReleaseAndGetString (); //need this or not?
+		}
+
+		public static void readMatFromFile(string filename, ref Mat data)
+		{
+			FileStorage fs = new FileStorage (filename, FileStorage.Mode.Read);
+
+			FileNode dataNode = fs.GetNode ("MyData");
+			dataNode.ReadMat (data);
+
+			fs.ReleaseAndGetString ();
+		}
+
+		public static void write1DArrayToFile(string filename, double[] data)
+		{
+			File.WriteAllText(filename, String.Join (",", data));
+		}
+
+		public static void read1DArrayFromFile(string filename, ref double[] data)
+		{
+			string values = File.ReadAllText (filename);
+
+			values.Replace (" ", "");
+
+			var splitted = values.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			data = new double[splitted.Length];
+
+			int index = 0;
+			foreach (string s in splitted) {
+				double d;
+				Double.TryParse (s, out d);
+				data[index] = d;
+			}
+		}
+
+		public static void write2DArrayToFile(string filename, double[,] data, int rows, int cols)
+		{
+			string lines = "";
+
+			for (int r = 0; r < rows; r++) 
+			{
+				for (int c = 0; c < cols; c++) 
+				{
+					lines = lines + data [r, c].ToString () + ",";
+				}
+				lines = lines.TrimEnd(',');
+				lines = lines + Environment.NewLine;
+			}
+			File.WriteAllText (filename, lines);
+		}
+
+		public static void read2DArrayFromFile(string filename, ref double[,] data)
+		{
+			string []lines = File.ReadAllLines (filename);
+
+			int totalLines = lines.Length;
+
+			for (int l = 0; l < totalLines; l++) 
+			{
+				lines[l].Replace (" ", "");
+
+				var splitted = lines[l].Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+				if (l == 0) 
+				{
+					data = new double[totalLines, splitted.Length];	
+				}
+
+				int index = 0;
+				foreach (string s in splitted) 
+				{
+					double d;
+					Double.TryParse (s, out d);
+					data[l, index] = d;
+				}
+			}
+		}
+
+		public static void write1DArrayToFile(string filename, byte[]  data)
+		{
+			File.WriteAllText(filename, String.Join (",", data));
+		}
+
+		public static void read1DArrayFromFile(string filename, ref byte[] data)
+		{
+			string values = File.ReadAllText (filename);
+
+			values.Replace (" ", "");
+
+			var splitted = values.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			data = new byte[splitted.Length];
+
+			int index = 0;
+			foreach (string s in splitted) 
+			{
+				Byte d;
+				Byte.TryParse (s, out d);
+				data[index] = d;
+			}
+		} //end read1DArrayFromFile
+
 	} //end class
 }
 
