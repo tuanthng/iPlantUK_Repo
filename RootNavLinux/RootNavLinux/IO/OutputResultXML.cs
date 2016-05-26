@@ -8,7 +8,8 @@ using RootNav.Core.MixtureModels;
 using System.Xml.XPath;
 using RootNav.Core.LiveWires;
 using System.Drawing;
-using RootNav.Interface.Controls; 
+using RootNav.Interface.Controls;
+using Emgu.CV; 
 
 namespace RootNavLinux
 {
@@ -429,7 +430,7 @@ namespace RootNavLinux
 
 			} //end if
 
-		} //end write Primary Paths
+		} //end write Lateral Paths
 		public static void writeLateralPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
@@ -525,8 +526,7 @@ namespace RootNavLinux
 				doc.Save (FullOutputFileName);
 
 			} //end if
-
-		} //end write Primary Paths
+		} //end write Lateral Paths
 
 		public static string convertColourToHexString(Color colour)
 		{
@@ -539,9 +539,116 @@ namespace RootNavLinux
 			//hex string has a format: #FFDF0A
 			//System.Drawing.ColorConverter c = new ColorConverter();
 			//return c.ConvertFromString(hex);
-
 			return System.Drawing.ColorTranslator.FromHtml (hex);
 		}
+
+		public static void writeMatToFile(string filename, Mat data)
+		{
+			FileStorage fs = new FileStorage (filename, FileStorage.Mode.Write);
+
+			fs.Write (data, "MyData");
+			fs.ReleaseAndGetString (); //need this or not?
+		}
+
+		public static void readMatFromFile(string filename, ref Mat data)
+		{
+			FileStorage fs = new FileStorage (filename, FileStorage.Mode.Read);
+
+			FileNode dataNode = fs.GetNode ("MyData");
+			dataNode.ReadMat (data);
+
+			fs.ReleaseAndGetString ();
+		}
+
+		public static void write1DArrayToFile(string filename, double[] data)
+		{
+			File.WriteAllText(filename, String.Join (",", data));
+		}
+
+		public static void read1DArrayFromFile(string filename, ref double[] data)
+		{
+			string values = File.ReadAllText (filename);
+
+			values.Replace (" ", "");
+
+			var splitted = values.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			data = new double[splitted.Length];
+
+			int index = 0;
+			foreach (string s in splitted) {
+				double d;
+				Double.TryParse (s, out d);
+				data[index] = d;
+			}
+		}
+
+		public static void write2DArrayToFile(string filename, double[,] data, int rows, int cols)
+		{
+			string lines = "";
+
+			for (int r = 0; r < rows; r++) 
+			{
+				for (int c = 0; c < cols; c++) 
+				{
+					lines = lines + data [r, c].ToString () + ",";
+				}
+				lines = lines.TrimEnd(',');
+				lines = lines + Environment.NewLine;
+			}
+			File.WriteAllText (filename, lines);
+		}
+
+		public static void read2DArrayFromFile(string filename, ref double[,] data)
+		{
+			string []lines = File.ReadAllLines (filename);
+
+			int totalLines = lines.Length;
+
+			for (int l = 0; l < totalLines; l++) 
+			{
+				lines[l].Replace (" ", "");
+
+				var splitted = lines[l].Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+				if (l == 0) 
+				{
+					data = new double[totalLines, splitted.Length];	
+				}
+
+				int index = 0;
+				foreach (string s in splitted) 
+				{
+					double d;
+					Double.TryParse (s, out d);
+					data[l, index] = d;
+				}
+			}
+		}
+
+		public static void write1DArrayToFile(string filename, byte[]  data)
+		{
+			File.WriteAllText(filename, String.Join (",", data));
+		}
+
+		public static void read1DArrayFromFile(string filename, ref byte[] data)
+		{
+			string values = File.ReadAllText (filename);
+
+			values.Replace (" ", "");
+
+			var splitted = values.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			data = new byte[splitted.Length];
+
+			int index = 0;
+			foreach (string s in splitted) 
+			{
+				Byte d;
+				Byte.TryParse (s, out d);
+				data[index] = d;
+			}
+		} //end read1DArrayFromFile
 
 	} //end class
 }
