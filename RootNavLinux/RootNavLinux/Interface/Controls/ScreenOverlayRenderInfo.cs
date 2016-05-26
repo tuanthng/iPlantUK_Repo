@@ -437,12 +437,13 @@ namespace RootNav.Interface.Controls
                         rootColors.Add(Color.FromArgb(100, 0, 128, 255));
                         highlightedRootColors.Add(Color.FromArgb(255, 0, 128, 255));
                         break;
-                    default:
-                        Color C = Color.FromArgb(100, (byte)r.Next(0, 255), (byte)r.Next(0, 255), (byte)r.Next(0, 255));
-                        //Color hC = new Color() { R = C.R, G = C.G, B = C.B, A = 255 };
-                        rootColors.Add(C);
-                        //highlightedRootColors.Add(hC);
-                        break;
+				default:
+					Color C = Color.FromArgb (100, (byte)r.Next (0, 255), (byte)r.Next (0, 255), (byte)r.Next (0, 255));
+					//Color hC = new Color () { R = C.R, G = C.G, B = C.B, A = 255 }; //changed to below code
+					Color hC = Color.FromArgb (C.R, C.G, C.B);
+					rootColors.Add (C);
+					highlightedRootColors.Add (hC);
+					break;
                 }
             }
         }
@@ -496,21 +497,29 @@ namespace RootNav.Interface.Controls
             rootPens = new List<Pen>();
             foreach (Color C in rootColors)
             {
+				Brush b = new SolidBrush (C);
 //                Brush b = new SolidColorBrush(C);
 //                if (b.CanFreeze) { b.Freeze(); }
-//                Pen p = new Pen(b, rootRenderThickness * CurrentZoom) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+                //Pen p = new Pen(b, rootRenderThickness * CurrentZoom) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+				Pen p = new Pen(b, (float)(rootRenderThickness * CurrentZoom));
+				p.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+				p.EndCap = System.Drawing.Drawing2D.LineCap.Round;
 //                if (p.CanFreeze) { p.Freeze(); }
-//                rootPens.Add(p);
+                rootPens.Add(p);
             }
 
             highlightedRootPens = new List<Pen>();
             foreach (Color C in highlightedRootColors)
             {
+				Brush b = new SolidBrush (C);
 //                Brush b = new SolidColorBrush(C);
 //                if (b.CanFreeze) { b.Freeze(); }
 //                Pen p = new Pen(b, rootRenderThickness * CurrentZoom) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+				Pen p = new Pen(b, (float)(rootRenderThickness * CurrentZoom));
+				p.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+				p.EndCap = System.Drawing.Drawing2D.LineCap.Round;
 //                if (p.CanFreeze) { p.Freeze(); }
-//                highlightedRootPens.Add(p);
+                highlightedRootPens.Add(p);
             }
         }
     }

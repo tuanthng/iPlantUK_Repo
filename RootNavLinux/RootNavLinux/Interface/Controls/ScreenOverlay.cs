@@ -105,12 +105,17 @@ namespace RootNav.Interface.Controls
 //        #endregion
 
 //        #region Properties
-//        public OverlayStage Stage { get; set; }
+        public OverlayStage Stage { get; set; }
 
-        //private ScreenOverlayRenderInfo renderInfo = new ScreenOverlayRenderInfo();
+        private ScreenOverlayRenderInfo renderInfo = new ScreenOverlayRenderInfo();
+
+		public ScreenOverlayRenderInfo RenderInfo 
+		{ 
+			get { return renderInfo; } 
+		}
 
         private RootTerminalCollection terminalCollection = new RootTerminalCollection();
-        //private RootInfo HighlightedSplineRootInfo { get; set; }
+        private RootInfo HighlightedSplineRootInfo { get; set; }
         //private List<ControlAdorner> terminalRootAdorners = new List<ControlAdorner>();
         //private List<TerminalRootSelector> terminalRootSelectors = new List<TerminalRootSelector>();
 
@@ -231,7 +236,7 @@ namespace RootNav.Interface.Controls
 //
 //            this.Stage = OverlayStage.Detection;
             this.terminalCollection = new RootTerminalCollection();
-//            this.HighlightedSplineRootInfo = null;
+            this.HighlightedSplineRootInfo = null;
 //            
 //            this.terminalRootAdorners.Clear();
 //            this.terminalRootSelectors.Clear();
@@ -250,49 +255,49 @@ namespace RootNav.Interface.Controls
 //            this.currentHighlightedTerminalIndex = -1;
         }
 
-//        void PathAdded()
-//        {
-//            LiveWirePath path = this.paths.Last();
-//
-//            List<Point> sampled = new List<Point>();
-//            for (int i = 0; i < path.Path.Count; i += SampleRate)
-//            {
-//                sampled.Add(path.Path[i]);
-//            }
-//            sampledRoots.Add(sampled);
-//
-//            this.renderInfo.RootCount = sampledRoots.Count; 
-//            this.InvalidateVisual();
-//        }
+        void PathAdded()
+        {
+            LiveWirePath path = this.paths.Last();
 
-//        public void RecalculateSamples(int index)
-//        {
-//            LiveWirePath path = this.paths[index];
-//
-//            List<Point> newPath = new List<Point>();
-//            for (int i = 0; i < path.Path.Count; i += SampleRate)
-//            {
-//                newPath.Add(path.Path[i]);
-//            }
-//
-//            sampledRoots[index] = newPath;
-//            this.InvalidateVisual();
-//        }
-//
-//        public void InitialiseMeasurementStage(int splineResolution, double unitConversion)
-//        {
-//            this.Roots = RootBase.CreateRootSystem(this.paths, this.terminalCollection, renderInfo.HighlightedRootColors, splineResolution, unitConversion);
-//
-//            this.Stage = OverlayStage.Measurement;
-//            this.InvalidateVisual();
-//        }
-//
-//        public void BackFromMeasurementStage()
-//        {
-//            this.Roots = null;
-//            this.Stage = OverlayStage.Detection;
-//            this.InvalidateVisual();
-//        }
+            List<Point> sampled = new List<Point>();
+            for (int i = 0; i < path.Path.Count; i += SampleRate)
+            {
+                sampled.Add(path.Path[i]);
+            }
+            sampledRoots.Add(sampled);
+
+            this.renderInfo.RootCount = sampledRoots.Count; 
+            //this.InvalidateVisual();
+        }
+
+        public void RecalculateSamples(int index)
+        {
+            LiveWirePath path = this.paths[index];
+
+            List<Point> newPath = new List<Point>();
+            for (int i = 0; i < path.Path.Count; i += SampleRate)
+            {
+                newPath.Add(path.Path[i]);
+            }
+
+            sampledRoots[index] = newPath;
+            //this.InvalidateVisual();
+        }
+
+        public void InitialiseMeasurementStage(int splineResolution, double unitConversion)
+        {
+            this.Roots = RootBase.CreateRootSystem(this.paths, this.terminalCollection, renderInfo.HighlightedRootColors, splineResolution, unitConversion);
+
+            this.Stage = OverlayStage.Measurement;
+            //this.InvalidateVisual();
+        }
+
+        public void BackFromMeasurementStage()
+        {
+            this.Roots = null;
+            this.Stage = OverlayStage.Detection;
+            //this.InvalidateVisual();
+        }
 
         public void RecalculateAllSamples()
         {
@@ -329,13 +334,18 @@ namespace RootNav.Interface.Controls
 
 //        #endregion
 //
-//        private bool shiftAdd = false;
-//
-//        public bool LinkAdd
-//        {
-//            get { return shiftAdd; }
-//            set { shiftAdd = value; }
-//        }
+        private bool shiftAdd = false;
+
+        public bool LinkAdd
+        {
+            get { return shiftAdd; }
+            set { shiftAdd = value; }
+        }
+
+		public RootDetectionScreenOverlay()
+		{
+			this.paths.PathAdded += new LiveWirePathCollection.PathAddedEventHandler(PathAdded);
+		}
 //
 //        public RootDetectionScreenOverlay(UIElement adornedElement, DetectionToolbox toolboxController, ZoomScrollViewer scrollViewer) :
 //            base(adornedElement)

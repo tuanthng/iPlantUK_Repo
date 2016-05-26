@@ -6,7 +6,10 @@ using RootNav.Core;
 using System.IO;
 using RootNav.Core.MixtureModels;
 using System.Xml.XPath;
-using RootNav.Core.LiveWires; 
+using RootNav.Core.LiveWires;
+using System.Drawing;
+using RootNav.Interface.Controls;
+using Emgu.CV; 
 
 namespace RootNavLinux
 {
@@ -282,7 +285,7 @@ namespace RootNavLinux
 			} //end if
 
 		} //end write Primary Paths
-		public static void writePrimaryPathsDataForBisque(LiveWirePathCollection paths)
+		public static void writePrimaryPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -302,7 +305,13 @@ namespace RootNavLinux
 				foreach (LiveWirePrimaryPath path in paths.Primaries)
 				{
 					//LiveWirePrimaryPath path = paths.Primaries [index];
+					Pen rootPen = render.RootPens[index];
 
+					// Render lateral path in source primary colour
+					//if (this.paths[i] is LiveWireLateralPath)
+					//{
+					//	rootPen = renderInfo.RootPens[(this.paths[i] as LiveWireLateralPath).TargetPoint.ParentIndex];
+					//}
 
 					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
 					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
@@ -314,6 +323,17 @@ namespace RootNavLinux
 					XmlAttribute nameAtt = doc.CreateAttribute("name");
 					nameAtt.Value = index.ToString ();
 					eachPathNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (rootPen.Color);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					eachPathNode.AppendChild (colourNode);
 
 					index ++;
 
@@ -410,8 +430,8 @@ namespace RootNavLinux
 
 			} //end if
 
-		} //end write Primary Paths
-		public static void writeLateralPathsDataForBisque(LiveWirePathCollection paths)
+		} //end write Lateral Paths
+		public static void writeLateralPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -432,7 +452,9 @@ namespace RootNavLinux
 				foreach (LiveWireLateralPath path in paths.Laterals)
 				{
 					//LiveWirePrimaryPath path = paths.Laterals [index];
-				
+					Pen rootPen = render.RootPens[index];
+					//rootPen = render.RootPens[path.TargetPoint.ParentIndex];
+
 					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
 					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
 					nameAttgObject.Value = index.ToString();
@@ -443,6 +465,17 @@ namespace RootNavLinux
 					XmlAttribute nameAtt = doc.CreateAttribute("name");
 					nameAtt.Value = index.ToString ();
 					eachPathNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (rootPen.Color);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					eachPathNode.AppendChild (colourNode);
 
 					index ++;
 
@@ -493,8 +526,130 @@ namespace RootNavLinux
 				doc.Save (FullOutputFileName);
 
 			} //end if
+		} //end write Lateral Paths
 
-		} //end write Primary Paths
+		public static string convertColourToHexString(Color colour)
+		{
+			//return "#" + colour.R.ToString ("X") + colour.G.ToString ("X") + colour.B.ToString ("X");
+			return System.Drawing.ColorTranslator.ToHtml(colour);
+		}
+
+		public static Color convertHexStringToColor(string hex)
+		{
+			//hex string has a format: #FFDF0A
+			//System.Drawing.ColorConverter c = new ColorConverter();
+			//return c.ConvertFromString(hex);
+			return System.Drawing.ColorTranslator.FromHtml (hex);
+		}
+
+		public static void writeMatToFile(string filename, Mat data)
+		{
+			FileStorage fs = new FileStorage (filename, FileStorage.Mode.Write);
+
+			fs.Write (data, "MyData");
+			fs.ReleaseAndGetString (); //need this or not?
+		}
+
+		public static void readMatFromFile(string filename, ref Mat data)
+		{
+			FileStorage fs = new FileStorage (filename, FileStorage.Mode.Read);
+
+			FileNode dataNode = fs.GetNode ("MyData");
+			dataNode.ReadMat (data);
+
+			fs.ReleaseAndGetString ();
+		}
+
+		public static void write1DArrayToFile(string filename, double[] data)
+		{
+			File.WriteAllText(filename, String.Join (",", data));
+		}
+
+		public static void read1DArrayFromFile(string filename, ref double[] data)
+		{
+			string values = File.ReadAllText (filename);
+
+			values.Replace (" ", "");
+
+			var splitted = values.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			data = new double[splitted.Length];
+
+			int index = 0;
+			foreach (string s in splitted) {
+				double d;
+				Double.TryParse (s, out d);
+				data[index] = d;
+			}
+		}
+
+		public static void write2DArrayToFile(string filename, double[,] data, int rows, int cols)
+		{
+			string lines = "";
+
+			for (int r = 0; r < rows; r++) 
+			{
+				for (int c = 0; c < cols; c++) 
+				{
+					lines = lines + data [r, c].ToString () + ",";
+				}
+				lines = lines.TrimEnd(',');
+				lines = lines + Environment.NewLine;
+			}
+			File.WriteAllText (filename, lines);
+		}
+
+		public static void read2DArrayFromFile(string filename, ref double[,] data)
+		{
+			string []lines = File.ReadAllLines (filename);
+
+			int totalLines = lines.Length;
+
+			for (int l = 0; l < totalLines; l++) 
+			{
+				lines[l].Replace (" ", "");
+
+				var splitted = lines[l].Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+				if (l == 0) 
+				{
+					data = new double[totalLines, splitted.Length];	
+				}
+
+				int index = 0;
+				foreach (string s in splitted) 
+				{
+					double d;
+					Double.TryParse (s, out d);
+					data[l, index] = d;
+				}
+			}
+		}
+
+		public static void write1DArrayToFile(string filename, byte[]  data)
+		{
+			File.WriteAllText(filename, String.Join (",", data));
+		}
+
+		public static void read1DArrayFromFile(string filename, ref byte[] data)
+		{
+			string values = File.ReadAllText (filename);
+
+			values.Replace (" ", "");
+
+			var splitted = values.Split(new []{","}, StringSplitOptions.RemoveEmptyEntries);
+
+			data = new byte[splitted.Length];
+
+			int index = 0;
+			foreach (string s in splitted) 
+			{
+				Byte d;
+				Byte.TryParse (s, out d);
+				data[index] = d;
+			}
+		} //end read1DArrayFromFile
+
 	} //end class
 }
 
