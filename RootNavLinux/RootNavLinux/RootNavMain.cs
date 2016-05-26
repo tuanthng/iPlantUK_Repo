@@ -755,7 +755,7 @@ namespace RootNavLinux
 
 			//Now, this is the time to write the output paths
 			//OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
-			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths);
+			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
 
 			if (this.screenOverlay.Paths.Primaries.Count () > 0) {
 				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
@@ -787,7 +787,7 @@ namespace RootNavLinux
 
 			//Now, this is the time to write the output paths
 			//OutputResultXML.writeLateralPathsData( this.screenOverlay.Paths);
-			OutputResultXML.writeLateralPathsDataForBisque( this.screenOverlay.Paths);
+			OutputResultXML.writeLateralPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
 
 			if (this.screenOverlay.Paths.Laterals.Count () > 0) {
 				LiveWireLateralPath path = this.screenOverlay.Paths.Laterals.First ();

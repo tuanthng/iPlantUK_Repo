@@ -6,7 +6,9 @@ using RootNav.Core;
 using System.IO;
 using RootNav.Core.MixtureModels;
 using System.Xml.XPath;
-using RootNav.Core.LiveWires; 
+using RootNav.Core.LiveWires;
+using System.Drawing;
+using RootNav.Interface.Controls; 
 
 namespace RootNavLinux
 {
@@ -282,7 +284,7 @@ namespace RootNavLinux
 			} //end if
 
 		} //end write Primary Paths
-		public static void writePrimaryPathsDataForBisque(LiveWirePathCollection paths)
+		public static void writePrimaryPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -302,7 +304,13 @@ namespace RootNavLinux
 				foreach (LiveWirePrimaryPath path in paths.Primaries)
 				{
 					//LiveWirePrimaryPath path = paths.Primaries [index];
+					Pen rootPen = render.RootPens[index];
 
+					// Render lateral path in source primary colour
+					//if (this.paths[i] is LiveWireLateralPath)
+					//{
+					//	rootPen = renderInfo.RootPens[(this.paths[i] as LiveWireLateralPath).TargetPoint.ParentIndex];
+					//}
 
 					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
 					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
@@ -314,6 +322,17 @@ namespace RootNavLinux
 					XmlAttribute nameAtt = doc.CreateAttribute("name");
 					nameAtt.Value = index.ToString ();
 					eachPathNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (rootPen.Color);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					eachPathNode.AppendChild (colourNode);
 
 					index ++;
 
@@ -411,7 +430,7 @@ namespace RootNavLinux
 			} //end if
 
 		} //end write Primary Paths
-		public static void writeLateralPathsDataForBisque(LiveWirePathCollection paths)
+		public static void writeLateralPathsDataForBisque(LiveWirePathCollection paths, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -432,7 +451,9 @@ namespace RootNavLinux
 				foreach (LiveWireLateralPath path in paths.Laterals)
 				{
 					//LiveWirePrimaryPath path = paths.Laterals [index];
-				
+					Pen rootPen = render.RootPens[index];
+					//rootPen = render.RootPens[path.TargetPoint.ParentIndex];
+
 					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
 					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
 					nameAttgObject.Value = index.ToString();
@@ -443,6 +464,17 @@ namespace RootNavLinux
 					XmlAttribute nameAtt = doc.CreateAttribute("name");
 					nameAtt.Value = index.ToString ();
 					eachPathNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (rootPen.Color);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					eachPathNode.AppendChild (colourNode);
 
 					index ++;
 
@@ -495,6 +527,22 @@ namespace RootNavLinux
 			} //end if
 
 		} //end write Primary Paths
+
+		public static string convertColourToHexString(Color colour)
+		{
+			//return "#" + colour.R.ToString ("X") + colour.G.ToString ("X") + colour.B.ToString ("X");
+			return System.Drawing.ColorTranslator.ToHtml(colour);
+		}
+
+		public static Color convertHexStringToColor(string hex)
+		{
+			//hex string has a format: #FFDF0A
+			//System.Drawing.ColorConverter c = new ColorConverter();
+			//return c.ConvertFromString(hex);
+
+			return System.Drawing.ColorTranslator.FromHtml (hex);
+		}
+
 	} //end class
 }
 
