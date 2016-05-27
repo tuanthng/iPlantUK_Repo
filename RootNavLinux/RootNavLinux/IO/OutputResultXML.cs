@@ -452,8 +452,8 @@ namespace RootNavLinux
 				foreach (LiveWireLateralPath path in paths.Laterals)
 				{
 					//LiveWirePrimaryPath path = paths.Laterals [index];
-					Pen rootPen = render.RootPens[index];
-					//rootPen = render.RootPens[path.TargetPoint.ParentIndex];
+					//Pen rootPen = render.RootPens[index];
+					Pen rootPen = render.RootPens[path.TargetPoint.ParentIndex];
 
 					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
 					XmlAttribute nameAttgObject = doc.CreateAttribute("name");

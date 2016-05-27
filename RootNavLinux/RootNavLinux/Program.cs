@@ -70,6 +70,10 @@ namespace RootNavLinux
 
 					//process the task
 					mainRoot.Process ();
+
+					//save data before exists the program
+					//mainRoot.saveData();
+
 				} else {
 					Console.WriteLine ("Using the default image.");
 

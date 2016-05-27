@@ -85,14 +85,23 @@ namespace RootNavLinux
 			set { baseWeightDescriptors = value; }
 		}
 
-		private RootTerminalCollection terminalCollection = new RootTerminalCollection();
+		//private RootTerminalCollection terminalCollection = new RootTerminalCollection();
 
 		private string ImageFileName { get; set; }
 		private string ResultXMLFileName{ get; set; } //the xml file containing result processed
 		public string OutputPath{ get; set; } //output and input path will be passed from outside. By default, they should be the current directory of the program
 		public string InputPath{ get; set; }
 
-		private string ProbabilityFilename{ get; set; }
+		private string ProbabilityBitmapImageFilename{ get; set; }
+		private string ProbabilityBitmapDataFilename{ get; set; }
+
+		private string FeatureBitmapImageFilename{ get; set; }
+		private string FeatureBitmapDataFileName {get; set;}
+
+		private string ProbabilityMapBestClassDataFilename { get; set; }
+
+		private string ProbabilityMapBrightestClassDataFilename { get; set; }
+		private string ProbabilityMapSecondClassDataFilename { get; set; }
 
 		public string InputPointsFilename{ get; set; }
 
@@ -108,7 +117,7 @@ namespace RootNavLinux
 
 			initConfiguration ();
 			createResultFilename ();
-			createProbabilityFilename ();
+			createFilenameForSaving ();
 
 			//store the xml file into the global
 			OutputResultXML.FullOutputFileName = ResultXMLFileName;
@@ -135,10 +144,22 @@ namespace RootNavLinux
 			ResultXMLFileName = Path.Combine(OutputPath, this.ImageFileName + "_result.xml");
 
 		}
-		private void createProbabilityFilename()
+		private void createFilenameForSaving()
 		{
+			//probability map
 			string name = System.IO.Path.GetFileNameWithoutExtension (this.ImageFileName);
-			ProbabilityFilename = name + "_map.png";
+			this.ProbabilityBitmapImageFilename = name + "_map.png";
+			this.ProbabilityBitmapDataFilename = name + "_map_data.dat";
+
+			//feature map
+			this.FeatureBitmapImageFilename = name + "_feature.png";
+			this.FeatureBitmapDataFileName = name + "_feature_data.dat";
+
+			ProbabilityMapBestClassDataFilename = name + "_probBestClass_data.dat";
+
+			//
+			ProbabilityMapBrightestClassDataFilename = name + "_probBrightestClass_data.dat";
+			ProbabilityMapSecondClassDataFilename = name + "_probSecondClass_data.dat";
 		}
 		private int initConfiguration()
 		{
@@ -389,6 +410,9 @@ namespace RootNavLinux
 			//this.probabilityBitmap = wbmp;
 			//this.probabilityBitmap = imgScreen.Mat;
 			this.probabilityBitmap = new Mat(imgScreen.Mat, imgScreen.ROI);
+
+			//this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
+
 			//this.featureBitmap = featureScreen.Mat; //changed to below code, because it causes error when later time using this variable. Not sure why?
 			this.featureBitmap = new Mat(featureScreen.Mat, featureScreen.ROI);
 
@@ -593,7 +617,7 @@ namespace RootNavLinux
 			}
 
 			//OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
-			OutputResultXML.writeTipsDetectedDataForBisque (this.ProbabilityFilename, points);
+			OutputResultXML.writeTipsDetectedDataForBisque (this.ProbabilityBitmapImageFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());
@@ -613,9 +637,11 @@ namespace RootNavLinux
 			if (this.hasSourceNode && this.hasPrimaryNode) {
 				AnalysePrimaryRoots ();	
 			}
-			if (this.hasSourceNode && this.hasLateralNode) {
-				AnalyseLateralRoots ();
-			}
+//			if (this.hasSourceNode && this.hasLateralNode) {
+//				AnalyseLateralRoots ();
+//			}
+
+
 		}
 
 		public void AnalysePrimaryRoots()
@@ -627,12 +653,17 @@ namespace RootNavLinux
 //				return;
 //			}
 
+			if (this.screenOverlay.Terminals.Sources.Count() == 0
+				|| this.screenOverlay.Terminals.Primaries.Count() == 0)
+			{
+				return;
+			}
+
 			//this.statusText.Text = "Status: Generating probability map";
 			//this.screenOverlay.IsBusy = true;
 
 			int width = this.emManager.Width;
 			int height = this.emManager.Height;
-
 
 
 			this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
@@ -718,6 +749,8 @@ namespace RootNavLinux
 				this.LiveWireLateralWorkCompletedUI (paths);
 
 			}
+
+			//saveData ();
 		}
 
 		private void LiveWirePrimaryWorkCompletedUI(List<LiveWirePrimaryPath> paths)
@@ -764,6 +797,16 @@ namespace RootNavLinux
 			} else {
 				System.Console.WriteLine ("No primary path.");
 			}
+
+			//analyse lateral if has
+			if (this.hasSourceNode && this.hasLateralNode) {
+				AnalyseLateralRoots ();
+			}
+			//if doesn't have lateral, no more analyse, then save data
+			//if has, saving data will wait untill analysing lateral finishes
+			if (!this.hasLateralNode) {
+				//saveData ();
+			}
 		}
 
 		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
@@ -796,6 +839,8 @@ namespace RootNavLinux
 			} else {
 				System.Console.WriteLine ("No lateral path.");
 			}
+
+			//saveData ();
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
@@ -811,6 +856,12 @@ namespace RootNavLinux
 			//{
 			//	return;
 			//}
+
+			if (this.screenOverlay.Paths.Primaries.Count() == 0
+				|| this.screenOverlay.Terminals.Laterals.Count() == 0)
+			{
+				return;
+			}
 
 			//this.screenOverlay.IsBusy = true;
 
@@ -901,6 +952,33 @@ namespace RootNavLinux
 				System.Console.WriteLine ("No point input");
 			}
 		} //end parseInputNodes
+
+		public void saveData()
+		{
+			System.Console.WriteLine ("Saving data...");
+			//save probability map to an image
+			System.Console.WriteLine ("Save Probability bitmap to an image...");
+			this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
+			System.Console.WriteLine ("Save Probability bitmap to data file...");
+			OutputResultXML.writeMatToFile (this.ProbabilityBitmapDataFilename, this.probabilityBitmap);
+
+			System.Console.WriteLine ("Save Feature bitmap to an image...");
+			this.featureBitmap.Save (this.FeatureBitmapImageFilename);
+			System.Console.WriteLine ("Save Feature bitmap to data file...");
+			OutputResultXML.writeMatToFile (this.FeatureBitmapDataFileName, this.featureBitmap);
+
+			System.Console.WriteLine ("Save Probability Map Best Class to data file...");
+			OutputResultXML.write1DArrayToFile (this.ProbabilityMapBestClassDataFilename, this.probabilityMapBestClass);
+			System.Console.WriteLine ("Save Probability Map Brightest Class to data file...");
+			OutputResultXML.write1DArrayToFile (this.ProbabilityMapBrightestClassDataFilename, this.probabilityMapBrightestClass);
+			System.Console.WriteLine ("Save Probability Map Second Class to data file...");
+			OutputResultXML.write1DArrayToFile (this.ProbabilityMapSecondClassDataFilename, this.probabilityMapSecondClass);
+		}
+
+//		~RootNavMain()
+//		{
+//			saveData ();
+//		}
 
 	} //end class
 } //end namespace
