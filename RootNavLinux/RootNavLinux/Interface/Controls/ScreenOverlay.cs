@@ -2150,48 +2150,48 @@ namespace RootNav.Interface.Controls
 //
 //            return false;
 //        }
-//
-//        private bool FindNearbyControlPoint(Point position, double distanceThreshold, out int controlPointIndex, out int rootIndex)
-//        {
-//            double distance = double.MaxValue;
-//            int currentRootIndex = 0;
-//            int currentControlPointIndex = 0;
-//            for (int currentIndex = 0; currentIndex < this.paths.Count; currentIndex++)
-//            {
-//                LiveWirePath currentRoot = this.paths[currentIndex] as LiveWirePath;
-//
-//                if (currentRoot == null || currentRoot.Indices == null)
-//                    continue;
-//
-//                for (int index = 0; index < currentRoot.Indices.Count; index++)
-//                {
-//                    int pathIndex = currentRoot.Indices[index];
-//                    Point controlPointPosition = currentRoot.Path[pathIndex];
-//                    double d2 = Math.Pow(controlPointPosition.X - position.X, 2.0) + Math.Pow(controlPointPosition.Y - position.Y, 2.0);
-//                    if (d2 < distance)
-//                    {
-//                        distance = d2;
-//                        currentRootIndex = currentIndex;
-//                        currentControlPointIndex = index;
-//                    }
-//                }
-//
-//            }
-//
-//            if (Math.Sqrt(distance) <= distanceThreshold)
-//            {
-//                controlPointIndex = currentControlPointIndex;
-//                rootIndex = currentRootIndex;
-//                return true;
-//            }
-//            else
-//            {
-//                controlPointIndex = -1;
-//                rootIndex = -1;
-//                return false;
-//            }
-//        }
-//
+
+        private bool FindNearbyControlPoint(Point position, double distanceThreshold, out int controlPointIndex, out int rootIndex)
+        {
+            double distance = double.MaxValue;
+            int currentRootIndex = 0;
+            int currentControlPointIndex = 0;
+            for (int currentIndex = 0; currentIndex < this.paths.Count; currentIndex++)
+            {
+                LiveWirePath currentRoot = this.paths[currentIndex] as LiveWirePath;
+
+                if (currentRoot == null || currentRoot.Indices == null)
+                    continue;
+
+                for (int index = 0; index < currentRoot.Indices.Count; index++)
+                {
+                    int pathIndex = currentRoot.Indices[index];
+                    Point controlPointPosition = currentRoot.Path[pathIndex];
+                    double d2 = Math.Pow(controlPointPosition.X - position.X, 2.0) + Math.Pow(controlPointPosition.Y - position.Y, 2.0);
+                    if (d2 < distance)
+                    {
+                        distance = d2;
+                        currentRootIndex = currentIndex;
+                        currentControlPointIndex = index;
+                    }
+                }
+
+            }
+
+            if (Math.Sqrt(distance) <= distanceThreshold)
+            {
+                controlPointIndex = currentControlPointIndex;
+                rootIndex = currentRootIndex;
+                return true;
+            }
+            else
+            {
+                controlPointIndex = -1;
+                rootIndex = -1;
+                return false;
+            }
+        }
+
 //        private bool FindHighlightedDragPointFromSpline(double distanceThreshold)
 //        {
 //            RootBase selectedRoot = this.HighlightedSplineRootInfo.BaseRoot;
@@ -2311,52 +2311,52 @@ namespace RootNav.Interface.Controls
 //            }
 //            return false;
 //        }
-//
-//        private bool FindNearbyRootPointsFromSplines(Point position, double distanceThreshold, out RootBase highlighted, out SplinePositionReference reference)
-//        {
-//            if (this.Roots != null && this.roots.RootTree.Count > 0)
-//            {
-//                // Find most appropriate index in sampledRoots
-//                double distance = double.MaxValue;
-//                int currentRootIndex = -1;
-//
-//                List<RootBase> flattenedRoots = this.roots.ToList();
-//
-//                for (int rootIndex = 0; rootIndex < flattenedRoots.Count; rootIndex++)
-//                {
-//                    RootBase r = flattenedRoots[rootIndex];
-//
-//                    if (r.Order < 0)
-//                    {
-//                        continue;
-//                    }
-//
-//                    for (int i = 0; i < r.Spline.SampledPoints.Length; i++)
-//                    {
-//                        Point p = r.Spline.SampledPoints[i];
-//                        double d2 = Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0);
-//                        if (d2 < distance)
-//                        {
-//                            distance = d2;
-//                            currentRootIndex = rootIndex;
-//                        }
-//                    }
-//                }
-//
-//                // Use root index to focus search in the current root paths
-//                if (Math.Sqrt(distance) <= distanceThreshold)
-//                {
-//                    highlighted = flattenedRoots[currentRootIndex];
-//                    reference = highlighted.Spline.GetPositionReference(position);
-//                    return true;
-//                }          
-//            }
-//
-//            highlighted = null;
-//            reference = null;
-//            return false;
-//        }
-//
+
+        private bool FindNearbyRootPointsFromSplines(Point position, double distanceThreshold, out RootBase highlighted, out SplinePositionReference reference)
+        {
+            if (this.Roots != null && this.roots.RootTree.Count > 0)
+            {
+                // Find most appropriate index in sampledRoots
+                double distance = double.MaxValue;
+                int currentRootIndex = -1;
+
+                List<RootBase> flattenedRoots = this.roots.ToList();
+
+                for (int rootIndex = 0; rootIndex < flattenedRoots.Count; rootIndex++)
+                {
+                    RootBase r = flattenedRoots[rootIndex];
+
+                    if (r.Order < 0)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < r.Spline.SampledPoints.Length; i++)
+                    {
+                        Point p = r.Spline.SampledPoints[i];
+                        double d2 = Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0);
+                        if (d2 < distance)
+                        {
+                            distance = d2;
+                            currentRootIndex = rootIndex;
+                        }
+                    }
+                }
+
+                // Use root index to focus search in the current root paths
+                if (Math.Sqrt(distance) <= distanceThreshold)
+                {
+                    highlighted = flattenedRoots[currentRootIndex];
+                    reference = highlighted.Spline.GetPositionReference(position);
+                    return true;
+                }          
+            }
+
+            highlighted = null;
+            reference = null;
+            return false;
+        }
+
 //        private bool FindHighlightedRoot()
 //        {
 //            // Assertion - It is not possible to highlight a root while adding or removing terminals
@@ -2398,67 +2398,67 @@ namespace RootNav.Interface.Controls
 //            return false;
 //        }
 //
-//        private bool FindNearbyRootPoints(Point position, double distanceThreshold, out Point rootPosition, out int rootIndex)
-//        {
-//            // Find most appropriate index in sampledRoots
-//            double distance = double.MaxValue;
-//            int currentRootIndex = -1;
-//            int sampledRootPathIndex = 0;
-//
-//            if (this.sampledRoots.Count == 0)
-//            {
-//                rootIndex = -1;
-//                rootPosition = default(Point);
-//                return false;
-//            }
-//           
-//            for (int sampleIndex = 0; sampleIndex < this.sampledRoots.Count; sampleIndex++)
-//            {
-//                List<Point> sampledRoot = this.sampledRoots[sampleIndex];
-//                for (int i = 0; i < sampledRoot.Count; i++)
-//                {
-//                    Point p = sampledRoot[i];
-//                    double d2 = Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0);
-//                    if (d2 < distance)
-//                    {
-//                        distance = d2;
-//                        currentRootIndex = sampleIndex;
-//                        sampledRootPathIndex = i;
-//                    }
-//                }
-//            }
-//
-//            // Use sampled roots index to focus search in the current root paths
-//            int currentRootPathIndexLeftBound = Math.Max(0, (sampledRootPathIndex - 1) * SampleRate);
-//            int currentRootPathIndexRightBound = Math.Min(this.paths[currentRootIndex].Path.Count - 1, (sampledRootPathIndex + 1) * SampleRate);
-//            int currentRootPathIndex = 0;
-//            distance = double.MaxValue;
-//            LiveWirePath currentRoot = this.paths[currentRootIndex];
-//            for (int index = currentRootPathIndexLeftBound; index <= currentRootPathIndexRightBound; index++)
-//            {
-//                Point p = currentRoot.Path[index];
-//                double d2 = Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0);
-//                if (d2 < distance)
-//                {
-//                    distance = d2;
-//                    currentRootPathIndex = index;
-//                }
-//            }
-//
-//            if (Math.Sqrt(distance) <= distanceThreshold)
-//            {
-//                rootPosition = this.paths[currentRootIndex].Path[currentRootPathIndex];
-//                rootIndex = currentRootIndex;
-//                return true;
-//            }
-//            else
-//            {
-//                rootPosition = default(Point);
-//                rootIndex = 0;
-//                return false;
-//            }
-//        }
-//
+        private bool FindNearbyRootPoints(Point position, double distanceThreshold, out Point rootPosition, out int rootIndex)
+        {
+            // Find most appropriate index in sampledRoots
+            double distance = double.MaxValue;
+            int currentRootIndex = -1;
+            int sampledRootPathIndex = 0;
+
+            if (this.sampledRoots.Count == 0)
+            {
+                rootIndex = -1;
+                rootPosition = default(Point);
+                return false;
+            }
+           
+            for (int sampleIndex = 0; sampleIndex < this.sampledRoots.Count; sampleIndex++)
+            {
+                List<Point> sampledRoot = this.sampledRoots[sampleIndex];
+                for (int i = 0; i < sampledRoot.Count; i++)
+                {
+                    Point p = sampledRoot[i];
+                    double d2 = Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0);
+                    if (d2 < distance)
+                    {
+                        distance = d2;
+                        currentRootIndex = sampleIndex;
+                        sampledRootPathIndex = i;
+                    }
+                }
+            }
+
+            // Use sampled roots index to focus search in the current root paths
+            int currentRootPathIndexLeftBound = Math.Max(0, (sampledRootPathIndex - 1) * SampleRate);
+            int currentRootPathIndexRightBound = Math.Min(this.paths[currentRootIndex].Path.Count - 1, (sampledRootPathIndex + 1) * SampleRate);
+            int currentRootPathIndex = 0;
+            distance = double.MaxValue;
+            LiveWirePath currentRoot = this.paths[currentRootIndex];
+            for (int index = currentRootPathIndexLeftBound; index <= currentRootPathIndexRightBound; index++)
+            {
+                Point p = currentRoot.Path[index];
+                double d2 = Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0);
+                if (d2 < distance)
+                {
+                    distance = d2;
+                    currentRootPathIndex = index;
+                }
+            }
+
+            if (Math.Sqrt(distance) <= distanceThreshold)
+            {
+                rootPosition = this.paths[currentRootIndex].Path[currentRootPathIndex];
+                rootIndex = currentRootIndex;
+                return true;
+            }
+            else
+            {
+                rootPosition = default(Point);
+                rootIndex = 0;
+                return false;
+            }
+        }
+
 //        private class TerminalDragInfo
 //        {
 //            private List<Point> startPoints;
