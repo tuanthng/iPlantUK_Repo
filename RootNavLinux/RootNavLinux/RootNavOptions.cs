@@ -84,13 +84,13 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Plant name", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string PlantName { get; set; }
 
-		[CommandLineOption(Description = "Use Curvature Profile?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		[CommandLineOption(Description = "Use Curvature Profile (true/false)?", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string CurvatureProfile { get; set; }
 
-		[CommandLineOption(Description = "Use Map Profile?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		[CommandLineOption(Description = "Use Map Profile (true/false)?", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string MapProfile { get; set; }
 
-		[CommandLineOption(Description = "Travel Map?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		[CommandLineOption(Description = "Use Travel Map if MapProfile enabled?", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string TravelMap { get; set; }
 
 		[CommandLineOption(Description = "Complete architecture recorded?", RequireExplicitAssignment= true, MinOccurs = 0)]
