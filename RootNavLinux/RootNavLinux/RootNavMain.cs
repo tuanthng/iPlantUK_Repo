@@ -227,6 +227,16 @@ namespace RootNavLinux
 
 
 				sourceBitmap = img;
+
+				this.imageInfo = new SceneMetadata.ImageInfo()
+				{
+					Label = filePath,
+					Hash = Hashing.Sha256(filePath),
+					Background = "dark",
+					Unit = "pixels",
+					TimeInSequence = 0.0
+				};
+
 			}
 			catch(Exception ex)
 			{
@@ -817,6 +827,7 @@ namespace RootNavLinux
 			//if has, saving data will wait untill analysing lateral finishes
 			if (!this.hasLateralNode) {
 				//saveData ();
+				BeginMeasurementStage();
 			}
 		}
 
@@ -852,6 +863,7 @@ namespace RootNavLinux
 			}
 
 			//saveData ();
+			BeginMeasurementStage();
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
@@ -993,6 +1005,9 @@ namespace RootNavLinux
 
 		public void BeginMeasurementStage()
 		{
+			if (!this.DoMeasurement) {
+				return;
+			}
 			this.imageInfo.Resolution = ImageResolutionValue;
 			this.imageInfo.Unit = ImageResolutionValue == 0 ? "pixels" : "mm";
 
