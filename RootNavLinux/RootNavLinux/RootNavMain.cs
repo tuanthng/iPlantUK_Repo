@@ -20,6 +20,7 @@ using Emgu.CV;
 using Emgu.CV.UI;
 using Emgu.CV.Structure;
 using System.Xml;
+using RootNav.Data;
 
 namespace RootNavLinux
 {
@@ -59,7 +60,7 @@ namespace RootNavLinux
 //		private bool connectionExists = false;
 
 //		RootNav.Data.IO.Databases.DatabaseManager databaseManager = null;
-//		private SceneMetadata.ImageInfo imageInfo = null;
+		private SceneMetadata.ImageInfo imageInfo = null;
 //		private WriteableBitmap featureBitmap = null;
 		private Mat featureBitmap = null;
 //		private WriteableBitmap sourceBitmap = null;
@@ -110,6 +111,15 @@ namespace RootNavLinux
 		private bool hasSourceNode = false; 
 		private bool hasPrimaryNode = false;
 		private bool hasLateralNode = false;
+
+		//parameters for measurement
+		public double ImageResolutionValue { get; set; }
+		public int SplineSpacing { get; set; }
+		public string PlantName { get; set; }
+		public string IsCurvatureProfile { get; set; }
+		public string IsMapProfile { get; set; }
+		public int TravelMap { get; set; }
+		public bool IsCompleteArch { get; set; }
 
 		public RootNavMain (string filePathImg)
 		{
@@ -979,6 +989,26 @@ namespace RootNavLinux
 //		{
 //			saveData ();
 //		}
+
+		public void BeginMeasurementStage()
+		{
+			this.imageInfo.Resolution = ImageResolutionValue;
+			this.imageInfo.Unit = ImageResolutionValue == 0 ? "pixels" : "mm";
+
+			this.screenOverlay.InitialiseMeasurementStage(this.SplineSpacing, ImageResolutionValue == 0 ? 0 : 1 / ImageResolutionValue);
+
+//			Binding b = new Binding();
+//			b.Source = this.screenOverlay.Roots.RootTree;
+//			BindingOperations.SetBinding(this.rootTreeView, TreeView.ItemsSourceProperty, b);
+//
+//			this.rootTreeView.MouseMove += new MouseEventHandler(rootTreeView_MouseMove);
+//			this.rootTreeView.MouseLeave += new MouseEventHandler(rootTreeView_MouseLeave);
+//
+//			this.rootTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(rootTreeView_SelectedItemChanged);
+
+			//this.detectionSlidePanel.BeginHide();
+			//this.measurementSlidePanel.BeginShow();
+		}
 
 	} //end class
 } //end namespace

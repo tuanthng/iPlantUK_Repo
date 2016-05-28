@@ -75,6 +75,27 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Specifies the input nodes (primary, source, lateral)", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string InputPointsFile { get; set; }
 
+		[CommandLineOption(Description = "Specifies the resolution of the image", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string ImageResolutionValue { get; set; }
+
+		[CommandLineOption(Description = "Spline spacing", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string SplineSpacing { get; set; }
+
+		[CommandLineOption(Description = "Plant name", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string PlantName { get; set; }
+
+		[CommandLineOption(Description = "Use Curvature Profile?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string CurvatureProfile { get; set; }
+
+		[CommandLineOption(Description = "Use Map Profile?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string MapProfile { get; set; }
+
+		[CommandLineOption(Description = "Travel Map?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string TravelMap { get; set; }
+
+		[CommandLineOption(Description = "Complete architecture recorded?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string CompleteArch { get; set; }
+
 		public EMConfiguration CreateConfiguration()
 		{
 			//create custom configuration
