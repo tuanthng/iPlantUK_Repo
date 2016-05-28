@@ -68,6 +68,39 @@ namespace RootNavLinux
 						mainRoot.InputPointsFilename = options.InputPointsFile;
 					}
 
+					//check measurement
+					if (options.DoMeasurement != null && options.DoMeasurement.Equals("true"))
+					{
+						mainRoot.DoMeasurement = true;
+						bool tempBool;
+						double tempDouble;
+
+						bool result = double.TryParse(options.ImageResolutionValue, out tempDouble);
+						mainRoot.ImageResolutionValue = result ? tempDouble : 0;
+						int tempInt;
+
+						result = Int32.TryParse(options.SplineSpacing, out tempInt);
+						mainRoot.SplineSpacing = result ? tempInt : 40; //use default when false
+
+						result = Boolean.TryParse(options.CurvatureProfile, out tempBool);
+						mainRoot.DoCurvatureProfile = result ? tempBool : true;
+
+						result = Boolean.TryParse(options.MapProfile, out tempBool);
+						mainRoot.DoMapProfile = result ? tempBool : true;
+
+						result = Int32.TryParse(options.TravelMap, out tempInt);
+						mainRoot.TravelMap = result ? tempInt : 40;
+
+						result = Boolean.TryParse(options.CompleteArch, out tempBool);
+						mainRoot.DoCompleteArch = result ? tempBool : true;
+
+						mainRoot.PlantName = options.PlantName;
+
+					}
+					else 
+					{
+						mainRoot.DoMeasurement = false;
+					}
 					//process the task
 					mainRoot.Process ();
 

@@ -116,10 +116,11 @@ namespace RootNavLinux
 		public double ImageResolutionValue { get; set; }
 		public int SplineSpacing { get; set; }
 		public string PlantName { get; set; }
-		public string IsCurvatureProfile { get; set; }
-		public string IsMapProfile { get; set; }
+		public bool DoCurvatureProfile { get; set; }
+		public bool DoMapProfile { get; set; }
 		public int TravelMap { get; set; }
-		public bool IsCompleteArch { get; set; }
+		public bool DoCompleteArch { get; set; }
+		public bool DoMeasurement { get; set; }
 
 		public RootNavMain (string filePathImg)
 		{

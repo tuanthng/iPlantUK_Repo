@@ -96,6 +96,9 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Complete architecture recorded?", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string CompleteArch { get; set; }
 
+		[CommandLineOption(Description = "Execute measure?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string DoMeasurement { get; set; }
+
 		public EMConfiguration CreateConfiguration()
 		{
 			//create custom configuration
