@@ -1026,6 +1026,297 @@ namespace RootNavLinux
 			//this.measurementSlidePanel.BeginShow();
 		}
 
+//		public void MeasureRootSystem()
+//		{
+//			if (this.screenOverlay.Roots == null || this.screenOverlay.Roots.RootTree.Count < 1)
+//			{
+//				return;
+//			}
+//
+//			// Tagging or cancel
+//			TagBox t = new TagBox(this.FileName);
+//			bool? addtag = t.ShowDialog();
+//			if (!addtag.HasValue || t.Cancelled)
+//			{
+//				return;
+//			}
+//
+//			string tag = t.Text;
+//			if (!addtag.Value || tag == "")
+//			{
+//				// Generate random string
+//				tag = RandomString(10);
+//			}
+//
+//			if (connectionExists && this.connectionInfo != null)
+//			{
+//				if (this.connectionInfo.Source == ConnectionSource.MySQLDatabase)
+//				{
+//					BitmapSource source = (bool)this.measurementToolbox.outputImageCheckbox.IsChecked ? this.sourceBitmap : null;
+//					bool success = RootMeasurement.WriteToDatabase(databaseManager as MySQLDatabaseManager, tag, (bool)this.measurementToolbox.completeArchitectureOutputCheckbox.IsChecked, this.screenOverlay.Roots.ToList(), source);
+//					if (success)
+//					{
+//						UpdateStatusText("Status: Measurements successfully output to database");
+//					}
+//					else
+//					{
+//						MessageBox.Show("Database could not be written to", "Database Error");
+//						UpdateStatusText("Status: Measurements could not be written to the database");
+//					}
+//				}
+//
+//				if (this.connectionInfo.Source == ConnectionSource.RSMLDirectory)
+//				{
+//					// Create instance of writer class
+//					RootNav.Data.IO.RSML.RSMLRootWriter writer = new Data.IO.RSML.RSMLRootWriter(connectionInfo);
+//
+//					// Create Scene and Metadata
+//					SceneMetadata metadata = RootFormatConverter.RootNavDataToRSMLMetadata(this.imageInfo, this.imageHeaderInfo, tag, this.screenOverlay.Roots);
+//					SceneInfo scene = RootFormatConverter.RootCollectionToRSMLScene(this.screenOverlay.Roots);
+//
+//					if (!(bool)this.measurementToolbox.completeArchitectureOutputCheckbox.IsChecked)
+//					{
+//						RootFormatConverter.SetIncompletePropertyOnScene(metadata, scene);
+//					}
+//
+//					bool success = writer.Write(metadata, scene);
+//					if (success)
+//					{
+//						UpdateStatusText("Status: Measurements successfully output to RSML file");
+//					}
+//					else
+//					{
+//						UpdateStatusText("Status: Measurements could not be written to RSML file");
+//					}
+//				}
+//			}
+//
+//			// Output measurent table if requested
+//			if ((bool)this.measurementToolbox.measurementOutputCheckbox.IsChecked || !connectionExists)
+//			{
+//				MeasurementWindow mw = new MeasurementWindow();
+//
+//				foreach (Dictionary<string, string> data in RootMeasurement.GetDataAsStrings(this.screenOverlay.Roots.RootTree.ToList()))
+//				{
+//					if (addtag.Value)
+//					{
+//						data.Add("Tag", tag);
+//					}
+//					mw.Add(data);
+//				}
+//
+//				mw.Show();
+//			}
+//
+//			// TODO: Could build curvature and map profiles into root functions in RSML
+//
+//			#region Curvature Profile
+//			if ((bool)this.measurementToolbox.curvatureProfileCheckbox.IsChecked)
+//			{
+//				TableWindow tw = new TableWindow();
+//
+//				var data = RootMeasurement.GetCurvatureProfiles(this.screenOverlay.Roots.RootTree.ToList(), 4);
+//
+//				double minDistance = double.MinValue;
+//				int rowCount = 0;
+//				foreach (var v in data)
+//				{
+//					if (v.Value != null && v.Value.Length > rowCount)
+//					{
+//						if (v.Value[0].Item1 > minDistance)
+//						{
+//							minDistance = v.Value[0].Item1;
+//						}
+//
+//						rowCount = v.Value.Length;
+//					}
+//				}
+//
+//				string[,] outputArray = new string[data.Count, rowCount + 1];
+//
+//				int i = 1;
+//				foreach (var keyValuePair in data)
+//				{
+//					if (keyValuePair.Value != null)
+//					{
+//						// Header
+//						outputArray[i, 0] = keyValuePair.Key.RelativeID;
+//
+//						// Data
+//						var distanceAnglePair = keyValuePair.Value;
+//						if (distanceAnglePair.Length == rowCount)
+//						{
+//							for (int j = 0; j < distanceAnglePair.Length; j++)
+//							{
+//								outputArray[i, j + 1] = Math.Round(distanceAnglePair[j].Item2,1).ToString();
+//								outputArray[0, j + 1] = Math.Round(distanceAnglePair[j].Item1).ToString();
+//							}
+//
+//						}
+//						else
+//						{
+//							for (int j = 0; j < distanceAnglePair.Length; j++)
+//							{
+//								outputArray[i, j + 1] = Math.Round(distanceAnglePair[j].Item2, 1).ToString();
+//							}
+//						}
+//
+//						i++;
+//					}
+//
+//				}
+//
+//
+//				// Turn array into data table
+//				DataTable dt = new DataTable();
+//				int nbColumns = outputArray.GetLength(0);
+//				int nbRows = outputArray.GetLength(1);
+//				for (i = 0; i < nbColumns; i++)
+//				{
+//					dt.Columns.Add(i.ToString(), typeof(string));
+//				}
+//
+//				for (int row = 0; row < nbRows; row++)
+//				{
+//					DataRow dr = dt.NewRow();
+//					for (int col = 0; col < nbColumns; col++)
+//					{
+//						dr[col] = outputArray[col,row];
+//					}
+//					dt.Rows.Add(dr);
+//				}
+//
+//				tw.measurementsView.ItemsSource = dt.DefaultView;
+//
+//				tw.Show();
+//			}
+//			#endregion
+//
+//			#region Map Profile
+//			if ((bool)this.measurementToolbox.mapProfileCheckbox.IsChecked)
+//			{
+//				TableWindow tw = new TableWindow();
+//
+//				Dictionary<RootBase, Tuple<double, double>[]> leftData, rightData;
+//
+//				RootMeasurement.GetMapProfiles(this.screenOverlay.Roots.RootTree.ToList(), out leftData, out rightData,
+//					4,
+//					this.measurementToolbox.travelSlider.Value,
+//					this.probabilityMapSecondClass,
+//					this.emManager.Width,
+//					this.emManager.Height);
+//
+//				double minDistance = double.MinValue;
+//				int rowCount = 0;
+//
+//				// Left
+//				foreach (var v in leftData)
+//				{
+//					if (v.Value != null && v.Value.Length > rowCount)
+//					{
+//						if (v.Value[0].Item1 > minDistance)
+//						{
+//							minDistance = v.Value[0].Item1;
+//						}
+//
+//						rowCount = v.Value.Length;
+//					}
+//				}
+//
+//				// Right
+//				foreach (var v in rightData)
+//				{
+//					if (v.Value != null && v.Value.Length > rowCount)
+//					{
+//						if (v.Value[0].Item1 > minDistance)
+//						{
+//							minDistance = v.Value[0].Item1;
+//						}
+//
+//						rowCount = v.Value.Length;
+//					}
+//				}
+//
+//
+//				string[,] outputArray = new string[leftData.Count + rightData.Count - 1, rowCount + 1];
+//
+//				int i = 1;
+//				foreach (var keyValuePair in leftData)
+//				{
+//					if (keyValuePair.Value != null)
+//					{
+//						// Header
+//						outputArray[i, 0] = keyValuePair.Key.RelativeID + " L";
+//
+//						// Left Data
+//						var distanceMapPair = keyValuePair.Value;
+//						if (distanceMapPair.Length == rowCount)
+//						{
+//							for (int j = 0; j < distanceMapPair.Length; j++)
+//							{
+//								outputArray[i, j + 1] = Math.Round(distanceMapPair[j].Item2, 1).ToString();
+//								outputArray[0, j + 1] = Math.Round(distanceMapPair[j].Item1).ToString();
+//							}
+//
+//						}
+//						else
+//						{
+//							for (int j = 0; j < distanceMapPair.Length; j++)
+//							{
+//								outputArray[i, j + 1] = Math.Round(distanceMapPair[j].Item2, 1).ToString();
+//							}
+//						}
+//
+//						i+=2;
+//					}
+//
+//				}
+//
+//				i = 2;
+//				foreach (var keyValuePair in rightData)
+//				{
+//					if (keyValuePair.Value != null)
+//					{
+//						// Header
+//						outputArray[i, 0] = keyValuePair.Key.RelativeID + " R";
+//
+//						// Left Data
+//						var distanceMapPair = keyValuePair.Value;
+//
+//						for (int j = 0; j < distanceMapPair.Length; j++)
+//						{
+//							outputArray[i, j + 1] = Math.Round(distanceMapPair[j].Item2, 1).ToString();
+//						}
+//
+//						i += 2;
+//					}
+//				}
+//
+//				// Turn array into data table
+//				DataTable dt = new DataTable();
+//				int nbColumns = outputArray.GetLength(0);
+//				int nbRows = outputArray.GetLength(1);
+//				for (i = 0; i < nbColumns; i++)
+//				{
+//					dt.Columns.Add(i.ToString(), typeof(string));
+//				}
+//
+//				for (int row = 0; row < nbRows; row++)
+//				{
+//					DataRow dr = dt.NewRow();
+//					for (int col = 0; col < nbColumns; col++)
+//					{
+//						dr[col] = outputArray[col, row];
+//					}
+//					dt.Rows.Add(dr);
+//				}
+//
+//				tw.measurementsView.ItemsSource = dt.DefaultView;
+//
+//				tw.Show();
+//			}
+//			#endregion
+//		}
 	} //end class
 } //end namespace
 
