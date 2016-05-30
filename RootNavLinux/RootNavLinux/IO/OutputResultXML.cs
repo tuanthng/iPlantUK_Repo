@@ -9,7 +9,8 @@ using System.Xml.XPath;
 using RootNav.Core.LiveWires;
 using System.Drawing;
 using RootNav.Interface.Controls;
-using Emgu.CV; 
+using Emgu.CV;
+using RootNav.Core.Measurement; 
 
 namespace RootNavLinux
 {
@@ -649,6 +650,180 @@ namespace RootNavLinux
 				data[index] = d;
 			}
 		} //end read1DArrayFromFile
+
+		public static void writeRootData(RootBase root, XmlDocument doc, ref XmlNode parent, ScreenOverlayRenderInfo render)
+		{
+			XmlNode rootNode = doc.CreateNode (XmlNodeType.Element, "Root", "");
+			XmlAttribute orderAtt = doc.CreateAttribute("order");
+			orderAtt.Value = root.Order.ToString();
+			rootNode.Attributes.Append (orderAtt);
+
+			XmlNode convexHullNode = doc.CreateNode (XmlNodeType.Element, "ConvexHull", "");
+
+			//convex hull
+			if (root.ConvexHullPoints != null && root.Order < 0) 
+			{
+				//gobject node
+				XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
+				XmlAttribute nameAttgObject = doc.CreateAttribute("name");
+				nameAttgObject.Value = "0";
+				gObjectNode.Attributes.Append (nameAttgObject);
+
+				convexHullNode.AppendChild (gObjectNode);
+
+				//polyline node
+				XmlNode polylineNode = doc.CreateNode (XmlNodeType.Element, "polyline", "");
+				XmlAttribute nameAtt = doc.CreateAttribute("name");
+				nameAtt.Value = "0";
+				polylineNode.Attributes.Append (nameAtt);
+
+				gObjectNode.AppendChild (polylineNode);
+
+				int count = root.ConvexHullPoints.Count;
+
+				for (int j = 0; j < count; j++)
+				{
+					Int32Point point = root.ConvexHullPoints[j];
+
+					XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "vertex", "");
+
+					XmlAttribute indexAtt = doc.CreateAttribute("index");
+					indexAtt.Value = j.ToString();
+					pointNode.Attributes.Append (indexAtt);
+
+					XmlAttribute xAtt = doc.CreateAttribute("x");
+					xAtt.Value = point.X.ToString ();
+					pointNode.Attributes.Append (xAtt);
+					XmlAttribute yAtt = doc.CreateAttribute("y");
+					yAtt.Value = point.Y.ToString ();
+					pointNode.Attributes.Append (yAtt);
+
+					XmlAttribute tAtt = doc.CreateAttribute("t");
+					tAtt.Value = "0";
+					pointNode.Attributes.Append (tAtt);
+
+					XmlAttribute zAtt = doc.CreateAttribute("z");
+					zAtt.Value = "0";
+					pointNode.Attributes.Append (zAtt);
+
+					polylineNode.AppendChild (pointNode);
+				}
+			}
+
+			rootNode.AppendChild (convexHullNode);
+
+			//Spline
+			if (root.Order >= 0) 
+			{
+				Pen rootPen = render.RootPens [0];
+
+				if (root.PrimaryParent == null || root.PrimaryParent.Order == -1) 
+				{
+					rootPen = render.RootPens [root.RootIndex];
+					
+					if (root.IsHighlighted || root.IsSelected)
+						rootPen = render.HighlightedRootPens [root.RootIndex];
+				} else 
+				{
+					rootPen = render.RootPens [root.PrimaryParent.RootIndex];
+					
+					if (root.IsHighlighted || root.IsSelected)
+						rootPen = render.HighlightedRootPens [root.PrimaryParent.RootIndex];
+				}
+
+				System.Windows.Point[] points = root.Spline.SampledPoints;
+				int count = points.Length;
+
+				XmlNode splineNode = doc.CreateNode (XmlNodeType.Element, "Spline", "");
+
+				if (count > 0) 
+				{
+					//gobject node
+					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
+					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
+					nameAttgObject.Value = "0";
+					gObjectNode.Attributes.Append (nameAttgObject);
+
+					splineNode.AppendChild (gObjectNode);
+
+					//polyline node
+					XmlNode polylineNode = doc.CreateNode (XmlNodeType.Element, "polyline", "");
+					XmlAttribute nameAtt = doc.CreateAttribute("name");
+					nameAtt.Value = "0";
+					polylineNode.Attributes.Append (nameAtt);
+
+					gObjectNode.AppendChild (polylineNode);
+
+					for (int j = 0; j < count; j++)
+					{
+						System.Windows.Point point = points[j];
+
+						XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "vertex", "");
+
+						XmlAttribute indexAtt = doc.CreateAttribute("index");
+						indexAtt.Value = j.ToString();
+						pointNode.Attributes.Append (indexAtt);
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = point.X.ToString ();
+						pointNode.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = point.Y.ToString ();
+						pointNode.Attributes.Append (yAtt);
+
+						XmlAttribute tAtt = doc.CreateAttribute("t");
+						tAtt.Value = "0";
+						pointNode.Attributes.Append (tAtt);
+
+						XmlAttribute zAtt = doc.CreateAttribute("z");
+						zAtt.Value = "0";
+						pointNode.Attributes.Append (zAtt);
+
+						polylineNode.AppendChild (pointNode);
+
+					}
+				}
+
+				rootNode.AppendChild (splineNode);
+
+			}
+
+			parent.AppendChild (rootNode);
+
+			//recursive for child trees
+			foreach (RootBase child in root.Children)
+			{
+				writeRootData(child, doc, ref rootNode, render);
+			}
+		}
+
+		public static void writeRootData(RootCollection roots, ScreenOverlayRenderInfo render)
+		{
+			if (File.Exists (FullOutputFileName)) {
+
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
+
+				XmlNode rootBaseNode = doc.CreateNode (XmlNodeType.Element, "RootTree", "");
+
+				foreach(RootBase r in roots)
+				{
+					writeRootData (r, doc, ref rootBaseNode, render);
+				}
+
+				dataProcessedNode.AppendChild(rootBaseNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+			}
+		}
 
 	} //end class
 }

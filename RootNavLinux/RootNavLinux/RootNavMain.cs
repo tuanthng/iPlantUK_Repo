@@ -1013,6 +1013,9 @@ namespace RootNavLinux
 
 			this.screenOverlay.InitialiseMeasurementStage(this.SplineSpacing, ImageResolutionValue == 0 ? 0 : 1 / ImageResolutionValue);
 
+			System.Console.WriteLine ("Saving root data...");
+			OutputResultXML.writeRootData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
+
 //			Binding b = new Binding();
 //			b.Source = this.screenOverlay.Roots.RootTree;
 //			BindingOperations.SetBinding(this.rootTreeView, TreeView.ItemsSourceProperty, b);
