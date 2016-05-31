@@ -658,59 +658,109 @@ namespace RootNavLinux
 			orderAtt.Value = root.Order.ToString();
 			rootNode.Attributes.Append (orderAtt);
 
-			XmlNode convexHullNode = doc.CreateNode (XmlNodeType.Element, "ConvexHull", "");
+			XmlAttribute lengthAtt = doc.CreateAttribute("length");
+			lengthAtt.Value = root.Length.ToString();
+			rootNode.Attributes.Append (lengthAtt);
 
-			//convex hull
-			if (root.ConvexHullPoints != null && root.Order < 0) 
+			//root.AngleMaximumDistance
+			//root.AngleMinimumDistance
+			//root.AngleWithParent
+			//root.Color
+			//root.ConvexHullArea
+			//root.EmergenceAngle
+			//root.EmergenceVector
+			//root.End
+			//root.Start
+			//root.RootIndex
+			//root.ID
+			//root.InnerTipPoint
+			//root.Label
+			//root.Length
+			//root.MaximumAnglePoint
+			//root.MinimumAnglePoint
+			//root.Parent
+			//root.ParentVector
+			//root.ParentVectorPoints
+			//root.PixelConvexHullArea
+			//root.PixelLength
+			//root.PixelStartDistance
+			//root.PrimaryParent
+			//root.RelativeID
+			//root.RootIndex
+			//root.StartDistance
+			//root.StartReference
+			//root.TipAngle
+			//root.TipAngleDistance
+			//root.TipVector
+			//root.TotalAngle
+			//root.TotalVector
+			//root.UnitConversionFactor
+
+			if (root.Order < 0) 
 			{
-				//gobject node
-				XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
-				XmlAttribute nameAttgObject = doc.CreateAttribute("name");
-				nameAttgObject.Value = "0";
-				gObjectNode.Attributes.Append (nameAttgObject);
-
-				convexHullNode.AppendChild (gObjectNode);
-
-				//polyline node
-				XmlNode polylineNode = doc.CreateNode (XmlNodeType.Element, "polyline", "");
-				XmlAttribute nameAtt = doc.CreateAttribute("name");
-				nameAtt.Value = "0";
-				polylineNode.Attributes.Append (nameAtt);
-
-				gObjectNode.AppendChild (polylineNode);
-
-				int count = root.ConvexHullPoints.Count;
-
-				for (int j = 0; j < count; j++)
+				if (root.ConvexHullPoints != null) 
 				{
-					Int32Point point = root.ConvexHullPoints[j];
+					XmlNode convexHullNode = doc.CreateNode (XmlNodeType.Element, "ConvexHull", "");
 
-					XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "vertex", "");
+					//gobject node
+					XmlNode gObjectNode = doc.CreateNode (XmlNodeType.Element, "gobject", "");
+					XmlAttribute nameAttgObject = doc.CreateAttribute("name");
+					nameAttgObject.Value = "0";
+					gObjectNode.Attributes.Append (nameAttgObject);
 
-					XmlAttribute indexAtt = doc.CreateAttribute("index");
-					indexAtt.Value = j.ToString();
-					pointNode.Attributes.Append (indexAtt);
+					convexHullNode.AppendChild (gObjectNode);
 
-					XmlAttribute xAtt = doc.CreateAttribute("x");
-					xAtt.Value = point.X.ToString ();
-					pointNode.Attributes.Append (xAtt);
-					XmlAttribute yAtt = doc.CreateAttribute("y");
-					yAtt.Value = point.Y.ToString ();
-					pointNode.Attributes.Append (yAtt);
+					//polyline node
+					XmlNode polylineNode = doc.CreateNode (XmlNodeType.Element, "polygon", "");
+					XmlAttribute nameAtt = doc.CreateAttribute("name");
+					nameAtt.Value = "0";
+					polylineNode.Attributes.Append (nameAtt);
 
-					XmlAttribute tAtt = doc.CreateAttribute("t");
-					tAtt.Value = "0";
-					pointNode.Attributes.Append (tAtt);
+					gObjectNode.AppendChild (polylineNode);
 
-					XmlAttribute zAtt = doc.CreateAttribute("z");
-					zAtt.Value = "0";
-					pointNode.Attributes.Append (zAtt);
+					int count = root.ConvexHullPoints.Count;
 
-					polylineNode.AppendChild (pointNode);
+					for (int j = 0; j < count; j++)
+					{
+						Int32Point point = root.ConvexHullPoints[j];
+
+						XmlNode pointNode = doc.CreateNode (XmlNodeType.Element, "vertex", "");
+
+						XmlAttribute indexAtt = doc.CreateAttribute("index");
+						indexAtt.Value = j.ToString();
+						pointNode.Attributes.Append (indexAtt);
+
+						XmlAttribute xAtt = doc.CreateAttribute("x");
+						xAtt.Value = point.X.ToString ();
+						pointNode.Attributes.Append (xAtt);
+						XmlAttribute yAtt = doc.CreateAttribute("y");
+						yAtt.Value = point.Y.ToString ();
+						pointNode.Attributes.Append (yAtt);
+
+						XmlAttribute tAtt = doc.CreateAttribute("t");
+						tAtt.Value = "0";
+						pointNode.Attributes.Append (tAtt);
+
+						XmlAttribute zAtt = doc.CreateAttribute("z");
+						zAtt.Value = "0";
+						pointNode.Attributes.Append (zAtt);
+
+						polylineNode.AppendChild (pointNode);
+					}
+
+					//convex hull
+					rootNode.AppendChild (convexHullNode);
 				}
-			}
 
-			rootNode.AppendChild (convexHullNode);
+				//other stuff
+				XmlAttribute areaAtt = doc.CreateAttribute("area");
+				areaAtt.Value = root.ConvexHullArea.ToString();
+				rootNode.Attributes.Append (areaAtt);
+
+				XmlAttribute primaryRootsAtt = doc.CreateAttribute("primaryRoots");
+				primaryRootsAtt.Value = root.Children.Count.ToString();
+				rootNode.Attributes.Append (primaryRootsAtt);
+			}
 
 			//Spline
 			if (root.Order >= 0) 
@@ -786,6 +836,21 @@ namespace RootNavLinux
 
 				rootNode.AppendChild (splineNode);
 
+				if (root.Order == 0) {
+					XmlAttribute lateralAtt = doc.CreateAttribute("laterals");
+					lateralAtt.Value = root.Children.Count.ToString();
+					rootNode.Attributes.Append (lateralAtt);
+				} //else {
+					
+				//}
+
+				XmlAttribute emergenceAngleAtt = doc.CreateAttribute("emergenceAngle");
+				emergenceAngleAtt.Value = root.EmergenceAngle.ToString();
+				rootNode.Attributes.Append (emergenceAngleAtt);
+
+				XmlAttribute tipAngleAtt = doc.CreateAttribute("tipAngle");
+				tipAngleAtt.Value = root.TipAngle.ToString();
+				rootNode.Attributes.Append (tipAngleAtt);
 			}
 
 			parent.AppendChild (rootNode);
