@@ -116,11 +116,13 @@ namespace RootNavLinux
 		public double ImageResolutionValue { get; set; }
 		public int SplineSpacing { get; set; }
 		public string PlantName { get; set; }
+		public string TagName { get; set; }
 		public bool DoCurvatureProfile { get; set; }
 		public bool DoMapProfile { get; set; }
 		public int TravelMap { get; set; }
 		public bool DoCompleteArch { get; set; }
 		public bool DoMeasurement { get; set; }
+		public bool DoMeasurementTable{ get; set; }
 
 		public RootNavMain (string filePathImg)
 		{
@@ -1015,8 +1017,10 @@ namespace RootNavLinux
 
 			System.Console.WriteLine ("Saving root data...");
 			OutputResultXML.writeRootData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
-			System.Console.WriteLine ("Saving measurement tables...");
-			OutputResultXML.writeMeasurementData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo, "Test", this.DoCurvatureProfile, this.DoMapProfile);
+			System.Console.WriteLine ("Saving measurement data...");
+			OutputResultXML.writeMeasurementData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo, this.TagName, 
+				this.DoMeasurementTable, this.DoCurvatureProfile, 
+				this.DoMapProfile, this.TravelMap, this.probabilityMapSecondClass, this.emManager.Width, this.emManager.Height);
 
 //			Binding b = new Binding();
 //			b.Source = this.screenOverlay.Roots.RootTree;

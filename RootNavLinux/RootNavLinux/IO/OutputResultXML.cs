@@ -892,7 +892,9 @@ namespace RootNavLinux
 			}
 		}
 
-		public static void writeMeasurementData(RootCollection roots, ScreenOverlayRenderInfo render, string tag, bool doCurvatureProfile, bool doMapProfile)
+		public static void writeMeasurementData(RootCollection roots, ScreenOverlayRenderInfo render, string tag, 
+								bool doMeasureTable, bool doCurvatureProfile, 
+								bool doMapProfile, int travel, double[] probabilityMapSecondClass, int width, int height)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -908,46 +910,240 @@ namespace RootNavLinux
 
 				XmlNode measurementNode = doc.CreateNode (XmlNodeType.Element, "Measurement", "");
 
-				//table
-				XmlNode tablesNode = doc.CreateNode (XmlNodeType.Element, "Tables", "");
-
-				XmlDocument xD = new XmlDocument();
-				foreach (Dictionary<string, string> data in RootMeasurement.GetDataAsStrings(roots.RootTree.ToList()))
+				if (doMeasureTable) 
 				{
-					data.Add("Tag", tag);
+					//table
+					XmlNode tablesNode = doc.CreateNode (XmlNodeType.Element, "Tables", "");
 
-					//write to xml file, Code: Dictionary to Element using XML.LINQ
-					XElement el = new XElement("Table", data.Select(kv => new XElement(kv.Key.Replace(' ', '_'), kv.Value)));
-					//convert XElement to XmlNode
-					xD.LoadXml(el.ToString());
+					XmlDocument xD = new XmlDocument();
+					foreach (Dictionary<string, string> data in RootMeasurement.GetDataAsStrings(roots.RootTree.ToList()))
+					{
+						data.Add("Tag", tag);
 
-					XmlNode xN = doc.ImportNode (xD.FirstChild, true);
+						//write to xml file, Code: Dictionary to Element using XML.LINQ
+						XElement el = new XElement("Table", data.Select(kv => new XElement(kv.Key.Replace(' ', '_'), kv.Value)));
+						//convert XElement to XmlNode
+						xD.LoadXml(el.ToString());
 
-					tablesNode.AppendChild (xN);
+						XmlNode xN = doc.ImportNode (xD.FirstChild, true);
+
+						tablesNode.AppendChild (xN);
+					}
+
+					//				Code: Element to Dictionary:
+					//
+					//				XElement rootElement = XElement.Parse("<root><key>value</key></root>");
+					//				Dictionary<string, string> dict = new Dictionary<string, string>();
+					//				foreach(var el in rootElement.Elements())
+					//				{
+					//					dict.Add(el.Name.LocalName, el.Value);
+					//				}
+
+					measurementNode.AppendChild (tablesNode);
 				}
-
-//				Code: Element to Dictionary:
-//
-//				XElement rootElement = XElement.Parse("<root><key>value</key></root>");
-//				Dictionary<string, string> dict = new Dictionary<string, string>();
-//				foreach(var el in rootElement.Elements())
-//				{
-//					dict.Add(el.Name.LocalName, el.Value);
-//				}
-
-
-				measurementNode.AppendChild (tablesNode);
 
 				//curvature profile
 				if (doCurvatureProfile) 
 				{
-					
+					//TableWindow tw = new TableWindow();
+
+					var data = RootMeasurement.GetCurvatureProfiles(roots.RootTree.ToList(), 4);
+
+					double minDistance = double.MinValue;
+					int rowCount = 0;
+					foreach (var v in data)
+					{
+						if (v.Value != null && v.Value.Length > rowCount)
+						{
+							if (v.Value[0].Item1 > minDistance)
+							{
+								minDistance = v.Value[0].Item1;
+							}
+
+							rowCount = v.Value.Length;
+						}
+					}
+
+					string[,] outputArray = new string[data.Count, rowCount + 1];
+
+					int i = 1;
+					foreach (var keyValuePair in data)
+					{
+						if (keyValuePair.Value != null)
+						{
+							// Header
+							outputArray[i, 0] = keyValuePair.Key.RelativeID;
+
+							// Data
+							var distanceAnglePair = keyValuePair.Value;
+							if (distanceAnglePair.Length == rowCount)
+							{
+								for (int j = 0; j < distanceAnglePair.Length; j++)
+								{
+									outputArray[i, j + 1] = Math.Round(distanceAnglePair[j].Item2,1).ToString();
+									outputArray[0, j + 1] = Math.Round(distanceAnglePair[j].Item1).ToString();
+								}
+
+							}
+							else
+							{
+								for (int j = 0; j < distanceAnglePair.Length; j++)
+								{
+									outputArray[i, j + 1] = Math.Round(distanceAnglePair[j].Item2, 1).ToString();
+								}
+							}
+
+							i++;
+						}
+
+					}
+
+					// Turn array into data table
+					DataTable dt = new DataTable();
+					int nbColumns = outputArray.GetLength(0);
+					int nbRows = outputArray.GetLength(1);
+					for (i = 0; i < nbColumns; i++)
+					{
+						dt.Columns.Add(i.ToString(), typeof(string));
+					}
+
+					for (int row = 0; row < nbRows; row++)
+					{
+						DataRow dr = dt.NewRow();
+						for (int col = 0; col < nbColumns; col++)
+						{
+							dr[col] = outputArray[col,row];
+						}
+						dt.Rows.Add(dr);
+					}
+
+					//tw.measurementsView.ItemsSource = dt.DefaultView;
+
+					//tw.Show();
 				}
 
 				//map profile
 				if (doMapProfile) 
 				{
-					
+					//TableWindow tw = new TableWindow();
+
+					Dictionary<RootBase, Tuple<double, double>[]> leftData, rightData;
+
+					RootMeasurement.GetMapProfiles(roots.RootTree.ToList(), out leftData, out rightData,
+													4,
+													travel,
+													probabilityMapSecondClass,
+													width,
+													height);
+
+					double minDistance = double.MinValue;
+					int rowCount = 0;
+
+					// Left
+					foreach (var v in leftData)
+					{
+						if (v.Value != null && v.Value.Length > rowCount)
+						{
+							if (v.Value[0].Item1 > minDistance)
+							{
+								minDistance = v.Value[0].Item1;
+							}
+
+							rowCount = v.Value.Length;
+						}
+					}
+
+					// Right
+					foreach (var v in rightData)
+					{
+						if (v.Value != null && v.Value.Length > rowCount)
+						{
+							if (v.Value[0].Item1 > minDistance)
+							{
+								minDistance = v.Value[0].Item1;
+							}
+
+							rowCount = v.Value.Length;
+						}
+					}
+
+
+					string[,] outputArray = new string[leftData.Count + rightData.Count - 1, rowCount + 1];
+
+					int i = 1;
+					foreach (var keyValuePair in leftData)
+					{
+						if (keyValuePair.Value != null)
+						{
+							// Header
+							outputArray[i, 0] = keyValuePair.Key.RelativeID + " L";
+
+							// Left Data
+							var distanceMapPair = keyValuePair.Value;
+							if (distanceMapPair.Length == rowCount)
+							{
+								for (int j = 0; j < distanceMapPair.Length; j++)
+								{
+									outputArray[i, j + 1] = Math.Round(distanceMapPair[j].Item2, 1).ToString();
+									outputArray[0, j + 1] = Math.Round(distanceMapPair[j].Item1).ToString();
+								}
+
+							}
+							else
+							{
+								for (int j = 0; j < distanceMapPair.Length; j++)
+								{
+									outputArray[i, j + 1] = Math.Round(distanceMapPair[j].Item2, 1).ToString();
+								}
+							}
+
+							i+=2;
+						}
+
+					}
+
+					i = 2;
+					foreach (var keyValuePair in rightData)
+					{
+						if (keyValuePair.Value != null)
+						{
+							// Header
+							outputArray[i, 0] = keyValuePair.Key.RelativeID + " R";
+
+							// Left Data
+							var distanceMapPair = keyValuePair.Value;
+
+							for (int j = 0; j < distanceMapPair.Length; j++)
+							{
+								outputArray[i, j + 1] = Math.Round(distanceMapPair[j].Item2, 1).ToString();
+							}
+
+							i += 2;
+						}
+					}
+
+					// Turn array into data table
+					DataTable dt = new DataTable();
+					int nbColumns = outputArray.GetLength(0);
+					int nbRows = outputArray.GetLength(1);
+					for (i = 0; i < nbColumns; i++)
+					{
+						dt.Columns.Add(i.ToString(), typeof(string));
+					}
+
+					for (int row = 0; row < nbRows; row++)
+					{
+						DataRow dr = dt.NewRow();
+						for (int col = 0; col < nbColumns; col++)
+						{
+							dr[col] = outputArray[col, row];
+						}
+						dt.Rows.Add(dr);
+					}
+
+					//tw.measurementsView.ItemsSource = dt.DefaultView;
+
+					//tw.Show();
 				}
 
 				dataProcessedNode.AppendChild(measurementNode);
