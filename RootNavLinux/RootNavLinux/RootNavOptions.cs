@@ -99,6 +99,9 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Execute measure?", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string DoMeasurement { get; set; }
 
+		[CommandLineOption(Description = "Output measure table?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string DoMeasurementTable { get; set; }
+
 		public EMConfiguration CreateConfiguration()
 		{
 			//create custom configuration

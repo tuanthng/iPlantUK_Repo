@@ -96,6 +96,8 @@ namespace RootNavLinux
 
 						mainRoot.PlantName = options.PlantName;
 
+						result = Boolean.TryParse(options.DoMeasurementTable, out tempBool);
+						mainRoot.DoMeasurementTable = result ? tempBool : true;
 					}
 					else 
 					{

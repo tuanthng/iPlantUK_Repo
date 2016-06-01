@@ -969,7 +969,7 @@ namespace RootNavLinux
 					int i = 1;
 					foreach (var keyValuePair in data)
 					{
-						if (keyValuePair.Value != null)
+						if (keyValuePair.Value != null /*&& keyValuePair.Value.Length > 0*/)
 						{
 							// Header
 							outputArray[i, 0] = keyValuePair.Key.RelativeID;
@@ -1004,7 +1004,7 @@ namespace RootNavLinux
 					int nbRows = outputArray.GetLength(1);
 					for (i = 0; i < nbColumns; i++)
 					{
-						dt.Columns.Add(i.ToString(), typeof(string));
+						dt.Columns.Add("col" + i.ToString(), typeof(string));
 					}
 
 					for (int row = 0; row < nbRows; row++)
@@ -1020,6 +1020,24 @@ namespace RootNavLinux
 					//tw.measurementsView.ItemsSource = dt.DefaultView;
 
 					//tw.Show();
+
+					//Convert DataTable to xml node. using LINQ. Remember to add a reference to DatasetExtension dll
+					XmlDocument xD = new XmlDocument();
+
+					XElement cur = new XElement("CurvatureProfile", 
+						dt.AsEnumerable().Select(row =>
+							new XElement("row",
+								dt.Columns.Cast<DataColumn>().Select(col =>
+									new XAttribute(col.ColumnName, row[col])
+								)
+							)
+						));
+					
+					xD.LoadXml(cur.ToString());
+
+					XmlNode xN = doc.ImportNode (xD.FirstChild, true);
+
+					measurementNode.AppendChild (xN);
 				}
 
 				//map profile
@@ -1128,7 +1146,7 @@ namespace RootNavLinux
 					int nbRows = outputArray.GetLength(1);
 					for (i = 0; i < nbColumns; i++)
 					{
-						dt.Columns.Add(i.ToString(), typeof(string));
+						dt.Columns.Add("col" + i.ToString(), typeof(string));
 					}
 
 					for (int row = 0; row < nbRows; row++)
@@ -1144,6 +1162,24 @@ namespace RootNavLinux
 					//tw.measurementsView.ItemsSource = dt.DefaultView;
 
 					//tw.Show();
+
+					//Convert DataTable to xml node. using LINQ. Remember to add a reference to DatasetExtension dll
+					XmlDocument xD = new XmlDocument();
+
+					XElement cur = new XElement("MapProfile", 
+						dt.AsEnumerable().Select(row =>
+							new XElement("row",
+								dt.Columns.Cast<DataColumn>().Select(col =>
+									new XAttribute(col.ColumnName, row[col])
+								)
+							)
+						));
+
+					xD.LoadXml(cur.ToString());
+
+					XmlNode xN = doc.ImportNode (xD.FirstChild, true);
+
+					measurementNode.AppendChild (xN);
 				}
 
 				dataProcessedNode.AppendChild(measurementNode);
