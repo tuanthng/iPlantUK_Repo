@@ -10,7 +10,9 @@ using RootNav.Core.LiveWires;
 using System.Drawing;
 using RootNav.Interface.Controls;
 using Emgu.CV;
-using RootNav.Core.Measurement; 
+using RootNav.Core.Measurement;
+using System.Linq;
+using System.Xml.Linq; 
 
 namespace RootNavLinux
 {
@@ -884,6 +886,71 @@ namespace RootNavLinux
 				}
 
 				dataProcessedNode.AppendChild(rootBaseNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+			}
+		}
+
+		public static void writeMeasurementData(RootCollection roots, ScreenOverlayRenderInfo render, string tag, bool doCurvatureProfile, bool doMapProfile)
+		{
+			if (File.Exists (FullOutputFileName)) {
+
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
+
+				XmlNode measurementNode = doc.CreateNode (XmlNodeType.Element, "Measurement", "");
+
+				//table
+				XmlNode tablesNode = doc.CreateNode (XmlNodeType.Element, "Tables", "");
+
+				XmlDocument xD = new XmlDocument();
+				foreach (Dictionary<string, string> data in RootMeasurement.GetDataAsStrings(roots.RootTree.ToList()))
+				{
+					data.Add("Tag", tag);
+
+					//write to xml file, Code: Dictionary to Element using XML.LINQ
+					XElement el = new XElement("Table", data.Select(kv => new XElement(kv.Key.Replace(' ', '_'), kv.Value)));
+					//convert XElement to XmlNode
+					xD.LoadXml(el.ToString());
+
+					XmlNode xN = doc.ImportNode (xD.FirstChild, true);
+
+					tablesNode.AppendChild (xN);
+				}
+
+//				Code: Element to Dictionary:
+//
+//				XElement rootElement = XElement.Parse("<root><key>value</key></root>");
+//				Dictionary<string, string> dict = new Dictionary<string, string>();
+//				foreach(var el in rootElement.Elements())
+//				{
+//					dict.Add(el.Name.LocalName, el.Value);
+//				}
+
+
+				measurementNode.AppendChild (tablesNode);
+
+				//curvature profile
+				if (doCurvatureProfile) 
+				{
+					
+				}
+
+				//map profile
+				if (doMapProfile) 
+				{
+					
+				}
+
+				dataProcessedNode.AppendChild(measurementNode);
 
 				//save changes to the file
 				doc.Save (FullOutputFileName);

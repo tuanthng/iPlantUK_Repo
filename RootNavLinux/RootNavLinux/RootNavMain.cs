@@ -1015,6 +1015,8 @@ namespace RootNavLinux
 
 			System.Console.WriteLine ("Saving root data...");
 			OutputResultXML.writeRootData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
+			System.Console.WriteLine ("Saving measurement tables...");
+			OutputResultXML.writeMeasurementData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo, "Test", this.DoCurvatureProfile, this.DoMapProfile);
 
 //			Binding b = new Binding();
 //			b.Source = this.screenOverlay.Roots.RootTree;
