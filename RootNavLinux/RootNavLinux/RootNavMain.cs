@@ -20,6 +20,11 @@ using Emgu.CV;
 using Emgu.CV.UI;
 using Emgu.CV.Structure;
 using System.Xml;
+using RootNav.Data;
+using RootNav.Core.Measurement;
+using RootNav.Data.IO.RSML;
+using RootNav.Data.IO;
+using System.Text;
 
 namespace RootNavLinux
 {
@@ -57,9 +62,11 @@ namespace RootNavLinux
 		}
 
 //		private bool connectionExists = false;
+		private RootNav.Data.IO.ConnectionParams connectionInfo = null;
+		private TiffHeaderInfo imageHeaderInfo = null;
 
 //		RootNav.Data.IO.Databases.DatabaseManager databaseManager = null;
-//		private SceneMetadata.ImageInfo imageInfo = null;
+		private SceneMetadata.ImageInfo imageInfo = null;
 //		private WriteableBitmap featureBitmap = null;
 		private Mat featureBitmap = null;
 //		private WriteableBitmap sourceBitmap = null;
@@ -85,14 +92,23 @@ namespace RootNavLinux
 			set { baseWeightDescriptors = value; }
 		}
 
-		private RootTerminalCollection terminalCollection = new RootTerminalCollection();
+		//private RootTerminalCollection terminalCollection = new RootTerminalCollection();
 
 		private string ImageFileName { get; set; }
 		private string ResultXMLFileName{ get; set; } //the xml file containing result processed
 		public string OutputPath{ get; set; } //output and input path will be passed from outside. By default, they should be the current directory of the program
 		public string InputPath{ get; set; }
 
-		private string ProbabilityFilename{ get; set; }
+		private string ProbabilityBitmapImageFilename{ get; set; }
+		private string ProbabilityBitmapDataFilename{ get; set; }
+
+		private string FeatureBitmapImageFilename{ get; set; }
+		private string FeatureBitmapDataFileName {get; set;}
+
+		private string ProbabilityMapBestClassDataFilename { get; set; }
+
+		private string ProbabilityMapBrightestClassDataFilename { get; set; }
+		private string ProbabilityMapSecondClassDataFilename { get; set; }
 
 		public string InputPointsFilename{ get; set; }
 
@@ -102,13 +118,29 @@ namespace RootNavLinux
 		private bool hasPrimaryNode = false;
 		private bool hasLateralNode = false;
 
+		private static Random random = new Random();
+
+		//parameters for measurement
+		public double ImageResolutionValue { get; set; }
+		public int SplineSpacing { get; set; }
+		public string PlantName { get; set; }
+		public string TagName { get; set; }
+		public bool DoCurvatureProfile { get; set; }
+		public bool DoMapProfile { get; set; }
+		public int TravelMap { get; set; }
+		public bool DoCompleteArch { get; set; }
+		public bool DoMeasurement { get; set; }
+		public bool DoMeasurementTable{ get; set; }
+		public string RSMLDirectory{ get; set; }
+
 		public RootNavMain (string filePathImg)
 		{
 			this.ImageFileName = filePathImg;
 
 			initConfiguration ();
 			createResultFilename ();
-			createProbabilityFilename ();
+			createFilenameForSaving ();
+			initialiseConnectionInfo ();
 
 			//store the xml file into the global
 			OutputResultXML.FullOutputFileName = ResultXMLFileName;
@@ -119,6 +151,16 @@ namespace RootNavLinux
 		public void Process()
 		{
 			LoadImage (this.ImageFileName);
+
+			if (this.PlantName == null || this.PlantName.Length == 0) 
+			{
+				this.PlantName = RandomString (10);
+			}
+
+			if (this.TagName == null || this.TagName.Length == 0) 
+			{
+				this.TagName = this.PlantName;
+			}
 
 			EMProcessing ();
 
@@ -135,10 +177,22 @@ namespace RootNavLinux
 			ResultXMLFileName = Path.Combine(OutputPath, this.ImageFileName + "_result.xml");
 
 		}
-		private void createProbabilityFilename()
+		private void createFilenameForSaving()
 		{
+			//probability map
 			string name = System.IO.Path.GetFileNameWithoutExtension (this.ImageFileName);
-			ProbabilityFilename = name + "_map.png";
+			this.ProbabilityBitmapImageFilename = name + "_map.png";
+			this.ProbabilityBitmapDataFilename = name + "_map_data.dat";
+
+			//feature map
+			this.FeatureBitmapImageFilename = name + "_feature.png";
+			this.FeatureBitmapDataFileName = name + "_feature_data.dat";
+
+			ProbabilityMapBestClassDataFilename = name + "_probBestClass_data.dat";
+
+			//
+			ProbabilityMapBrightestClassDataFilename = name + "_probBrightestClass_data.dat";
+			ProbabilityMapSecondClassDataFilename = name + "_probSecondClass_data.dat";
 		}
 		private int initConfiguration()
 		{
@@ -148,6 +202,7 @@ namespace RootNavLinux
 				//InputPath = System.IO.Directory.GetCurrentDirectory();
 				InputPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				OutputPath = InputPath;
+				RSMLDirectory = OutputPath;
 
 				this.configurations = EMConfiguration.LoadFromXML();
 
@@ -174,6 +229,7 @@ namespace RootNavLinux
 			{
 				img = CvInvoke.Imread(filePath, Emgu.CV.CvEnum.ImreadModes.AnyColor);
 
+
 				//for testing
 				//Console.WriteLine(filePath);
 				//Console.WriteLine(img.NumberOfChannels.ToString());
@@ -195,6 +251,16 @@ namespace RootNavLinux
 
 
 				sourceBitmap = img;
+
+				this.imageInfo = new SceneMetadata.ImageInfo()
+				{
+					Label = filePath,
+					Hash = Hashing.Sha256(filePath),
+					Background = "dark",
+					Unit = "pixels",
+					TimeInSequence = 0.0
+				};
+
 			}
 			catch(Exception ex)
 			{
@@ -389,6 +455,9 @@ namespace RootNavLinux
 			//this.probabilityBitmap = wbmp;
 			//this.probabilityBitmap = imgScreen.Mat;
 			this.probabilityBitmap = new Mat(imgScreen.Mat, imgScreen.ROI);
+
+			//this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
+
 			//this.featureBitmap = featureScreen.Mat; //changed to below code, because it causes error when later time using this variable. Not sure why?
 			this.featureBitmap = new Mat(featureScreen.Mat, featureScreen.ROI);
 
@@ -593,7 +662,7 @@ namespace RootNavLinux
 			}
 
 			//OutputResultXML.writeTipsDetectedData (this.ProbabilityFilename, points);
-			OutputResultXML.writeTipsDetectedDataForBisque (this.ProbabilityFilename, points);
+			OutputResultXML.writeTipsDetectedDataForBisque (this.ProbabilityBitmapImageFilename, points);
 
 			//TODO: testing
 			System.Console.WriteLine("Total points: " + points.Count.ToString());
@@ -613,9 +682,11 @@ namespace RootNavLinux
 			if (this.hasSourceNode && this.hasPrimaryNode) {
 				AnalysePrimaryRoots ();	
 			}
-			if (this.hasSourceNode && this.hasLateralNode) {
-				AnalyseLateralRoots ();
-			}
+//			if (this.hasSourceNode && this.hasLateralNode) {
+//				AnalyseLateralRoots ();
+//			}
+
+
 		}
 
 		public void AnalysePrimaryRoots()
@@ -627,12 +698,17 @@ namespace RootNavLinux
 //				return;
 //			}
 
+			if (this.screenOverlay.Terminals.Sources.Count() == 0
+				|| this.screenOverlay.Terminals.Primaries.Count() == 0)
+			{
+				return;
+			}
+
 			//this.statusText.Text = "Status: Generating probability map";
 			//this.screenOverlay.IsBusy = true;
 
 			int width = this.emManager.Width;
 			int height = this.emManager.Height;
-
 
 
 			this.currentGraph = LiveWireGraph.FromProbabilityMap(this.probabilityMapBestClass, width, height);
@@ -718,6 +794,8 @@ namespace RootNavLinux
 				this.LiveWireLateralWorkCompletedUI (paths);
 
 			}
+
+			//saveData ();
 		}
 
 		private void LiveWirePrimaryWorkCompletedUI(List<LiveWirePrimaryPath> paths)
@@ -764,6 +842,17 @@ namespace RootNavLinux
 			} else {
 				System.Console.WriteLine ("No primary path.");
 			}
+
+			//analyse lateral if has
+			if (this.hasSourceNode && this.hasLateralNode) {
+				AnalyseLateralRoots ();
+			}
+			//if doesn't have lateral, no more analyse, then save data
+			//if has, saving data will wait untill analysing lateral finishes
+			if (!this.hasLateralNode) {
+				//saveData ();
+				BeginMeasurementStage();
+			}
 		}
 
 		private void LiveWireLateralWorkCompletedUI(List<LiveWireLateralPath> paths)
@@ -796,6 +885,9 @@ namespace RootNavLinux
 			} else {
 				System.Console.WriteLine ("No lateral path.");
 			}
+
+			//saveData ();
+			BeginMeasurementStage();
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
@@ -811,6 +903,12 @@ namespace RootNavLinux
 			//{
 			//	return;
 			//}
+
+			if (this.screenOverlay.Paths.Primaries.Count() == 0
+				|| this.screenOverlay.Terminals.Laterals.Count() == 0)
+			{
+				return;
+			}
 
 			//this.screenOverlay.IsBusy = true;
 
@@ -901,6 +999,117 @@ namespace RootNavLinux
 				System.Console.WriteLine ("No point input");
 			}
 		} //end parseInputNodes
+
+		public void saveData()
+		{
+			System.Console.WriteLine ("Saving data...");
+			//save probability map to an image
+			System.Console.WriteLine ("Save Probability bitmap to an image...");
+			this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
+			System.Console.WriteLine ("Save Probability bitmap to data file...");
+			OutputResultXML.writeMatToFile (this.ProbabilityBitmapDataFilename, this.probabilityBitmap);
+
+			System.Console.WriteLine ("Save Feature bitmap to an image...");
+			this.featureBitmap.Save (this.FeatureBitmapImageFilename);
+			System.Console.WriteLine ("Save Feature bitmap to data file...");
+			OutputResultXML.writeMatToFile (this.FeatureBitmapDataFileName, this.featureBitmap);
+
+			System.Console.WriteLine ("Save Probability Map Best Class to data file...");
+			OutputResultXML.write1DArrayToFile (this.ProbabilityMapBestClassDataFilename, this.probabilityMapBestClass);
+			System.Console.WriteLine ("Save Probability Map Brightest Class to data file...");
+			OutputResultXML.write1DArrayToFile (this.ProbabilityMapBrightestClassDataFilename, this.probabilityMapBrightestClass);
+			System.Console.WriteLine ("Save Probability Map Second Class to data file...");
+			OutputResultXML.write1DArrayToFile (this.ProbabilityMapSecondClassDataFilename, this.probabilityMapSecondClass);
+		}
+
+//		~RootNavMain()
+//		{
+//			saveData ();
+//		}
+
+		public void BeginMeasurementStage()
+		{
+			if (!this.DoMeasurement) {
+				return;
+			}
+			this.imageInfo.Resolution = ImageResolutionValue;
+			this.imageInfo.Unit = ImageResolutionValue == 0 ? "pixels" : "mm";
+
+			this.screenOverlay.InitialiseMeasurementStage(this.SplineSpacing, ImageResolutionValue == 0 ? 0 : 1 / ImageResolutionValue);
+
+			System.Console.WriteLine ("Saving root data...");
+			OutputResultXML.writeRootData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
+
+			if (this.screenOverlay.Roots != null && this.screenOverlay.Roots.RootTree.Count > 0)
+			{
+				System.Console.WriteLine ("Writing RSML file...");
+				writeDataToRSML (this.TagName);
+
+				System.Console.WriteLine ("Saving measurement data...");
+				OutputResultXML.writeMeasurementData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo, this.TagName, 
+					this.DoMeasurementTable, this.DoCurvatureProfile, 
+					this.DoMapProfile, this.TravelMap, this.probabilityMapSecondClass, this.emManager.Width, this.emManager.Height);
+			}
+
+//			Binding b = new Binding();
+//			b.Source = this.screenOverlay.Roots.RootTree;
+//			BindingOperations.SetBinding(this.rootTreeView, TreeView.ItemsSourceProperty, b);
+//
+//			this.rootTreeView.MouseMove += new MouseEventHandler(rootTreeView_MouseMove);
+//			this.rootTreeView.MouseLeave += new MouseEventHandler(rootTreeView_MouseLeave);
+//
+//			this.rootTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(rootTreeView_SelectedItemChanged);
+
+			//this.detectionSlidePanel.BeginHide();
+			//this.measurementSlidePanel.BeginShow();
+		}
+		private void initialiseConnectionInfo()
+		{
+			this.connectionInfo = new ConnectionParams() { Directory = this.RSMLDirectory};
+			this.connectionInfo.Source = ConnectionSource.RSMLDirectory;
+		}
+		private bool writeDataToRSML (string tag)
+		{
+			// Create instance of writer class
+			RootNav.Data.IO.RSML.RSMLRootWriter writer = new RSMLRootWriter (connectionInfo);
+			
+			// Create Scene and Metadata
+			SceneMetadata metadata = RootFormatConverter.RootNavDataToRSMLMetadata (this.imageInfo, this.imageHeaderInfo, tag, this.screenOverlay.Roots);
+			SceneInfo scene = RootFormatConverter.RootCollectionToRSMLScene (this.screenOverlay.Roots);
+			
+			if (!this.DoCompleteArch) 
+			{
+				RootFormatConverter.SetIncompletePropertyOnScene (metadata, scene);
+			}
+			
+			bool success = writer.Write (metadata, scene);
+
+			if (success) 
+			{
+				OutputResultXML.writeRSML(this.RSMLDirectory, writer.RSMLFile);
+
+				System.Console.WriteLine ("Status: Measurements successfully output to RSML file");
+			} 
+			else 
+			{
+				System.Console.WriteLine ("Status: Measurements could not be written to RSML file");
+			}
+			return success;
+		}
+
+
+		private string RandomString(int size)
+		{
+			StringBuilder builder = new StringBuilder();
+			char ch;
+			for (int i = 0; i < size; i++)
+			{
+				ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
+				builder.Append(ch);
+			}
+
+			return builder.ToString();
+		}
 
 	} //end class
 } //end namespace

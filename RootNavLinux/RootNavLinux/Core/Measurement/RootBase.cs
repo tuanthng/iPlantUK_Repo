@@ -466,6 +466,7 @@ namespace RootNav.Core.Measurement
             if (this.Order < 0)
             {
                 return null;
+				//return new Tuple<double, double>[0];
             }
 
             // Resolution here is measured in pixels or mm depending on if there's a conversion available
@@ -643,6 +644,10 @@ namespace RootNav.Core.Measurement
             return ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X)) > 0;
         }
 
+		//public override int GetHashCode()
+		//{
+		//	return this.rootIndex.GetHashCode();
+		//}
     }
 
     //[ValueConversion(typeof(Color), typeof(SolidColorBrush))]

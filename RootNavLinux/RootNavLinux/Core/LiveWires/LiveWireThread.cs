@@ -56,7 +56,11 @@ namespace RootNav.Core.LiveWires
 		{
 			actualThread.Start();
 		}
-			
+
+		public virtual void Join()
+		{
+			actualThread.Join();
+		}
     }
 
     public class LiveWirePrimaryThread : LiveWireThread

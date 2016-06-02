@@ -33,6 +33,14 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="WindowsBase" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="MySql.Data">
+      <HintPath>..\Libs\MySQLv4.5\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -49,6 +57,16 @@
     <Compile Include="RootInfo.cs" />
     <Compile Include="SceneInfo.cs" />
     <Compile Include="Annotation.cs" />
+    <Compile Include="IO\ConnectionParams.cs" />
+    <Compile Include="IO\EncryptedStorage.cs" />
+    <Compile Include="IO\IRootReader.cs" />
+    <Compile Include="IO\IRootWriter.cs" />
+    <Compile Include="IO\ImageEncoder.cs" />
+    <Compile Include="IO\Databases\DatabaseManager.cs" />
+    <Compile Include="IO\Databases\MySQLDatabaseManager.cs" />
+    <Compile Include="IO\Databases\MySqlRootReader.cs" />
+    <Compile Include="IO\RSML\RSMLRootReader.cs" />
+    <Compile Include="IO\RSML\RSMLRootWriter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
