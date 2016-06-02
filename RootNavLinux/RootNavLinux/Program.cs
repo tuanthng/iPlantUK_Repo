@@ -68,6 +68,14 @@ namespace RootNavLinux
 						mainRoot.InputPointsFilename = options.InputPointsFile;
 					}
 
+					mainRoot.PlantName = options.PlantName;
+					mainRoot.TagName = options.TagName;
+
+					if (options.RSMLDIR != null && !options.RSMLDIR.Equals("."))
+					{
+						mainRoot.RSMLDirectory = options.RSMLDIR;
+					}
+
 					//check measurement
 					if (options.DoMeasurement != null && options.DoMeasurement.Equals("true"))
 					{

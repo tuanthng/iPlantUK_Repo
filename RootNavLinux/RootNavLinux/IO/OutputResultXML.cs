@@ -1189,6 +1189,34 @@ namespace RootNavLinux
 			}
 		}
 
+		public static void writeRSML(string rsmlDir, string rsmlFile)
+		{
+			if (File.Exists (FullOutputFileName)) {
+
+				//this code used to append new node to the existing xml file
+				XmlTextReader reader = new XmlTextReader (FullOutputFileName);
+				XmlDocument doc = new XmlDocument ();
+				doc.Load (reader);
+				reader.Close ();
+
+				//select the 1st node
+				XmlElement root = doc.DocumentElement;
+				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Input/File");
+
+				XmlNode rmslPathNode = doc.CreateNode (XmlNodeType.Element, "RSMLPath", "");
+				rmslPathNode.InnerText = rsmlDir;
+
+				XmlNode rmslFileNode = doc.CreateNode (XmlNodeType.Element, "RSMLFile", "");
+				rmslFileNode.InnerText = rsmlFile;
+
+				dataProcessedNode.AppendChild(rmslPathNode);
+				dataProcessedNode.AppendChild(rmslFileNode);
+
+				//save changes to the file
+				doc.Save (FullOutputFileName);
+
+			} //end if
+		} //end write Lateral Paths
 	} //end class
 }
 

@@ -23,6 +23,8 @@ using System.Xml;
 using RootNav.Data;
 using RootNav.Core.Measurement;
 using RootNav.Data.IO.RSML;
+using RootNav.Data.IO;
+using System.Text;
 
 namespace RootNavLinux
 {
@@ -116,6 +118,8 @@ namespace RootNavLinux
 		private bool hasPrimaryNode = false;
 		private bool hasLateralNode = false;
 
+		private static Random random = new Random();
+
 		//parameters for measurement
 		public double ImageResolutionValue { get; set; }
 		public int SplineSpacing { get; set; }
@@ -127,6 +131,7 @@ namespace RootNavLinux
 		public bool DoCompleteArch { get; set; }
 		public bool DoMeasurement { get; set; }
 		public bool DoMeasurementTable{ get; set; }
+		public string RSMLDirectory{ get; set; }
 
 		public RootNavMain (string filePathImg)
 		{
@@ -135,6 +140,7 @@ namespace RootNavLinux
 			initConfiguration ();
 			createResultFilename ();
 			createFilenameForSaving ();
+			initialiseConnectionInfo ();
 
 			//store the xml file into the global
 			OutputResultXML.FullOutputFileName = ResultXMLFileName;
@@ -145,6 +151,16 @@ namespace RootNavLinux
 		public void Process()
 		{
 			LoadImage (this.ImageFileName);
+
+			if (this.PlantName == null || this.PlantName.Length == 0) 
+			{
+				this.PlantName = RandomString (10);
+			}
+
+			if (this.TagName == null || this.TagName.Length == 0) 
+			{
+				this.TagName = this.PlantName;
+			}
 
 			EMProcessing ();
 
@@ -186,6 +202,7 @@ namespace RootNavLinux
 				//InputPath = System.IO.Directory.GetCurrentDirectory();
 				InputPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				OutputPath = InputPath;
+				RSMLDirectory = OutputPath;
 
 				this.configurations = EMConfiguration.LoadFromXML();
 
@@ -1025,9 +1042,9 @@ namespace RootNavLinux
 
 			if (this.screenOverlay.Roots != null && this.screenOverlay.Roots.RootTree.Count > 0)
 			{
-				//System.Console.WriteLine ("Writing RSML file...");
-				//writeDataToRSML (this.TagName);
-			
+				System.Console.WriteLine ("Writing RSML file...");
+				writeDataToRSML (this.TagName);
+
 				System.Console.WriteLine ("Saving measurement data...");
 				OutputResultXML.writeMeasurementData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo, this.TagName, 
 					this.DoMeasurementTable, this.DoCurvatureProfile, 
@@ -1046,7 +1063,11 @@ namespace RootNavLinux
 			//this.detectionSlidePanel.BeginHide();
 			//this.measurementSlidePanel.BeginShow();
 		}
-
+		private void initialiseConnectionInfo()
+		{
+			this.connectionInfo = new ConnectionParams() { Directory = this.RSMLDirectory};
+			this.connectionInfo.Source = ConnectionSource.RSMLDirectory;
+		}
 		private bool writeDataToRSML (string tag)
 		{
 			// Create instance of writer class
@@ -1065,6 +1086,8 @@ namespace RootNavLinux
 
 			if (success) 
 			{
+				OutputResultXML.writeRSML(this.RSMLDirectory, writer.RSMLFile);
+
 				System.Console.WriteLine ("Status: Measurements successfully output to RSML file");
 			} 
 			else 
@@ -1072,6 +1095,20 @@ namespace RootNavLinux
 				System.Console.WriteLine ("Status: Measurements could not be written to RSML file");
 			}
 			return success;
+		}
+
+
+		private string RandomString(int size)
+		{
+			StringBuilder builder = new StringBuilder();
+			char ch;
+			for (int i = 0; i < size; i++)
+			{
+				ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
+				builder.Append(ch);
+			}
+
+			return builder.ToString();
 		}
 
 	} //end class

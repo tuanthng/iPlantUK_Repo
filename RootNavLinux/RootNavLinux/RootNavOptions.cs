@@ -102,6 +102,12 @@ namespace RootNavLinux
 		[CommandLineOption(Description = "Output measure table?", RequireExplicitAssignment= true, MinOccurs = 0)]
 		public string DoMeasurementTable { get; set; }
 
+		[CommandLineOption(Description = "Tag name?", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string TagName { get; set; }
+
+		[CommandLineOption(Description = "RSML directory", RequireExplicitAssignment= true, MinOccurs = 0)]
+		public string RSMLDIR { get; set; }
+
 		public EMConfiguration CreateConfiguration()
 		{
 			//create custom configuration

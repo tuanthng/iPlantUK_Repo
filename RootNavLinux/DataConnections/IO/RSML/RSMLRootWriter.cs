@@ -15,6 +15,10 @@ namespace RootNav.Data.IO.RSML
         string initialDirectory;
         Random r = new Random();
 
+		private string rsmlFile;
+
+		public string RSMLFile{ get { return rsmlFile; } }
+
         public RSMLRootWriter(ConnectionParams connectionInfo)
         {
             initialDirectory = connectionInfo.Directory;
@@ -56,11 +60,12 @@ namespace RootNav.Data.IO.RSML
             // Scene
             rsmlNode.AppendChild(CreateScene(document, scene));
             
-            // Write document to file
-            if (initialDirectory.Last() != '\\')
-            {
-                initialDirectory += '\\';
-            }
+
+			// Write document to file
+            //if (initialDirectory.Last() != '\\)
+			//{
+            //    initialDirectory += '\\';
+            //}
             
             string fileName = metadata.Key;
 
@@ -69,7 +74,10 @@ namespace RootNav.Data.IO.RSML
                 fileName = fileName.Replace(c, '_');
             }
 
-            string file = System.IO.Path.Combine(initialDirectory, fileName + ".rsml");
+			rsmlFile = fileName + ".rsml";
+
+			string file = System.IO.Path.Combine(initialDirectory, rsmlFile);
+
             document.Save(file);
 
             return true;
