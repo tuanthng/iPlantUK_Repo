@@ -1029,6 +1029,11 @@ namespace RootNavLinux
 								else if (point.Attributes ["type"].Value.ToUpper().CompareTo ("START") == 0) 
 								{
 									newPath.StartPoint = p;
+
+									//find the closest terminal and get the terminal index and type
+
+
+
 								} 
 							}  //end for each
 							this.listAdjustedPaths.Add(newPath);
@@ -1259,6 +1264,81 @@ namespace RootNavLinux
 			//this.Dispatcher.BeginInvoke(new LiveWireReCompletedDelegate(this.LiveWireReWorkCompletedUI));
 			this.LiveWireReWorkCompletedUI();
 		}
+
+		public void AddControlPointToRoot(int highlightedRootIndex, Point dragPoint, Point newPoint)
+		{
+			if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWirePrimaryPath)
+			{
+				LiveWirePrimaryPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWirePrimaryPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				int newIndex = currentPath.Path.IndexOf(dragPoint);
+				if (currentPath.IntermediatePoints.Count > 0)
+				{
+					bool indexFound = false;
+					for (int i = 0; i < currentPath.IntermediatePoints.Count; i++)
+					{
+						if (newIndex < currentPath.Indices[i])
+						{
+							currentPath.IntermediatePoints.Insert(i, newPoint);
+							indexFound = true;
+							break;
+						}
+					}
+					if (!indexFound)
+					{
+						currentPath.IntermediatePoints.Add(newPoint);
+					}
+
+				}
+				else
+				{
+					currentPath.IntermediatePoints.Add(newPoint);
+				}
+
+				ReprocessAlteredRoot(highlightedRootIndex);
+			}
+			else if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWireLateralPath)
+			{
+				LiveWireLateralPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWireLateralPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				int newIndex = currentPath.Path.IndexOf(dragPoint);
+				if (currentPath.IntermediatePoints.Count > 0)
+				{
+					bool indexFound = false;
+					for (int i = 0; i < currentPath.IntermediatePoints.Count; i++)
+					{
+						if (newIndex < currentPath.Indices[i])
+						{
+							currentPath.IntermediatePoints.Insert(i, newPoint);
+							indexFound = true;
+							break;
+						}
+					}
+					if (!indexFound)
+					{
+						currentPath.IntermediatePoints.Add(newPoint);
+					}
+
+				}
+				else
+				{
+					currentPath.IntermediatePoints.Add(newPoint);
+				}
+
+				ReprocessLateralRoot(highlightedRootIndex);
+			}
+		}
+
 	} //end class
 } //end namespace
 

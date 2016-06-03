@@ -2077,35 +2077,35 @@ namespace RootNav.Interface.Controls
 //
 //        }
 //
-//        private bool FindNearbyTerminalPoint(Point position, double distanceThreshold, out int terminalIndex)
-//        {
-//            double distance = double.MaxValue;  
-//            int index = 0;
-//            for(int i = 0; i < this.terminalCollection.Count; i++)
-//            {
-//                RootTerminal terminal = this.terminalCollection[i];
-//                Point p = terminal.Position;
-//                double d = Math.Sqrt(Math.Pow(p.X - mousePosition.X, 2.0) + Math.Pow(p.Y - mousePosition.Y, 2.0));
-//                if (d < distance)
-//                {
-//                    index = i;
-//                    distance = d;
-//                }
-//            }
-//
-//            if (distance <= distanceThreshold)
-//            {
-//                terminalIndex = index;
-//                return true;
-//            }
-//            else
-//            {
-//                terminalIndex = -1;
-//                return false;
-//            }
-//          
-//        }
-//
+		public bool FindNearbyTerminalPoint(Point position, double distanceThreshold, out int terminalIndex)
+        {
+            double distance = double.MaxValue;  
+            int index = 0;
+            for(int i = 0; i < this.terminalCollection.Count; i++)
+            {
+                RootTerminal terminal = this.terminalCollection[i];
+                Point p = terminal.Position;
+				double d = Math.Sqrt(Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0));
+                if (d < distance)
+                {
+                    index = i;
+                    distance = d;
+                }
+            }
+
+            if (distance <= distanceThreshold)
+            {
+                terminalIndex = index;
+                return true;
+            }
+            else
+            {
+                terminalIndex = -1;
+                return false;
+            }
+          
+        }
+
 //        private bool FindHighlightedControlPoint()
 //        {
 //            if (this.paths != null && this.paths.Count > 0)
@@ -2151,7 +2151,7 @@ namespace RootNav.Interface.Controls
 //            return false;
 //        }
 
-        private bool FindNearbyControlPoint(Point position, double distanceThreshold, out int controlPointIndex, out int rootIndex)
+        public bool FindNearbyControlPoint(Point position, double distanceThreshold, out int controlPointIndex, out int rootIndex)
         {
             double distance = double.MaxValue;
             int currentRootIndex = 0;
