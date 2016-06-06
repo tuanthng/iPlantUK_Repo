@@ -855,7 +855,10 @@ namespace RootNavLinux
 			//if has, saving data will wait untill analysing lateral finishes
 			if (!this.hasLateralNode) {
 				//saveData ();
+				this.processAdjustedPaths ();  
+				//TODO: need to check to make sure adjusting paths completely finish before measurement begins
 				BeginMeasurementStage();
+
 			}
 		}
 
@@ -893,10 +896,12 @@ namespace RootNavLinux
 				System.Console.WriteLine ("No lateral path.");
 			}
 
+			//TODO: need to check to make sure adjusting paths completely finish before measurement begins
+			this.processAdjustedPaths ();
+
 			//saveData ();
 			BeginMeasurementStage();
 
-			this.processAdjustedPaths ();
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
