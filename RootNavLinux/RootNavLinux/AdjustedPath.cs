@@ -15,7 +15,11 @@ namespace RootNavLinux
 			set { sourceIndex = value; }
 		}
 
-		public TerminalType TypeSource;
+		public TerminalType TypePath
+		{ 
+			get; 
+			set; 
+		}
 
 		private List<Point> intermediatePoints = new List<Point>();
 

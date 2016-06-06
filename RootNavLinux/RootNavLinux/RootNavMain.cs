@@ -895,6 +895,8 @@ namespace RootNavLinux
 
 			//saveData ();
 			BeginMeasurementStage();
+
+			this.processAdjustedPaths ();
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
@@ -989,7 +991,7 @@ namespace RootNavLinux
 
 					//select the 1st node
 					XmlElement root = doc.DocumentElement;
-					XmlNode pointsNode = root.SelectSingleNode ("/Points");
+					XmlNode pointsNode = root.SelectSingleNode ("/InputData/Points");
 
 					foreach (XmlNode node in pointsNode.ChildNodes) 
 					{
@@ -1008,7 +1010,7 @@ namespace RootNavLinux
 					} //end for each
 
 					//check if there is any adjusted paths
-					XmlNodeList adjustedPaths = root.SelectNodes ("/AdjustedPaths/Path");
+					XmlNodeList adjustedPaths = root.SelectNodes ("/InputData/AdjustedPaths/Path");
 
 					if (adjustedPaths != null && adjustedPaths.Count > 0) 
 					{
@@ -1030,13 +1032,11 @@ namespace RootNavLinux
 								{
 									newPath.StartPoint = p;
 
-									//find the closest terminal and get the terminal index and type
-
-
-
-								} 
+								} //end else if 
 							}  //end for each
+
 							this.listAdjustedPaths.Add(newPath);
+
 						} //end for each
 					} //end if
 				} //end if
@@ -1046,6 +1046,53 @@ namespace RootNavLinux
 				System.Console.WriteLine ("No point input");
 			}
 		} //end parseInputNodes
+
+		private void processAdjustedPaths ()
+		{
+			System.Console.WriteLine ("processing Adjusted Paths...");
+
+			if (this.listAdjustedPaths != null && this.listAdjustedPaths.Count > 0) 
+			{
+				foreach (AdjustedPath newPath in this.listAdjustedPaths) 
+				{
+					//find the closest terminal and get the terminal index and type
+					int terminalIndex = -1;
+					Point p = newPath.StartPoint;
+
+					bool found = this.screenOverlay.FindNearbyTerminalPoint (p, RootDetectionScreenOverlay.RootUISize, out terminalIndex);
+
+					if (found) {
+						//determine the lateral or primary path defending on the terminal type found
+						TerminalType typeFound = this.screenOverlay.Terminals [terminalIndex].Type;
+
+						newPath.TypePath = typeFound;
+					}//end if
+					else 
+					{
+						newPath.TypePath = TerminalType.Undefined;
+					}
+
+					//find if the starting point is close to any root path
+					//int controlPointIndex;
+					int rootIndex;
+					Point rootPosition;
+
+					//bool rootFound = this.screenOverlay.FindNearbyControlPointByTerminalType (p, RootDetectionScreenOverlay.RootUISize, newPath.TypePath, out controlPointIndex, out rootIndex);
+					bool rootFound = this.screenOverlay.FindNearbyRootPoints (p, RootDetectionScreenOverlay.RootUISize, out rootPosition, out rootIndex);
+
+					if (rootFound) 
+					{
+						//if found any root, assign new control points for that root
+						//this.AddControlPointToRoot(rootIndex, 
+						for (int index = 0; index < newPath.IntermediatePoints.Count; index++) 
+						{
+							this.AddControlPointToRoot (rootIndex, newPath.IntermediatePoints [index], (index + 1) == newPath.IntermediatePoints.Count);
+						}
+					} //end if
+
+				} //end foreach
+			} //end if
+		} //end
 
 		public void saveData()
 		{
@@ -1182,7 +1229,7 @@ namespace RootNavLinux
 				}
 			}
 
-			LiveWirePrimaryManager manager = new LiveWirePrimaryManager()
+			LiveWirePrimaryManagerThread manager = new LiveWirePrimaryManagerThread()
 			{
 				Graph = this.currentGraph,
 				Terminals = this.screenOverlay.Terminals,
@@ -1220,6 +1267,19 @@ namespace RootNavLinux
 			//this.screenOverlay.InvalidateVisual();
 			//this.screenOverlay.IsBusy = false;
 			//this.statusText.Text = "Status: Idle";
+
+			if (this.screenOverlay.Paths.Primaries.Count () > 0) 
+			{
+				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
+				System.Console.WriteLine ("Total points of the 1st path the primary point (reprocessed): " + path.Path.Count.ToString ());
+
+			}
+			else {
+				System.Console.WriteLine ("No primary path.");
+			}
+
+			//TODO: output result. Make sure to remove the old Primary paths
+			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
 		}
 
 		public void ReprocessLateralRoot(params int[] rootIndexes)
@@ -1339,6 +1399,43 @@ namespace RootNavLinux
 			}
 		}
 
+		public void AddControlPointToRoot(int highlightedRootIndex, Point newPoint, bool executed = false)
+		{
+			if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWirePrimaryPath)
+			{
+				LiveWirePrimaryPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWirePrimaryPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				currentPath.IntermediatePoints.Add(newPoint);
+
+				if (executed) 
+				{
+					ReprocessAlteredRoot(highlightedRootIndex);
+				}
+
+			}
+			else if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWireLateralPath)
+			{
+				LiveWireLateralPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWireLateralPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				currentPath.IntermediatePoints.Add(newPoint);
+
+				if (executed) 
+				{
+					ReprocessLateralRoot(highlightedRootIndex);	
+				}
+
+			}
+		}
 	} //end class
 } //end namespace
 
