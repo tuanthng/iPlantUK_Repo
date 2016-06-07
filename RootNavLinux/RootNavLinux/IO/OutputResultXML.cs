@@ -302,7 +302,21 @@ namespace RootNavLinux
 				XmlElement root = doc.DocumentElement;
 				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
 
-				XmlNode primaryPathsNode = doc.CreateNode (XmlNodeType.Element, "PrimaryPaths", "");
+				XmlNode primaryPathsNodeOld = root.SelectSingleNode ("/DataProcessed/Output/PrimaryPaths");
+
+				XmlNode primaryPathsNode = null;
+
+				//remove the old node if has
+				if (primaryPathsNodeOld == null) 
+				{
+					primaryPathsNode = doc.CreateNode (XmlNodeType.Element, "PrimaryPaths", "");
+				} 
+				else 
+				{
+					primaryPathsNodeOld.RemoveAll ();
+
+					primaryPathsNode = primaryPathsNodeOld;
+				}
 
 				int index = 0;
 				foreach (LiveWirePrimaryPath path in paths.Primaries)
@@ -448,7 +462,21 @@ namespace RootNavLinux
 				XmlElement root = doc.DocumentElement;
 				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
 
-				XmlNode lateralPathsNode = doc.CreateNode (XmlNodeType.Element, "LateralPaths", "");
+				XmlNode lateralPathsNodeOld = root.SelectSingleNode ("/DataProcessed/Output/LateralPaths");
+
+				XmlNode lateralPathsNode = null;
+
+				//remove the old node if has
+				if (lateralPathsNodeOld == null) 
+				{
+					lateralPathsNode = doc.CreateNode (XmlNodeType.Element, "LateralPaths", "");
+				} 
+				else 
+				{
+					lateralPathsNodeOld.RemoveAll ();
+
+					lateralPathsNode = lateralPathsNodeOld;
+				}
 
 				//int totalPath = paths.Laterals;
 				int index = 0;
