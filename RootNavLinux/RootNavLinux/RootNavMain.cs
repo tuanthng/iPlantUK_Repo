@@ -32,6 +32,8 @@ namespace RootNavLinux
 	{
 		public static double BackgroundPenalty = 0.1;
 
+		public static double SCALE_UI = 4.5;
+
 		public delegate void StatusTextUpdateDelegate(String s);
 		//public delegate void ScreenImageUpdateDelegate(WriteableBitmap wbmp);
 		public delegate void ScreenImageUpdateDelegate(Mat wbmp);
@@ -458,7 +460,7 @@ namespace RootNavLinux
 			//this.probabilityBitmap = imgScreen.Mat;
 			this.probabilityBitmap = new Mat(imgScreen.Mat, imgScreen.ROI);
 
-			//this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
+			this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
 
 			//this.featureBitmap = featureScreen.Mat; //changed to below code, because it causes error when later time using this variable. Not sure why?
 			this.featureBitmap = new Mat(featureScreen.Mat, featureScreen.ROI);
@@ -592,11 +594,15 @@ namespace RootNavLinux
 						//featureBitmap.Data.SetValue ((byte)(this.probabilityMapBrightestClass[index] * 255), (y * featureStride) + x);
 						featureBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBrightestClass[index] * 255);
 						//screenBitmap.Data.SetValue(bgr32, (y * outputStride) + x);
-						screenBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBestClass[index] * 255);
-						screenBitmap.Data[y, x, 1] = 0;
-						screenBitmap.Data[y, x, 2] = 0;
+						//screenBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBestClass[index] * 255);
+						//screenBitmap.Data[y, x, 1] = 0;
+						//screenBitmap.Data[y, x, 2] = 0;
 
+						byte[] values = BitConverter.GetBytes (bgr32);
 
+						screenBitmap.Data[y, x, 0] = values[0];
+						screenBitmap.Data[y, x, 1] = values[1];
+						screenBitmap.Data[y, x, 2] = values[2];
 					}
 				}
 
@@ -1064,7 +1070,7 @@ namespace RootNavLinux
 					int terminalIndex = -1;
 					Point p = newPath.StartPoint;
 
-					bool found = this.screenOverlay.FindNearbyTerminalPoint (p, RootDetectionScreenOverlay.RootUISize, out terminalIndex);
+					bool found = this.screenOverlay.FindNearbyTerminalPoint (p, RootDetectionScreenOverlay.RootUISize * SCALE_UI, out terminalIndex);
 
 					if (found) {
 						//determine the lateral or primary path defending on the terminal type found
@@ -1083,7 +1089,7 @@ namespace RootNavLinux
 					Point rootPosition;
 
 					//bool rootFound = this.screenOverlay.FindNearbyControlPointByTerminalType (p, RootDetectionScreenOverlay.RootUISize, newPath.TypePath, out controlPointIndex, out rootIndex);
-					bool rootFound = this.screenOverlay.FindNearbyRootPoints (p, RootDetectionScreenOverlay.RootUISize, out rootPosition, out rootIndex);
+					bool rootFound = this.screenOverlay.FindNearbyRootPoints (p, RootDetectionScreenOverlay.RootUISize * SCALE_UI, out rootPosition, out rootIndex);
 
 					if (rootFound) 
 					{
