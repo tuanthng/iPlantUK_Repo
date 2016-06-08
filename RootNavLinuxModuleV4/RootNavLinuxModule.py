@@ -309,7 +309,7 @@ class RootNavLinux(object):
             
             etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
             
-            
+           
             #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
             #filepath = '/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png'
             filepath = '/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002_copy.jpg'
@@ -330,63 +330,70 @@ class RootNavLinux(object):
             #    gPoint = etree.SubElement(gObjectTag, 'point', name=tip.attrib['id'])
             #    etree.SubElement(gPoint, 'vertex', x=tip.attrib['x'], y=tip.attrib['y'])
              
-              
+        #display root info
+        #rootsTopMostNodes = rootNode.findall("./Output/RootTree/Root")
+        rootsTopMostNodes = rootNode.xpath('./Output/RootTree/Root[@order="-1"]')
+        
+        for root in rootsTopMostNodes:
+            etree.SubElement( outputSubTag, 'tag', name='Root length', value=root.get('length'))
+            etree.SubElement( outputSubTag, 'tag', name='Root area', value=root.get('area'))
+            etree.SubElement( outputSubTag, 'tag', name='Primary root', value=root.get('primaryRoots'))     
         
             #outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=self.options.image_url)
             
-            resource = etree.Element ('image', name=os.path.basename(filepath), value=localpath2url(filepath))
-            meta = etree.SubElement (resource, 'tag', name='Experimental')
-            etree.SubElement (meta, 'tag', name='numberpoints', value="12")
+        resource = etree.Element ('image', name=os.path.basename(filepath), value=localpath2url(filepath))
+        meta = etree.SubElement (resource, 'tag', name='Experimental')
+        etree.SubElement (meta, 'tag', name='numberpoints', value="12")
+        
+        #resource = etree.Element ('image', name='new file %s'%(os.path.basename(filepath)))
+                     
+        logging.debug('resource: ' + str(resource))
+        
+        
+        #self.uploadFileToServer(filepath)
+        
+        logging.debug('self.bq.service_map in teardown: ' + str(self.bq.service_map))
             
-            #resource = etree.Element ('image', name='new file %s'%(os.path.basename(filepath)))
-                         
-            logging.debug('resource: ' + str(resource))
+        #url = self.bq.service_url('data_service', 'image')
+        #url = self.bq.service_url('blob_service')
+        #url = self.bq.service_url('image_service', 'image') ##couldnt use for upload
+        #url = self.bq.service_url('/import/transfer') #not a service
+        #url = self.bq.service_url('import', 'transfer') #not a service
+        #url = self.bq.service_url('import', path='transfer') #not a service
+        #url = self.bq.service_url('http://127.0.0.1:8080/', '/import/transfer') #not a service
+        #response = save_blob(self.bq, resource=resource)
+        
+        #logging.debug('url : ' + str(url))
+        #response_xml = self.bq.postblob(localpath2url(filepath), xml=resource) #post image to bisque and get the response
+        
+        #logging.debug('response_xml: ' + str(response_xml))
+        
+        #r =  self.bq.postxml(url, resource, method='POST')
+        
+        
+        #logging.debug('Response: ' + str(r))
+        
+        #response = self.bq.postblob(filepath, xml=resource)
+        #response = self.bq.postblob(filepath, xml=resource)
+        #blob = etree.XML(response).find('./')
+        
+        
+        # if blob is None or blob.get('uri') is None:
+        #    logging.debug('Could not insert the Histogram file into the system')
+        #    self.bq.fail_mex('Could not insert the Histogram file into the system')
+        # else:
+            # outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        #    outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=blob.get('uri'), type='image')
             
-            
-            #self.uploadFileToServer(filepath)
-            
-            logging.debug('self.bq.service_map in teardown: ' + str(self.bq.service_map))
-            
-            #url = self.bq.service_url('data_service', 'image')
-            #url = self.bq.service_url('blob_service')
-            #url = self.bq.service_url('image_service', 'image') ##couldnt use for upload
-            #url = self.bq.service_url('/import/transfer') #not a service
-            #url = self.bq.service_url('import', 'transfer') #not a service
-            #url = self.bq.service_url('import', path='transfer') #not a service
-            #url = self.bq.service_url('http://127.0.0.1:8080/', '/import/transfer') #not a service
-            #response = save_blob(self.bq, resource=resource)
-            
-            #logging.debug('url : ' + str(url))
-            #response_xml = self.bq.postblob(localpath2url(filepath), xml=resource) #post image to bisque and get the response
-            
-            #logging.debug('response_xml: ' + str(response_xml))
-            
-            #r =  self.bq.postxml(url, resource, method='POST')
-            
-            
-            #logging.debug('Response: ' + str(r))
-            
-            #response = self.bq.postblob(filepath, xml=resource)
-            #response = self.bq.postblob(filepath, xml=resource)
-            #blob = etree.XML(response).find('./')
-            
-            
-            # if blob is None or blob.get('uri') is None:
-            #    logging.debug('Could not insert the Histogram file into the system')
-            #    self.bq.fail_mex('Could not insert the Histogram file into the system')
-            # else:
-                # outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
-            #    outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=blob.get('uri'), type='image')
-                
-           # if r is None or r.get('uri') is None:
-            #    logging.debug('Could not insert the Histogram file into the system')
-           #     self.bq.fail_mex('Could not insert the Histogram file into the system')
-           # else:
-                # outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
-            #    logging.debug('resource id: %s' %r.get('resource_uniq'))
-            #    logging.debug('url: %s' %r.get('uri'))
-            #    outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=r.get('uri'), type='image')
-                # outputExtraImgTag = etree.SubElement(outputImgTag, 'tag', name='OutputExtraImage', value=r.get('value'), type='image')
+       # if r is None or r.get('uri') is None:
+        #    logging.debug('Could not insert the Histogram file into the system')
+       #     self.bq.fail_mex('Could not insert the Histogram file into the system')
+       # else:
+            # outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        #    logging.debug('resource id: %s' %r.get('resource_uniq'))
+        #    logging.debug('url: %s' %r.get('uri'))
+        #    outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=r.get('uri'), type='image')
+            # outputExtraImgTag = etree.SubElement(outputImgTag, 'tag', name='OutputExtraImage', value=r.get('value'), type='image')
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
@@ -405,6 +412,9 @@ class RootNavLinux(object):
         if (lateralPathsNode is not None) and (len(lateralPathsNode) > 0):
             for path in lateralPathsNode[0]:
                 outputPathImgTag.append(path)
+        
+        
+        outputRootImgTag = etree.SubElement(outputTag, 'tag', name='OutputRootsImage', value=self.options.image_url)
                 
         #or using # self.bq.addTag()
         self.bq.finish_mex(tags = [outputTag])

@@ -277,6 +277,12 @@
 				<tag name="label" value="Paths" />
 			</template>
 		</tag>
+		
+		<tag name="OutputRootsImage" type="image">
+			<template>
+				<tag name="label" value="Roots" />
+			</template>
+		</tag>
 
 	</tag>
 
