@@ -861,9 +861,16 @@ namespace RootNavLinux
 			//if has, saving data will wait untill analysing lateral finishes
 			if (!this.hasLateralNode) {
 				//saveData ();
-				this.processAdjustedPaths ();  
+
 				//TODO: need to check to make sure adjusting paths completely finish before measurement begins
-				BeginMeasurementStage();
+				if (!(this.listAdjustedPaths != null && this.listAdjustedPaths.Count > 0)) 
+				{
+					BeginMeasurementStage();
+				}
+				else 
+				{
+					this.processAdjustedPaths ();  
+				}
 
 			}
 		}
@@ -906,7 +913,11 @@ namespace RootNavLinux
 			this.processAdjustedPaths ();
 
 			//saveData ();
-			BeginMeasurementStage();
+			//if there is no adjusted paths, then doing measurement or else wait until re-doing paths
+			if (!(this.listAdjustedPaths != null && this.listAdjustedPaths.Count > 0)) 
+			{
+				BeginMeasurementStage();
+			}
 
 		}
 
@@ -1291,6 +1302,11 @@ namespace RootNavLinux
 
 			//TODO: output result. Make sure to remove the old Primary paths
 			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
+
+			OutputResultXML.writeLateralPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
+
+			BeginMeasurementStage();
+
 		}
 
 		public void ReprocessLateralRoot(params int[] rootIndexes)
