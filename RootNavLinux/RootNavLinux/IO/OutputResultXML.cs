@@ -681,7 +681,7 @@ namespace RootNavLinux
 			}
 		} //end read1DArrayFromFile
 
-		public static void writeRootData(RootBase root, XmlDocument doc, ref XmlNode parent, ScreenOverlayRenderInfo render)
+		public static void writeRootDataForBisque(RootBase root, XmlDocument doc, ref XmlNode parent, ScreenOverlayRenderInfo render)
 		{
 			XmlNode rootNode = doc.CreateNode (XmlNodeType.Element, "Root", "");
 			XmlAttribute orderAtt = doc.CreateAttribute("order");
@@ -745,6 +745,18 @@ namespace RootNavLinux
 					XmlAttribute nameAtt = doc.CreateAttribute("name");
 					nameAtt.Value = "0";
 					polylineNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (Color.WhiteSmoke);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					polylineNode.AppendChild (colourNode);
+
 
 					gObjectNode.AppendChild (polylineNode);
 
@@ -888,11 +900,11 @@ namespace RootNavLinux
 			//recursive for child trees
 			foreach (RootBase child in root.Children)
 			{
-				writeRootData(child, doc, ref rootNode, render);
+				writeRootDataForBisque(child, doc, ref rootNode, render);
 			}
 		}
 
-		public static void writeRootData(RootCollection roots, ScreenOverlayRenderInfo render)
+		public static void writeRootDataForBisque(RootCollection roots, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -910,7 +922,7 @@ namespace RootNavLinux
 
 				foreach(RootBase r in roots)
 				{
-					writeRootData (r, doc, ref rootBaseNode, render);
+					writeRootDataForBisque (r, doc, ref rootBaseNode, render);
 				}
 
 				dataProcessedNode.AppendChild(rootBaseNode);

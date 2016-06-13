@@ -1155,7 +1155,7 @@ namespace RootNavLinux
 			this.screenOverlay.InitialiseMeasurementStage(this.SplineSpacing, ImageResolutionValue == 0 ? 0 : 1 / ImageResolutionValue);
 
 			System.Console.WriteLine ("Saving root data...");
-			OutputResultXML.writeRootData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
+			OutputResultXML.writeRootDataForBisque (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
 
 			if (this.screenOverlay.Roots != null && this.screenOverlay.Roots.RootTree.Count > 0)
 			{
