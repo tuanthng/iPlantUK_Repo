@@ -961,7 +961,10 @@ namespace RootNavLinux
 						data.Add("Tag", tag);
 
 						//write to xml file, Code: Dictionary to Element using XML.LINQ
-						XElement el = new XElement("Table", data.Select(kv => new XElement(kv.Key.Replace(' ', '_'), kv.Value)));
+
+						XElement el = new XElement("Table", data.Select(kv => new XElement("tag", 
+									new XAttribute("name", kv.Key.Replace(' ', '_')), 
+									new XAttribute("value", kv.Value))));
 						//convert XElement to XmlNode
 						xD.LoadXml(el.ToString());
 
@@ -1257,6 +1260,43 @@ namespace RootNavLinux
 
 			} //end if
 		} //end write Lateral Paths
+
+		public static XElement DictionaryToXml(Dictionary<string, string> inputDict, string elmName = "Table", string valuesName = "tag")
+		{
+
+			XElement outElm = new XElement(elmName);
+
+			Dictionary<string, string>.KeyCollection keys = inputDict.Keys;
+
+			XElement inner = new XElement(valuesName);
+
+			foreach (string key in keys)
+			{
+				inner.Add(new XAttribute("name", key.Replace(' ', '_')));
+				inner.Add(new XAttribute("value", inputDict[key]));
+			}
+
+			outElm.Add(inner);
+
+			return outElm;
+		}
+
+		public static Dictionary<string, string> XmlToDictionary(string key, string value, XElement baseElm)
+		{
+			Dictionary<string, string> dict = new Dictionary<string, string>();
+
+			foreach (XElement elm in baseElm.Elements())
+			{ 
+				string dictKey = elm.Attribute(key.Replace(' ', '_')).Value;
+				string dictVal = elm.Attribute(value).Value;
+
+				dict.Add(dictKey, dictVal);
+
+			}
+
+			return dict;
+		}
+
 	} //end class
 }
 
