@@ -332,13 +332,15 @@ class RootNavLinux(object):
              
         #display root info
         #rootsTopMostNodes = rootNode.findall("./Output/RootTree/Root")
+        
         rootsTopMostNodes = rootNode.xpath('./Output/RootTree/Root[@order="-1"]')
         
         for root in rootsTopMostNodes:
             etree.SubElement( outputSubTag, 'tag', name='Root length', value=root.get('length'))
             etree.SubElement( outputSubTag, 'tag', name='Root area', value=root.get('area'))
             etree.SubElement( outputSubTag, 'tag', name='Primary root', value=root.get('primaryRoots'))     
-        
+            
+            
             #outputExtraImgTag = etree.SubElement(outputTag, 'tag', name='OutputExtraImage', value=self.options.image_url)
             
         resource = etree.Element ('image', name=os.path.basename(filepath), value=localpath2url(filepath))
@@ -413,10 +415,54 @@ class RootNavLinux(object):
             for path in lateralPathsNode[0]:
                 outputPathImgTag.append(path)
         
-        
+        #node to display the root and convex hull
         outputRootImgTag = etree.SubElement(outputTag, 'tag', name='OutputRootsImage', value=self.options.image_url)
+         
+        gObjectRootNode = etree.SubElement(outputRootImgTag, 'gobject', name='Roots')
+         
+        splineInOtherRootsNodes = rootNode.xpath('./Output/RootTree/Root[@order!="-1"]/Spline')
+        for spline in splineInOtherRootsNodes:
+            #outputRootImgTag.append(spline[0])
+            gObjectRootNode.append(spline[0])
+         
+        for root in rootsTopMostNodes:
+            convexNodes = root.findall('ConvexHull')
+            for cx in convexNodes:
+                #outputRootImgTag.append(cx[0])                
+                gObjectRootNode.append(cx[0])
+        
+        #get data for measurement table
+        measurementTablesNode =  rootNode.xpath('./Output/Measurement/Tables')
                 
+        if (measurementTablesNode is not None and len (measurementTablesNode) > 0):
+            #outputRootImgTag.append(measurementTablesNode[0])
+            gObjectRootNode.append(measurementTablesNode[0])
+        
+        #get data for curvature profile
+        curvNode = etree.SubElement(gObjectRootNode, 'tag', name='CurvatureProfile')
+        curvatureProfileDataNode = rootNode.xpath('./Output/Measurement/CurvatureProfile')
+        if (curvatureProfileDataNode is not None and len (curvatureProfileDataNode) > 0):
+            for rowDataNode in curvatureProfileDataNode[0]:
+                #gObjectRootNode.append()
+                gObjectCurv = etree.SubElement(curvNode, 'gobject', type='row')
+                etree.SubElement(gObjectCurv, 'tag', name='col0', value=rowDataNode.attrib['col0'])
+                etree.SubElement(gObjectCurv, 'tag', name='col1', value=rowDataNode.attrib['col1'])
+            
+        #get data for travel map
+        mapNode = etree.SubElement(gObjectRootNode, 'tag', name='MapProfile')
+        mapProfileDataNode = rootNode.xpath('./Output/Measurement/MapProfile')
+        if (mapProfileDataNode is not None and len (mapProfileDataNode) > 0):
+            #gObjectRootNode.append(mapProfileDataNode[0])
+            for rowDataNode in mapProfileDataNode[0]:
+                gObjectMap = etree.SubElement(mapNode, 'gobject', type='row')
+                etree.SubElement(gObjectMap, 'tag', name='col0', value=rowDataNode.attrib['col0'])
+                etree.SubElement(gObjectMap, 'tag', name='col1', value=rowDataNode.attrib['col1'])
+                etree.SubElement(gObjectMap, 'tag', name='col2', value=rowDataNode.attrib['col2'])
+            
+        #get data for RSML file for downloading 
+        
         #or using # self.bq.addTag()
+        #self.bq.finish_mex(tags = [outputTag], gobjects = [gObjectRootNode])
         self.bq.finish_mex(tags = [outputTag])
         #self.bq.finish_mex('Finished')
         self.bq.close()

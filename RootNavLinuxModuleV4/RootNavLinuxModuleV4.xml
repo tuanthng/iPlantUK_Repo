@@ -118,14 +118,14 @@
 <!-- 			</template> -->
 <!-- 		</tag> -->
 		
-		<tag name="DoMeasurement" value="false" type="combo">
+		<tag name="DoMeasurement" value="true" type="combo">
 			<template>
 				<tag name="label" value="Do measurement" />
 				<tag name="select">
 					<value>true</value>
 					<value>false</value>
 				</tag>
-				<tag name="defaultValue" value="false" />
+				<tag name="defaultValue" value="true" />
 				<tag name="description" value="Execute the measurement." />
 			</template>
 		</tag>
@@ -169,14 +169,14 @@
 <!-- 			</template> -->
 <!-- 		</tag> -->
 		
-		<tag name="OutputMeasurementTable" value="false" type="combo">
+		<tag name="OutputMeasurementTable" value="true" type="combo">
 			<template>
 				<tag name="label" value="Output measurement tables" />
 				<tag name="select">
 					<value>true</value>
 					<value>false</value>
 				</tag>
-				<tag name="defaultValue" value="false" />
+				<tag name="defaultValue" value="true" />
 				<tag name="description" value="Write the measurement in the table format." />
 			</template>
 		</tag>
@@ -190,14 +190,14 @@
 <!-- 			</template> -->
 <!-- 		</tag> -->
 		
-		<tag name="CurvatureProfile" value="false" type="combo">
+		<tag name="CurvatureProfile" value="true" type="combo">
 			<template>
 				<tag name="label" value="Curvature Profile" />
 				<tag name="select">
 					<value>true</value>
 					<value>false</value>
 				</tag>
-				<tag name="defaultValue" value="false" />
+				<tag name="defaultValue" value="true" />
 				<tag name="description" value="This value will be used for measurement" />
 			</template>
 		</tag>
@@ -211,14 +211,14 @@
 <!-- 			</template> -->
 <!-- 		</tag> -->
 		
-		<tag name="MapProfile" value="false" type="combo">
+		<tag name="MapProfile" value="true" type="combo">
 			<template>
 				<tag name="label" value="Map Profile" />
 				<tag name="select">
 					<value>true</value>
 					<value>false</value>
 				</tag>
-				<tag name="defaultValue" value="false" />
+				<tag name="defaultValue" value="true" />
 				<tag name="description" value="This value will be used for measurement" />
 			</template>
 		</tag>
@@ -245,14 +245,14 @@
 <!-- 			</template> -->
 <!-- 		</tag> -->
 		
-		<tag name="CompleteArch" value="false" type="combo">
+		<tag name="CompleteArch" value="true" type="combo">
 			<template>
 				<tag name="label" value="Complete architecture recorded" />
 				<tag name="select">
 					<value>true</value>
 					<value>false</value>
 				</tag>
-				<tag name="defaultValue" value="false" />
+				<tag name="defaultValue" value="true" />
 				<tag name="description" value="This value will be used for measurement" />
 			</template>
 		</tag>
@@ -282,10 +282,83 @@
 			<template>
 				<tag name="label" value="Roots" />
 			</template>
+			<gobject name="Roots">
+                <template>
+                    <tag name="export_csv" value="true" type="boolean">
+                        <tag name="label" value="Measurement tables as CSV" />
+                        <tag name="xmap" value="tag-value-number" />
+                        <tag name="xreduce" value="vector" />
+                        <tag name="xpath">
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='ID']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Parent']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Order']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Length']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Label']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Emergence_Angle']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Tip_Angle']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Hull_Area']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Start_Distance']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Lateral_Count']</value>
+                            <value>//gobject[@name='Roots']/resource[@resource_type='Tables']/resource[@resource_type='Table']/tag[@name='Tag']</value>
+                        </tag>
+                        <tag name="title">
+                            <value>ID</value>
+                            <value>Parent</value>
+                            <value>Order</value>
+                            <value>Length</value>
+                            <value>Label</value>
+                            <value>Emergence Angle</value>
+                            <value>Tip Angle</value>
+                            <value>Hull Area</value>
+                            <value>Start Distance</value>
+                            <value>Lateral Count</value>
+                            <value>Tag</value>
+                        </tag>
+                    </tag>
+					<tag name="export_csv1" value="true" type="boolean">
+                        <tag name="label" value="Curvature profile as CSV" />
+                        <tag name="xmap" value="tag-value-string" />
+                        <tag name="xreduce" value="vector" />
+                        <tag name="xpath">
+                            <value>//gobject[@name='Roots']/tag[@name='CurvatureProfile']/gobject/tag[@name='col0']</value>
+                            <value>//gobject[@name='Roots']/tag[@name='CurvatureProfile']/gobject/tag[@name='col1']</value>
+                        </tag>
+                        <tag name="title">
+                            <value>Col0</value>
+                            <value>Col1</value>
+                        </tag>
+                    </tag>
+                    <tag name="export_csv2" value="true" type="boolean">
+                        <tag name="label" value="Map profile as CSV" />
+                        <tag name="xmap" value="tag-value-string" />
+                        <tag name="xreduce" value="vector" />
+                        <tag name="xpath">
+                            <value>//gobject[@name='Roots']/tag[@name='MapProfile']/gobject/tag[@name='col0']</value>
+                            <value>//gobject[@name='Roots']/tag[@name='MapProfile']/gobject/tag[@name='col1']</value>
+                            <value>//gobject[@name='Roots']/tag[@name='MapProfile']/gobject/tag[@name='col2']</value>
+                        </tag>
+                        <tag name="title">
+                            <value>Col0</value>
+                            <value>Col1</value>
+                            <value>Col2</value>
+                        </tag>
+                    </tag>
+                    <tag name="export_xml"    value="true"  type="boolean" />
+                    <tag name="export_excel"  value="false" type="boolean" />
+                    <tag name="export_gdocs"  value="false" type="boolean" />
+                    <tag name="preview_movie" value="false" type="boolean" />
+                </template>
+            </gobject>
 		</tag>
 
 	</tag>
 
+	<tag name="display_options" >
+	  <tag name="group" value="Plant Analysis" />
+	  <tag name="group" value="Root Analysis" />
+	  <tag name="group" value="Tracking" />
+	</tag>
+    
 	<tag name="interface">
 		<tag name="javascript" type="file" value="RootNav.js" />
 		<tag name="css" type="file" value="webapp.css" />
