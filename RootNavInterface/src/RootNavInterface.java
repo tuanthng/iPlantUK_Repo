@@ -75,6 +75,8 @@ public class RootNavInterface extends JApplet {
 	
 	private String originalImageFile;
 	
+	private String probabilityImgFile;
+	
 	public RootNavInterface() {
 		this(null);
 
@@ -303,7 +305,7 @@ public class RootNavInterface extends JApplet {
 			
 			if (test)
 			{
-				this.fullStagingFolder = "/home/tuan/staging/00-fNbUZCqLU47GxmsbtcgiKk/";
+				this.fullStagingFolder = "/home/tuan/staging/00-dtM5Ld5SDS26PWyW49HsyT/";
 			}
 			
 			File[] selectedFiles = listFilesMatching(new File(this.fullStagingFolder), resultPattern);
@@ -340,12 +342,14 @@ public class RootNavInterface extends JApplet {
 				if (test)
 				{
 					//pnlImagePanel.setOriginalImage("/home/tuan/bisque/data/imagedir/admin/2016-04-19/0002.jpg");
-					pnlImagePanel.setOriginalImage(this.fullStagingFolder + "0002.jpg.tif");
+					//pnlImagePanel.setOriginalImage(this.fullStagingFolder + "0002.jpg.tif");
+					pnlImagePanel.setProbabilityImage(this.fullStagingFolder + this.probabilityImgFile);
 					
 				}
 				else
 				{
 					pnlImagePanel.setOriginalImage(this.originalImageFile);
+					//pnlImagePanel.setOriginalImage(this.originalImageFile);
 				}
 			//}
 			//else
@@ -469,6 +473,24 @@ public class RootNavInterface extends JApplet {
 						 
 					 }
 			        
+					 //read probability map
+					 expr = xpath.compile("//DataProcessed/Output/File/ProbabilityImageFile");
+					 nl = (NodeList)expr.evaluate(doc, XPathConstants.NODESET);
+					 
+					 for(int index = 0; index < nl.getLength(); index++)
+					 {
+						 Node n = nl.item(index);
+						 
+						 if (n.getNodeType() == Node.ELEMENT_NODE)
+						 {
+							 org.w3c.dom.Element el = (Element)n;
+							 this.probabilityImgFile = el.getTextContent();
+							 
+							 writeLog("Prob Image file: " + this.probabilityImgFile);
+						 }
+						 
+					 }
+					 
 					canRead = true;
 				}catch (ParserConfigurationException e) {
 					//e.printStackTrace();
