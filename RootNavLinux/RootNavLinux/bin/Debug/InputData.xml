@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<InputData>
 <Points>
     <Point x="675.6" y="29.34" type="Source"/>
     <Point x="498" y="991" type="Primary"/>
     <Point x="90" y="30" type="Lateral"/>
-</Points>  
+</Points> 
+<AdjustedPaths>
+<Path>
+    <Point x="499" y="983" type="Start"/>	
+    <Point x="459" y="337" type="Mid"/>
+</Path>
+</AdjustedPaths>
+</InputData>

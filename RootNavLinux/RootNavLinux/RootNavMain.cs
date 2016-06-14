@@ -32,6 +32,8 @@ namespace RootNavLinux
 	{
 		public static double BackgroundPenalty = 0.1;
 
+		public static double SCALE_UI = 4.5;
+
 		public delegate void StatusTextUpdateDelegate(String s);
 		//public delegate void ScreenImageUpdateDelegate(WriteableBitmap wbmp);
 		public delegate void ScreenImageUpdateDelegate(Mat wbmp);
@@ -117,6 +119,8 @@ namespace RootNavLinux
 		private bool hasSourceNode = false; 
 		private bool hasPrimaryNode = false;
 		private bool hasLateralNode = false;
+
+		private List<AdjustedPath> listAdjustedPaths;
 
 		private static Random random = new Random();
 
@@ -456,7 +460,7 @@ namespace RootNavLinux
 			//this.probabilityBitmap = imgScreen.Mat;
 			this.probabilityBitmap = new Mat(imgScreen.Mat, imgScreen.ROI);
 
-			//this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
+			this.probabilityBitmap.Save(this.ProbabilityBitmapImageFilename);
 
 			//this.featureBitmap = featureScreen.Mat; //changed to below code, because it causes error when later time using this variable. Not sure why?
 			this.featureBitmap = new Mat(featureScreen.Mat, featureScreen.ROI);
@@ -590,11 +594,15 @@ namespace RootNavLinux
 						//featureBitmap.Data.SetValue ((byte)(this.probabilityMapBrightestClass[index] * 255), (y * featureStride) + x);
 						featureBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBrightestClass[index] * 255);
 						//screenBitmap.Data.SetValue(bgr32, (y * outputStride) + x);
-						screenBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBestClass[index] * 255);
-						screenBitmap.Data[y, x, 1] = 0;
-						screenBitmap.Data[y, x, 2] = 0;
+						//screenBitmap.Data[y, x, 0] = (byte)(this.probabilityMapBestClass[index] * 255);
+						//screenBitmap.Data[y, x, 1] = 0;
+						//screenBitmap.Data[y, x, 2] = 0;
 
+						byte[] values = BitConverter.GetBytes (bgr32);
 
+						screenBitmap.Data[y, x, 0] = values[0];
+						screenBitmap.Data[y, x, 1] = values[1];
+						screenBitmap.Data[y, x, 2] = values[2];
 					}
 				}
 
@@ -835,11 +843,13 @@ namespace RootNavLinux
 			//OutputResultXML.writePrimaryPathsData( this.screenOverlay.Paths);
 			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
 
-			if (this.screenOverlay.Paths.Primaries.Count () > 0) {
+			if (this.screenOverlay.Paths.Primaries.Count () > 0) 
+			{
 				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
 				System.Console.WriteLine ("Total points of the 1st path the primary point: " + path.Path.Count.ToString ());
 
-			} else {
+			}
+			else {
 				System.Console.WriteLine ("No primary path.");
 			}
 
@@ -851,7 +861,17 @@ namespace RootNavLinux
 			//if has, saving data will wait untill analysing lateral finishes
 			if (!this.hasLateralNode) {
 				//saveData ();
-				BeginMeasurementStage();
+
+				//TODO: need to check to make sure adjusting paths completely finish before measurement begins
+				if (!(this.listAdjustedPaths != null && this.listAdjustedPaths.Count > 0)) 
+				{
+					BeginMeasurementStage();
+				}
+				else 
+				{
+					this.processAdjustedPaths ();  
+				}
+
 			}
 		}
 
@@ -878,16 +898,27 @@ namespace RootNavLinux
 			//OutputResultXML.writeLateralPathsData( this.screenOverlay.Paths);
 			OutputResultXML.writeLateralPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
 
-			if (this.screenOverlay.Paths.Laterals.Count () > 0) {
+			if (this.screenOverlay.Paths.Laterals.Count () > 0) 
+			{
 				LiveWireLateralPath path = this.screenOverlay.Paths.Laterals.First ();
 				System.Console.WriteLine ("Total points of the 1st path the lateral point: " + path.Path.Count.ToString ());
 
-			} else {
+			} 
+			else 
+			{
 				System.Console.WriteLine ("No lateral path.");
 			}
 
+			//TODO: need to check to make sure adjusting paths completely finish before measurement begins
+			this.processAdjustedPaths ();
+
 			//saveData ();
-			BeginMeasurementStage();
+			//if there is no adjusted paths, then doing measurement or else wait until re-doing paths
+			if (!(this.listAdjustedPaths != null && this.listAdjustedPaths.Count > 0)) 
+			{
+				BeginMeasurementStage();
+			}
+
 		}
 
 		private void UpdateScreenImage(Mat wbmp)
@@ -982,23 +1013,108 @@ namespace RootNavLinux
 
 					//select the 1st node
 					XmlElement root = doc.DocumentElement;
-					XmlNode pointsNode = root.SelectSingleNode ("/Points");
+					XmlNode pointsNode = root.SelectSingleNode ("/InputData/Points");
 
-					foreach (XmlNode node in pointsNode.ChildNodes) {
-						if (node.Attributes ["type"].Value.ToUpper().CompareTo ("SOURCE") == 0) {
+					foreach (XmlNode node in pointsNode.ChildNodes) 
+					{
+						if (node.Attributes ["type"].Value.ToUpper().CompareTo ("SOURCE") == 0) 
+						{
 							AddSourcePoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
-						} else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("PRIMARY") == 0) {
+						} 
+						else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("PRIMARY") == 0) 
+						{
 							AddPrimaryPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
-						} else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("LATERAL") == 0) {
+						} 
+						else if (node.Attributes ["type"].Value.ToUpper().CompareTo ("LATERAL") == 0) 
+						{
 							AddLateralPoint (new Point (double.Parse (node.Attributes ["x"].Value), double.Parse (node.Attributes ["y"].Value)), false);
 						}
 					} //end for each
+
+					//check if there is any adjusted paths
+					XmlNodeList adjustedPaths = root.SelectNodes ("/InputData/AdjustedPaths/Path");
+
+					if (adjustedPaths != null && adjustedPaths.Count > 0) 
+					{
+						this.listAdjustedPaths = new List<AdjustedPath> ();
+
+						foreach (XmlNode path in adjustedPaths) 
+						{
+							AdjustedPath newPath = new AdjustedPath ();
+
+							foreach (XmlNode point in path.ChildNodes) 
+							{
+								Point p = new Point (double.Parse (point.Attributes ["x"].Value), double.Parse (point.Attributes ["y"].Value));
+
+								if (point.Attributes ["type"].Value.ToUpper().CompareTo ("MID") == 0) 
+								{
+									newPath.IntermediatePoints.Add (p);	
+								} 
+								else if (point.Attributes ["type"].Value.ToUpper().CompareTo ("START") == 0) 
+								{
+									newPath.StartPoint = p;
+
+								} //end else if 
+							}  //end for each
+
+							this.listAdjustedPaths.Add(newPath);
+
+						} //end for each
+					} //end if
 				} //end if
 			} //end if
-			else {
+			else 
+			{
 				System.Console.WriteLine ("No point input");
 			}
 		} //end parseInputNodes
+
+		private void processAdjustedPaths ()
+		{
+			System.Console.WriteLine ("processing Adjusted Paths...");
+
+			if (this.listAdjustedPaths != null && this.listAdjustedPaths.Count > 0) 
+			{
+				foreach (AdjustedPath newPath in this.listAdjustedPaths) 
+				{
+					//find the closest terminal and get the terminal index and type
+					int terminalIndex = -1;
+					Point p = newPath.StartPoint;
+
+					bool found = this.screenOverlay.FindNearbyTerminalPoint (p, RootDetectionScreenOverlay.RootUISize * SCALE_UI, out terminalIndex);
+
+					if (found) {
+						//determine the lateral or primary path defending on the terminal type found
+						TerminalType typeFound = this.screenOverlay.Terminals [terminalIndex].Type;
+
+						newPath.TypePath = typeFound;
+					}//end if
+					else 
+					{
+						newPath.TypePath = TerminalType.Undefined;
+					}
+
+					//find if the starting point is close to any root path
+					//int controlPointIndex;
+					int rootIndex;
+					Point rootPosition;
+
+					//bool rootFound = this.screenOverlay.FindNearbyControlPointByTerminalType (p, RootDetectionScreenOverlay.RootUISize, newPath.TypePath, out controlPointIndex, out rootIndex);
+					bool rootFound = this.screenOverlay.FindNearbyRootPoints (p, RootDetectionScreenOverlay.RootUISize * SCALE_UI, out rootPosition, out rootIndex);
+
+					if (rootFound) 
+					{
+						//if found any root, assign new control points for that root
+						//this.AddControlPointToRoot(rootIndex, 
+						for (int index = 0; index < newPath.IntermediatePoints.Count; index++) 
+						{
+							this.AddControlPointToRoot (rootIndex, newPath.IntermediatePoints [index], (index + 1) == newPath.IntermediatePoints.Count);
+						}
+					} //end if
+
+				} //end foreach
+			} //end if
+		} //end
 
 		public void saveData()
 		{
@@ -1029,7 +1145,8 @@ namespace RootNavLinux
 
 		public void BeginMeasurementStage()
 		{
-			if (!this.DoMeasurement) {
+			if (!this.DoMeasurement) 
+			{
 				return;
 			}
 			this.imageInfo.Resolution = ImageResolutionValue;
@@ -1038,7 +1155,7 @@ namespace RootNavLinux
 			this.screenOverlay.InitialiseMeasurementStage(this.SplineSpacing, ImageResolutionValue == 0 ? 0 : 1 / ImageResolutionValue);
 
 			System.Console.WriteLine ("Saving root data...");
-			OutputResultXML.writeRootData (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
+			OutputResultXML.writeRootDataForBisque (this.screenOverlay.Roots, this.screenOverlay.RenderInfo);
 
 			if (this.screenOverlay.Roots != null && this.screenOverlay.Roots.RootTree.Count > 0)
 			{
@@ -1063,11 +1180,13 @@ namespace RootNavLinux
 			//this.detectionSlidePanel.BeginHide();
 			//this.measurementSlidePanel.BeginShow();
 		}
+
 		private void initialiseConnectionInfo()
 		{
 			this.connectionInfo = new ConnectionParams() { Directory = this.RSMLDirectory};
 			this.connectionInfo.Source = ConnectionSource.RSMLDirectory;
 		}
+
 		private bool writeDataToRSML (string tag)
 		{
 			// Create instance of writer class
@@ -1097,7 +1216,6 @@ namespace RootNavLinux
 			return success;
 		}
 
-
 		private string RandomString(int size)
 		{
 			StringBuilder builder = new StringBuilder();
@@ -1111,6 +1229,240 @@ namespace RootNavLinux
 			return builder.ToString();
 		}
 
+		public void ReprocessAlteredRoot(params int[] rootIndexes)
+		{
+			//this.screenOverlay.IsBusy = true;
+			//this.statusText.Text = "Status: Recalculating " + rootIndexes.Length.ToString() + (rootIndexes.Length == 1 ? " root" : " roots");
+			System.Console.WriteLine("Status: Recalculating " + rootIndexes.Length.ToString() + (rootIndexes.Length == 1 ? " root" : " roots"));
+				
+			int width = this.emManager.Width;
+			int height = this.emManager.Height;
+
+			int threadCount = RootNav.Core.Threading.ThreadParams.LiveWireThreadCount;
+
+			List<LiveWirePrimaryPath> alteredPaths = new List<LiveWirePrimaryPath>();
+
+			foreach (int i in rootIndexes)
+			{
+				LiveWirePrimaryPath p = this.screenOverlay.Paths[i] as LiveWirePrimaryPath;
+				if (p != null)
+				{
+					alteredPaths.Add(p);
+				}
+			}
+
+			LiveWirePrimaryManagerThread manager = new LiveWirePrimaryManagerThread()
+			{
+				Graph = this.currentGraph,
+				Terminals = this.screenOverlay.Terminals,
+				ThreadCount = Math.Min(rootIndexes.Length, threadCount),
+				DistanceMap = this.distanceProbabilityMap,
+				ReWorkPaths = alteredPaths
+			};
+
+			manager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+			manager.ProgressCompleted += new RunWorkerCompletedEventHandler(LiveWireManagerReProgressCompleted);
+			manager.ReRun();
+		}
+
+		private void LiveWireManagerReProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
+		{
+			// Weightings
+			this.baseWeightDescriptors.Clear();
+			foreach (LiveWirePath path in this.screenOverlay.Paths)
+			{
+				LiveWirePrimaryPath primary = path as LiveWirePrimaryPath;
+				if (primary != null)
+				{
+					this.baseWeightDescriptors.Add(new LiveWireWeightDescriptor(primary, probabilityMapBestClass, this.emManager.Width, this.emManager.Height));
+				}
+			}
+
+			// UI
+			//this.Dispatcher.BeginInvoke(new LiveWireReCompletedDelegate(this.LiveWireReWorkCompletedUI));
+			this.LiveWireReWorkCompletedUI();
+		}
+
+		private void LiveWireReWorkCompletedUI()
+		{
+			this.screenOverlay.RecalculateAllSamples();
+			//this.screenOverlay.InvalidateVisual();
+			//this.screenOverlay.IsBusy = false;
+			//this.statusText.Text = "Status: Idle";
+
+			if (this.screenOverlay.Paths.Primaries.Count () > 0) 
+			{
+				LiveWirePrimaryPath path = this.screenOverlay.Paths.Primaries.First ();
+				System.Console.WriteLine ("Total points of the 1st path the primary point (reprocessed): " + path.Path.Count.ToString ());
+
+			}
+			else {
+				System.Console.WriteLine ("No primary path.");
+			}
+
+			//TODO: output result. Make sure to remove the old Primary paths
+			OutputResultXML.writePrimaryPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
+
+			OutputResultXML.writeLateralPathsDataForBisque( this.screenOverlay.Paths, this.screenOverlay.RenderInfo);
+
+			BeginMeasurementStage();
+
+		}
+
+		public void ReprocessLateralRoot(params int[] rootIndexes)
+		{
+			//this.screenOverlay.IsBusy = true;
+			//this.statusText.Text = "Status: Recalculating " + rootIndexes.Length.ToString() + (rootIndexes.Length == 1 ? " root" : " roots");
+			System.Console.WriteLine("Status: Recalculating " + rootIndexes.Length.ToString() + (rootIndexes.Length == 1 ? " root" : " roots"));
+			int width = this.emManager.Width;
+			int height = this.emManager.Height;
+
+			int threadCount = RootNav.Core.Threading.ThreadParams.LiveWireThreadCount;
+
+			List<LiveWireLateralPath> alteredPaths = new List<LiveWireLateralPath>();
+
+			foreach (int i in rootIndexes)
+			{
+				LiveWireLateralPath p = this.screenOverlay.Paths[i] as LiveWireLateralPath;
+				if (p != null)
+				{
+					alteredPaths.Add(p);
+				}
+			}
+
+			//this.lateralLiveWireManager = new LiveWireLateralManager()
+			this.lateralLiveWireManager = new LiveWireLateralManagerThread()
+			{
+				Graph = currentGraph,
+				Terminals = this.screenOverlay.Terminals,
+				ThreadCount = Math.Max(rootIndexes.Length, threadCount),
+				CurrentPaths = this.screenOverlay.Paths.Primaries.ToList(),
+				ReWorkPaths = alteredPaths,
+				DistanceMap = this.distanceProbabilityMap
+			};
+			lateralLiveWireManager.ProgressChanged += new ProgressChangedEventHandler(LiveWireManagerProgressChanged);
+			lateralLiveWireManager.ProgressCompleted += new RunWorkerCompletedEventHandler(LateralLiveWireManagerReProgressCompleted);
+			lateralLiveWireManager.ReRun();
+		}
+
+		void LateralLiveWireManagerReProgressCompleted(object sender, RunWorkerCompletedEventArgs args)
+		{
+			// UI
+			//this.Dispatcher.BeginInvoke(new LiveWireReCompletedDelegate(this.LiveWireReWorkCompletedUI));
+			this.LiveWireReWorkCompletedUI();
+		}
+
+		public void AddControlPointToRoot(int highlightedRootIndex, Point dragPoint, Point newPoint)
+		{
+			if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWirePrimaryPath)
+			{
+				LiveWirePrimaryPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWirePrimaryPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				int newIndex = currentPath.Path.IndexOf(dragPoint);
+				if (currentPath.IntermediatePoints.Count > 0)
+				{
+					bool indexFound = false;
+					for (int i = 0; i < currentPath.IntermediatePoints.Count; i++)
+					{
+						if (newIndex < currentPath.Indices[i])
+						{
+							currentPath.IntermediatePoints.Insert(i, newPoint);
+							indexFound = true;
+							break;
+						}
+					}
+					if (!indexFound)
+					{
+						currentPath.IntermediatePoints.Add(newPoint);
+					}
+
+				}
+				else
+				{
+					currentPath.IntermediatePoints.Add(newPoint);
+				}
+
+				ReprocessAlteredRoot(highlightedRootIndex);
+			}
+			else if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWireLateralPath)
+			{
+				LiveWireLateralPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWireLateralPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				int newIndex = currentPath.Path.IndexOf(dragPoint);
+				if (currentPath.IntermediatePoints.Count > 0)
+				{
+					bool indexFound = false;
+					for (int i = 0; i < currentPath.IntermediatePoints.Count; i++)
+					{
+						if (newIndex < currentPath.Indices[i])
+						{
+							currentPath.IntermediatePoints.Insert(i, newPoint);
+							indexFound = true;
+							break;
+						}
+					}
+					if (!indexFound)
+					{
+						currentPath.IntermediatePoints.Add(newPoint);
+					}
+
+				}
+				else
+				{
+					currentPath.IntermediatePoints.Add(newPoint);
+				}
+
+				ReprocessLateralRoot(highlightedRootIndex);
+			}
+		}
+
+		public void AddControlPointToRoot(int highlightedRootIndex, Point newPoint, bool executed = false)
+		{
+			if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWirePrimaryPath)
+			{
+				LiveWirePrimaryPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWirePrimaryPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				currentPath.IntermediatePoints.Add(newPoint);
+
+				if (executed) 
+				{
+					ReprocessAlteredRoot(highlightedRootIndex);
+				}
+
+			}
+			else if (this.screenOverlay.Paths[highlightedRootIndex] is LiveWireLateralPath)
+			{
+				LiveWireLateralPath currentPath = this.screenOverlay.Paths[highlightedRootIndex] as LiveWireLateralPath;
+
+				if (currentPath == null)
+				{
+					return;
+				}
+
+				currentPath.IntermediatePoints.Add(newPoint);
+
+				if (executed) 
+				{
+					ReprocessLateralRoot(highlightedRootIndex);	
+				}
+
+			}
+		}
 	} //end class
 } //end namespace
 

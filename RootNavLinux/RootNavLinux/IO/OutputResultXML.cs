@@ -302,7 +302,21 @@ namespace RootNavLinux
 				XmlElement root = doc.DocumentElement;
 				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
 
-				XmlNode primaryPathsNode = doc.CreateNode (XmlNodeType.Element, "PrimaryPaths", "");
+				XmlNode primaryPathsNodeOld = root.SelectSingleNode ("/DataProcessed/Output/PrimaryPaths");
+
+				XmlNode primaryPathsNode = null;
+
+				//remove the old node if has
+				if (primaryPathsNodeOld == null) 
+				{
+					primaryPathsNode = doc.CreateNode (XmlNodeType.Element, "PrimaryPaths", "");
+				} 
+				else 
+				{
+					primaryPathsNodeOld.RemoveAll ();
+
+					primaryPathsNode = primaryPathsNodeOld;
+				}
 
 				int index = 0;
 				foreach (LiveWirePrimaryPath path in paths.Primaries)
@@ -448,7 +462,21 @@ namespace RootNavLinux
 				XmlElement root = doc.DocumentElement;
 				XmlNode dataProcessedNode = root.SelectSingleNode ("/DataProcessed/Output");
 
-				XmlNode lateralPathsNode = doc.CreateNode (XmlNodeType.Element, "LateralPaths", "");
+				XmlNode lateralPathsNodeOld = root.SelectSingleNode ("/DataProcessed/Output/LateralPaths");
+
+				XmlNode lateralPathsNode = null;
+
+				//remove the old node if has
+				if (lateralPathsNodeOld == null) 
+				{
+					lateralPathsNode = doc.CreateNode (XmlNodeType.Element, "LateralPaths", "");
+				} 
+				else 
+				{
+					lateralPathsNodeOld.RemoveAll ();
+
+					lateralPathsNode = lateralPathsNodeOld;
+				}
 
 				//int totalPath = paths.Laterals;
 				int index = 0;
@@ -653,7 +681,7 @@ namespace RootNavLinux
 			}
 		} //end read1DArrayFromFile
 
-		public static void writeRootData(RootBase root, XmlDocument doc, ref XmlNode parent, ScreenOverlayRenderInfo render)
+		public static void writeRootDataForBisque(RootBase root, XmlDocument doc, ref XmlNode parent, ScreenOverlayRenderInfo render)
 		{
 			XmlNode rootNode = doc.CreateNode (XmlNodeType.Element, "Root", "");
 			XmlAttribute orderAtt = doc.CreateAttribute("order");
@@ -717,6 +745,18 @@ namespace RootNavLinux
 					XmlAttribute nameAtt = doc.CreateAttribute("name");
 					nameAtt.Value = "0";
 					polylineNode.Attributes.Append (nameAtt);
+
+					//<tag value="#ff0000" name="color" />
+					XmlNode colourNode = doc.CreateNode (XmlNodeType.Element, "tag", "");
+					XmlAttribute nameAttColourNode = doc.CreateAttribute("name");
+					nameAttColourNode.Value = "color";
+					colourNode.Attributes.Append (nameAttColourNode);
+					XmlAttribute valueAttColourNode = doc.CreateAttribute("value");
+					valueAttColourNode.Value = OutputResultXML.convertColourToHexString (Color.WhiteSmoke);
+					colourNode.Attributes.Append (valueAttColourNode);
+
+					polylineNode.AppendChild (colourNode);
+
 
 					gObjectNode.AppendChild (polylineNode);
 
@@ -860,11 +900,11 @@ namespace RootNavLinux
 			//recursive for child trees
 			foreach (RootBase child in root.Children)
 			{
-				writeRootData(child, doc, ref rootNode, render);
+				writeRootDataForBisque(child, doc, ref rootNode, render);
 			}
 		}
 
-		public static void writeRootData(RootCollection roots, ScreenOverlayRenderInfo render)
+		public static void writeRootDataForBisque(RootCollection roots, ScreenOverlayRenderInfo render)
 		{
 			if (File.Exists (FullOutputFileName)) {
 
@@ -882,7 +922,7 @@ namespace RootNavLinux
 
 				foreach(RootBase r in roots)
 				{
-					writeRootData (r, doc, ref rootBaseNode, render);
+					writeRootDataForBisque (r, doc, ref rootBaseNode, render);
 				}
 
 				dataProcessedNode.AppendChild(rootBaseNode);
@@ -921,7 +961,10 @@ namespace RootNavLinux
 						data.Add("Tag", tag);
 
 						//write to xml file, Code: Dictionary to Element using XML.LINQ
-						XElement el = new XElement("Table", data.Select(kv => new XElement(kv.Key.Replace(' ', '_'), kv.Value)));
+
+						XElement el = new XElement("Table", data.Select(kv => new XElement("tag", 
+									new XAttribute("name", kv.Key.Replace(' ', '_')), 
+									new XAttribute("value", kv.Value))));
 						//convert XElement to XmlNode
 						xD.LoadXml(el.ToString());
 
@@ -1217,6 +1260,43 @@ namespace RootNavLinux
 
 			} //end if
 		} //end write Lateral Paths
+
+		public static XElement DictionaryToXml(Dictionary<string, string> inputDict, string elmName = "Table", string valuesName = "tag")
+		{
+
+			XElement outElm = new XElement(elmName);
+
+			Dictionary<string, string>.KeyCollection keys = inputDict.Keys;
+
+			XElement inner = new XElement(valuesName);
+
+			foreach (string key in keys)
+			{
+				inner.Add(new XAttribute("name", key.Replace(' ', '_')));
+				inner.Add(new XAttribute("value", inputDict[key]));
+			}
+
+			outElm.Add(inner);
+
+			return outElm;
+		}
+
+		public static Dictionary<string, string> XmlToDictionary(string key, string value, XElement baseElm)
+		{
+			Dictionary<string, string> dict = new Dictionary<string, string>();
+
+			foreach (XElement elm in baseElm.Elements())
+			{ 
+				string dictKey = elm.Attribute(key.Replace(' ', '_')).Value;
+				string dictVal = elm.Attribute(value).Value;
+
+				dict.Add(dictKey, dictVal);
+
+			}
+
+			return dict;
+		}
+
 	} //end class
 }
 

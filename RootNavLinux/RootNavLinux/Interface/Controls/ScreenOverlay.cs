@@ -28,7 +28,7 @@ namespace RootNav.Interface.Controls
         private const double TerminalUISize = 11.0;
         private const double SnapToTipThreshold = 60.0;
         private const double ControlPointUISize = 7.0;
-        private const double RootUISize = 10;
+        public const double RootUISize = 10;
         #endregion
 
 //        #region Dependency Properties
@@ -2077,35 +2077,35 @@ namespace RootNav.Interface.Controls
 //
 //        }
 //
-//        private bool FindNearbyTerminalPoint(Point position, double distanceThreshold, out int terminalIndex)
-//        {
-//            double distance = double.MaxValue;  
-//            int index = 0;
-//            for(int i = 0; i < this.terminalCollection.Count; i++)
-//            {
-//                RootTerminal terminal = this.terminalCollection[i];
-//                Point p = terminal.Position;
-//                double d = Math.Sqrt(Math.Pow(p.X - mousePosition.X, 2.0) + Math.Pow(p.Y - mousePosition.Y, 2.0));
-//                if (d < distance)
-//                {
-//                    index = i;
-//                    distance = d;
-//                }
-//            }
-//
-//            if (distance <= distanceThreshold)
-//            {
-//                terminalIndex = index;
-//                return true;
-//            }
-//            else
-//            {
-//                terminalIndex = -1;
-//                return false;
-//            }
-//          
-//        }
-//
+		public bool FindNearbyTerminalPoint(Point position, double distanceThreshold, out int terminalIndex)
+        {
+            double distance = double.MaxValue;  
+            int index = 0;
+            for(int i = 0; i < this.terminalCollection.Count; i++)
+            {
+                RootTerminal terminal = this.terminalCollection[i];
+                Point p = terminal.Position;
+				double d = Math.Sqrt(Math.Pow(p.X - position.X, 2.0) + Math.Pow(p.Y - position.Y, 2.0));
+                if (d < distance)
+                {
+                    index = i;
+                    distance = d;
+                }
+            }
+
+            if (distance <= distanceThreshold)
+            {
+                terminalIndex = index;
+                return true;
+            }
+            else
+            {
+                terminalIndex = -1;
+                return false;
+            }
+          
+        }
+
 //        private bool FindHighlightedControlPoint()
 //        {
 //            if (this.paths != null && this.paths.Count > 0)
@@ -2151,7 +2151,7 @@ namespace RootNav.Interface.Controls
 //            return false;
 //        }
 
-        private bool FindNearbyControlPoint(Point position, double distanceThreshold, out int controlPointIndex, out int rootIndex)
+        public bool FindNearbyControlPoint(Point position, double distanceThreshold, out int controlPointIndex, out int rootIndex)
         {
             double distance = double.MaxValue;
             int currentRootIndex = 0;
@@ -2191,6 +2191,55 @@ namespace RootNav.Interface.Controls
                 return false;
             }
         }
+
+		public bool FindNearbyControlPointByTerminalType(Point position, double distanceThreshold, TerminalType type, out int controlPointIndex, out int rootIndex)
+		{
+			double distance = double.MaxValue;
+			int currentRootIndex = 0;
+			int currentControlPointIndex = 0;
+			for (int currentIndex = 0; currentIndex < this.paths.Count; currentIndex++)
+			{
+				LiveWirePath currentRoot = this.paths[currentIndex] as LiveWirePath;;
+
+				if (type == TerminalType.Primary) 
+				{
+					currentRoot = this.paths [currentIndex] as LiveWirePrimaryPath;	
+				} else if (type == TerminalType.Lateral) 
+				{
+					currentRoot = this.paths [currentIndex] as LiveWireLateralPath;	
+				}
+
+				if (currentRoot == null || currentRoot.Indices == null)
+					continue;
+
+				for (int index = 0; index < currentRoot.Indices.Count; index++)
+				{
+					int pathIndex = currentRoot.Indices[index];
+					Point controlPointPosition = currentRoot.Path[pathIndex];
+					double d2 = Math.Pow(controlPointPosition.X - position.X, 2.0) + Math.Pow(controlPointPosition.Y - position.Y, 2.0);
+					if (d2 < distance)
+					{
+						distance = d2;
+						currentRootIndex = currentIndex;
+						currentControlPointIndex = index;
+					}
+				}
+
+			}
+
+			if (Math.Sqrt(distance) <= distanceThreshold)
+			{
+				controlPointIndex = currentControlPointIndex;
+				rootIndex = currentRootIndex;
+				return true;
+			}
+			else
+			{
+				controlPointIndex = -1;
+				rootIndex = -1;
+				return false;
+			}
+		}
 
 //        private bool FindHighlightedDragPointFromSpline(double distanceThreshold)
 //        {
@@ -2398,7 +2447,7 @@ namespace RootNav.Interface.Controls
 //            return false;
 //        }
 //
-        private bool FindNearbyRootPoints(Point position, double distanceThreshold, out Point rootPosition, out int rootIndex)
+        public bool FindNearbyRootPoints(Point position, double distanceThreshold, out Point rootPosition, out int rootIndex)
         {
             // Find most appropriate index in sampledRoots
             double distance = double.MaxValue;
