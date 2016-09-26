@@ -5,6 +5,7 @@ BQ.renderers.resources.mex = 'BQ.javaappletex.Mex';
 
 var rsmlcontent = "";
 var rsmlfile = "";
+var fileContent = "";
 
 var htmlWidget = function( html, title ) {
     var w = Ext.create('Ext.window.Window', {
@@ -285,37 +286,7 @@ function readText(filePath) {
     return true;
 }   
 
-function downloadTextFile(file)
-{
-	var allText = "";
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function ()
-    {
-        if(rawFile.readyState === 4)
-        {
-            if(rawFile.status === 200 || rawFile.status == 0)
-            {
-                allText = rawFile.responseText;
-                //alert(allText);
-            }
-        }
-    }
-    rawFile.send(null);
-    
-    
-    var element = document.createElement('a');
-	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(allText));
-	element.setAttribute('download', "myrsml1.rsml");
-	
-	element.style.display = 'none';
-	document.body.appendChild(element);
-	
-	element.click();
-	
-	document.body.removeChild(element);
-    
-}
+
 
 function readTextFile(file)
 {
@@ -329,6 +300,7 @@ function readTextFile(file)
             if(rawFile.status === 200 || rawFile.status == 0)
             {
                 allText = rawFile.responseText;
+                fileContent = allText;
                 //alert(allText);
             }
         }
@@ -350,6 +322,18 @@ function download(filename, text)
 	element.click();
 	
 	document.body.removeChild(element);
+}
+function downloadURI(filename) 
+{
+	var element = document.createElement('a');
+	
+	element.style.display = 'none';
+	element.href = filename;
+	//document.body.appendChild(element);
+	
+	element.click();
+	
+	//document.body.removeChild(element);
 }
 
 //overwrite standard renderer with our own
@@ -434,6 +418,8 @@ Ext.define('BQ.renderers.rootnav.Image', {
 
     save : function() {
     	
+    	//this.setLoading('Generating...');
+    	
     	//readText("file:///home/tuan/staging/00-nUvqT6qX9kMTgENP4rRti3/P.rsml");
     	//download("myrsml.rsml", readText("file:///home/tuan/staging/00-nUvqT6qX9kMTgENP4rRti3/P.rsml"));
     	//downloadTextFile("file:///home/tuan/staging/00-nUvqT6qX9kMTgENP4rRti3/P.rsml");
@@ -444,7 +430,8 @@ Ext.define('BQ.renderers.rootnav.Image', {
     	
     	//alert('numbertipsdetected:' + numbertipsdetected);
     	var rsmlfile = this.mex.dict['outputs/RSMLFile'];
-    	alert('filersml:' + rsmlfile);
+    	var rsmlname = this.mex.dict['outputs/RSMLName'];
+    	//alert('filersml:' + rsmlfile);
     	//var textKey = "";
 
     	//for(var key in this.mex.dict)
@@ -453,9 +440,19 @@ Ext.define('BQ.renderers.rootnav.Image', {
         //}
     	//alert('Value: ' + this.mex.dict['outputs/OutputRootsImage']);
     	
-    	download("myrsml.rsml", readTextFile("http://127.0.0.1:8080/blob_service/00-WkiWKagtP3LTAWfeGkBaTo"));
+    	//There are 2 ways to do the download file
+    	//1. call readTextFile to fill fileContent variable. Then, call 
+    	//readTextFile("http://127.0.0.1:8080/blob_service/00-NUkzLMk54qqUfATRVucXDR");
+    	//download("myrsml.rsml", fileContent);
+    	//readTextFile(rsmlfile);
+    	//download(rsmlname, fileContent);
+    	//2. call downloadURI
+    	//downloadURI("http://127.0.0.1:8080/blob_service/00-NUkzLMk54qqUfATRVucXDR");
+    	downloadURI(rsmlfile);
     	
-        var me = this,
+    	//Note: if use the 1. method, need to find the filename. The 2 method doesnt need that.
+    	
+        /*var me = this,
             points = this.gobjects[0];
         this.setLoading('Generating...');
         // filter gobjects first
@@ -468,9 +465,10 @@ Ext.define('BQ.renderers.rootnav.Image', {
             }
             return true;
         });
-
-        this.setLoading('Downloading...');
-        points.save_(
+		*/
+        //this.setLoading('Downloading...');
+    	this.setLoading(false);
+        /*points.save_(
             undefined,
             function() {
                 me.setLoading(false);
@@ -479,7 +477,7 @@ Ext.define('BQ.renderers.rootnav.Image', {
                 me.setLoading(false);
                 BQ.ui.error('Problem saving filtered points');
             }
-        );
+        );*/
     },
 
     onNewGradient: function() {

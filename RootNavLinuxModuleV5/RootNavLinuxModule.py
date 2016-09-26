@@ -530,7 +530,10 @@ class RootNavLinux(object):
             self.bq.fail_mex('Could not upload the rsml file into the system')
         else:
             ##create node for mex
-            outputRSMLFileTag = etree.SubElement(outputTag, 'tag', name='RSMLFile', value=blob.get('uri'), type='file')
+            linkdataservice = blob.get('uri')
+            linkblobservice = linkdataservice.replace('data_service', 'blob_service');
+            outputRSMLFileTag = etree.SubElement(outputTag, 'tag', name='RSMLFile', value=linkblobservice, type='file')
+            outputRSMLNameTag = etree.SubElement(outputTag, 'tag', name='RSMLName', value=rsmlFileNode, type='name')
                 
         #response = save_blob(self.bq, localpath2url(resultrsmlfile), resource=resource)
 #         response = save_blob(self.bq, resultrsmlfile, resource=resource)

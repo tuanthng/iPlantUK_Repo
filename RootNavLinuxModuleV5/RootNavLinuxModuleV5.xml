@@ -279,6 +279,7 @@
 		</tag>
 		
 		<tag name="RSMLFile" value="http://127.0.0.1:8080/blob_service/00-NUkzLMk54qqUfATRVucXDR" type="file"/>
+		<tag name="RSMLName" value="P.rsml" type="name"/>
 		
 		<tag name="OutputRootsImage" type="image">
 			<template>
