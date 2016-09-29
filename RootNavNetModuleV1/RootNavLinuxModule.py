@@ -45,6 +45,8 @@ logging.basicConfig(level=logging.DEBUG)
 #EXEC = "mono RootNavLinux.exe"
 EXEC = "./runRootNav.sh"
 
+UPLOADED_FOLDER = 'RootNavNet'
+
 def gettag (el, tagname):
     for kid in el:
         if kid.get ('name') == tagname:
@@ -125,6 +127,59 @@ class RootNavLinux(object):
             return session.c.push(url, content=None, files=fields, headers={'Accept': 'text/xml'}, path=path, method=method)
         else:
             raise BQCommError("improper parameters for postblob")
+
+    imgformatname = {
+                    'png': 'png',
+                    'tif': 'tiff',
+                    'tiff': 'tiff',
+                    'jpg': 'jpeg',
+                    'jpeg': 'jpeg',
+                    'jpe': 'jpeg',
+                    'bmp': 'bmp'}
+
+    def getimgformatname(self, ext):
+        return imgformatname.get(ext, 'tiff')
+
+    def fetch_image_pixelsbytxn(self, session, uri, dest, uselocalpath=False, imgformat='tiff', ext='tif'):
+        """
+        fetch original image locally as tif
+        @param session: the bqsession
+        @param uri: resource image uri
+        @param dest: a destination directory
+        @param uselocalpath: true when routine is run on same host as server
+        """
+        image = session.load(uri)
+        name = image.name or next_name("image")
+        ip = image.pixels().format(imgformat)
+        if uselocalpath:
+            ip = ip.localpath()
+        pixels = ip.fetch()
+        if os.path.isdir(dest):
+            dest = os.path.join(dest, os.path.basename(name))
+        else:
+            dest = os.path.join('.', os.path.basename(name))
+        if not dest.lower().endswith ('.'+ext):
+            dest = "%s%s" % (dest, ext)
+    
+    
+        if uselocalpath:
+            # path = ET.XML(pixels).xpath('/resource/@src')[0]
+            resource = session.factory.string2etree(pixels)
+            path = resource.get ('value')
+            # path = urllib.url2pathname(path[5:])
+            if path.startswith('file:/'):
+                path = path[5:]
+                # Skip 'file:'
+            if os.path.exists(path):
+                safecopy(path, dest)
+                return { uri : dest }
+            else:
+                log.error ("localpath did not return valid path: %s", path)
+    
+        f = open(dest, 'wb')
+        f.write(pixels)
+        f.close()
+        return { uri : dest }
 
                 
     def setup(self):
@@ -229,6 +284,7 @@ class RootNavLinux(object):
         
         #results = fetch_image_planes(self.bq, self.options.image_url, self.options.stagingPath)
         results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
+        #        
 #         image = self.bq.load(self.options.image_url)
 #         pixels = image.pixels() #.fetch()
 #         dest = os.path.join(self.options.stagingPath, image.name)
@@ -531,7 +587,7 @@ class RootNavLinux(object):
         mexid = parts[len(parts) - 1]
         resultrsmlfile = os.path.join(rsmlPathNode, rsmlFileNode)
         #resource = etree.Element ('image', name="\'" + os.path.join(mexid, rsmlFileNode) + "\'")
-        resource = etree.Element ('resource', name=os.path.join(mexid, rsmlFileNode))
+        resource = etree.Element ('resource', name=os.path.join(UPLOADED_FOLDER, mexid, rsmlFileNode))
         #resource = etree.Element ('resource', name='new file %s'%rsmlFileNode )
         #resource = etree.Element ('image', name='new file P.rsml')
         logging.debug('name resource: ' + os.path.join(mexid, rsmlFileNode))
