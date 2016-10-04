@@ -138,7 +138,7 @@ class RootNavLinux(object):
                     'bmp': 'bmp'}
 
     def getimgformatname(self, ext):
-        return imgformatname.get(ext, 'tiff')
+        return self.imgformatname.get(ext, 'tiff')
 
     def fetch_image_pixelsbytxn(self, session, uri, dest, uselocalpath=False, imgformat='tiff', ext='tif'):
         """
@@ -282,9 +282,22 @@ class RootNavLinux(object):
         #image_url = self.bq.service_url('image_service',path=image_xml.attrib['resource_uniq'])
         #logging.debug('image_url: ' + str(image_url))
         
+        #get input data xml file
+        image = self.bq.load(self.options.image_url)
+        inputDataFile = image.name + "_InputData.xml"
+        
+        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
+        
+        fileid, ext = os.path.splitext(image.name);
+        ext = ext.split('.')[-1] #remove . in the extension
+        formatimg = self.getimgformatname(ext)
+        
         #results = fetch_image_planes(self.bq, self.options.image_url, self.options.stagingPath)
-        results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
-        #        
+        #results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
+        # trying to download images keeping their original types
+        results = self.fetch_image_pixelsbytxn(self.bq, self.options.image_url, self.options.stagingPath,False,formatimg,ext)
+          
+        
 #         image = self.bq.load(self.options.image_url)
 #         pixels = image.pixels() #.fetch()
 #         dest = os.path.join(self.options.stagingPath, image.name)
@@ -299,7 +312,10 @@ class RootNavLinux(object):
         fileid, ext = os.path.splitext(imageDownloaded);
         
         #call FCN to do the segmentation
-        segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg' + ext)
+        #need to use png because the output image is in P mode, not RGB
+        #else, need to convert the output to RGB before saving it
+        #segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg' + ext)
+        segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg.png')
         
         paras = imageDownloaded + ' ' + segmentedImg
         
@@ -310,18 +326,20 @@ class RootNavLinux(object):
         #overlay the output on the original
         overlayedImg = os.path.join(self.options.stagingPath, fileid + '_ove' + ext)
         
-        paras = imageDownloaded + ' ' + segmentedImg + ' ' + overlayedImg
+        paras = segmentedImg + ' ' + imageDownloaded + ' ' + overlayedImg
+        
+        logging.debug('execute python overlayOutputToOriginalImg.py ' + paras)
         
         os.system('python overlayOutputToOriginalImg.py ' + paras)
         
         #assign the output image to the imageDownloaded variable
         #imageDownloaded = imageDownloaded
         
-        #get input data xml file
-        image = self.bq.load(self.options.image_url)
-        inputDataFile = image.name + "_InputData.xml"
-        
-        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
+#         #get input data xml file
+#         image = self.bq.load(self.options.image_url)
+#         inputDataFile = image.name + "_InputData.xml"
+#         
+#         inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
         
         #construct the parameters for the tool
         #' -ImageFile="' +  os.path.basename(imageDownloaded) + '"'
@@ -394,7 +412,8 @@ class RootNavLinux(object):
         self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
         #get the image downloaded
         image = self.bq.load(self.options.image_url)
-        imageDownloaded = image.name + ".tif"
+        #imageDownloaded = image.name + ".tif"
+        imageDownloaded = image.name 
         
         resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
         

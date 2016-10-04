@@ -2,12 +2,25 @@
 from __future__ import division
 import sys , os
 
-sys.path.append('/home/tuan/caffe/distribute/python')
+sys.path.append('/home/tuan/caffe/caffe/python')
 #sys.path.append('/usr/local/lib/python2.7/dist-packages')
+sys.path.append('/home/tuan/caffe/caffe/lib')
+"""
+adding lib path to the system (this works for older version of caffe. With the new version, no need to do this
+Tested with the version available on caffe github
 
-os.environ['LD_LIBRARY_PATH'] = '/home/tuan/caffe/distribute/lib/'
+sudo gedit /etc/ld.so.conf.d/caffe.conf
+
+then, enter the path 
+/home/tuan/caffe/caffe/lib
+
+save, and quit
+
+run: sudo ldconfig
+"""
+os.environ['LD_LIBRARY_PATH'] = '/home/tuan/caffe/caffe/lib'
 from ctypes import *
-cdll.LoadLibrary('/home/tuan/caffe/distribute/lib/libcaffe.so.1.0.0-rc3')
+cdll.LoadLibrary('/home/tuan/caffe/caffe/lib/libcaffe.so')
 
 import caffe
 
@@ -76,7 +89,11 @@ net = caffe.Net(fModel,
 print 'Test img: ' + imgpath
     
 # prepare the image
-im = np.array(Image.open(imgpath), dtype=np.float32)
+imgsrc = Image.open(imgpath)
+if imgsrc.mode != 'RGB':
+    imgsrc = imgsrc.convert('RGB')
+    
+im = np.array(imgsrc, dtype=np.float32)
 if len(im.shape) == 2:
     im = np.reshape(im, im.shape + (1,))
     im = np.concatenate((im, im, im), axis=2)
@@ -98,6 +115,7 @@ print out.shape;
 
 out = Image.fromarray(out.astype(np.uint8))
 out.putpalette(palette)
+
 
 out.save(resultimgpath)
 

@@ -32,7 +32,7 @@ npfilteredimg = nporginimg
 
 npfilteredimg[npoutimg == 0] = 0
 
-npfilteredimg[npoutimg > 0] = 1
+#npfilteredimg[npoutimg > 0] = 1
 
 newimg = Image.fromarray(npfilteredimg)
 
