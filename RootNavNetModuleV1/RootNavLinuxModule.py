@@ -209,6 +209,8 @@ class RootNavLinux(object):
         
         adjustedPathsNode = etree.SubElement(inputDataNode, "AdjustedPaths")
         
+        statisticNode = etree.SubElement(inputDataNode, "StatisticNode")
+        
         # extract gobject inputs
         tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('sources', 'gobject')
         #with open('inputtips.csv', 'w') as TIPS:
@@ -219,11 +221,20 @@ class RootNavLinux(object):
             #    print >> TIPS, "%(y)s, %(x)s" % dict(x=circle. .vertices[0].x,y=point.vertices[0].y)
             #    logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
         
+        #fileid, ext = os.path.splitext(image.name);
+        #ext = ext.split('.')[-1] #remove . in the extension
+        
+        numberpoints = 0
+        numbercircles = 0
+        numbersquares = 0
+        numberpolylines = 0
+        
         for ob in tips.gobjects:
             logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
             
             if ob.xmltag == 'point':
                 pointNode = etree.SubElement(pointsNode, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source", "Shape" : "Point"})
+                numberpoints = numberpoints + 1
                 
             elif ob.xmltag == 'circle':
                 xL = float(ob.vertices[0].x)
@@ -233,6 +244,7 @@ class RootNavLinux(object):
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
                 pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
+                numbercircles = numbercircles + 1
                 
             elif ob.xmltag == 'square':
                 xL = float(ob.vertices[0].x)
@@ -242,6 +254,7 @@ class RootNavLinux(object):
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
                 pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
+                numbersquares = numbersquares + 1
                 
             elif ob.xmltag == 'polyline':
                 pathNode = etree.SubElement(adjustedPathsNode, "Path")
@@ -255,7 +268,28 @@ class RootNavLinux(object):
                         pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Start", "Shape" : "Polyline"})
                     else:
                         pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Mid", "Shape" : "Polyline"})
-                        
+                
+                numberpolylines = numberpolylines + 1
+        
+        #numberpoints = 0
+        #numbercircles = 0
+        #numbersquares = 0
+        #numberpolylines = 0
+        snode = etree.SubElement(statisticNode, "NumberPoints", {'number' : str(numberpoints)})
+        snode = etree.SubElement(statisticNode, "NumberCircles", {'number' : str(numbercircles)})
+        snode = etree.SubElement(statisticNode, "NumberSquares", {'number' : str(numbersquares)})
+        
+                                
+        #if either sources or tips haven't not entered, then use CNN to detect source and tips
+#         if numberpoints == 0 or numbercircles == 0 or numbersquares == 0:
+#             tipsImg = os.path.join(self.options.stagingPath, fileid + '_tips.png')
+#         
+#             paras = imageDownloaded + ' ' + tipsImg
+#             
+#             logging.debug('execute python detecttipssingleimg.py ' + paras)
+#             
+#             os.system('python detecttipssingleimg.py ' + paras)
+                
         #tree = etree.ElementTree(pointsNode)
         tree = etree.ElementTree(inputDataNode)
                 
@@ -317,7 +351,7 @@ class RootNavLinux(object):
         #segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg' + ext)
         segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg.png')
         
-        paras = imageDownloaded + ' ' + segmentedImg
+        paras = imageDownloaded + ' ' + segmentedImg + ' ' + inputDataFileFullPath
         
         logging.debug('execute python segmentsingleimg.py ' + paras)
         
@@ -332,8 +366,22 @@ class RootNavLinux(object):
         
         os.system('python overlayOutputToOriginalImg.py ' + paras)
         
+        #######################
+        #check if needs tip detected
+        
+        tipsImg = os.path.join(self.options.stagingPath, fileid + '_tips.png')
+        scaledImg = os.path.join(self.options.stagingPath, fileid + '_scaled' + ext)
+        
+        paras = imageDownloaded + ' ' + tipsImg + ' ' + inputDataFileFullPath + ' ' + scaledImg
+            
+        logging.debug('execute python detecttipssingleimg.py ' + paras)
+            
+        os.system('python detecttipssingleimg.py ' + paras)
+                
+        ################
+        
         #assign the output image to the imageDownloaded variable
-        #imageDownloaded = imageDownloaded
+        imageDownloaded = overlayedImg
         
 #         #get input data xml file
 #         image = self.bq.load(self.options.image_url)
@@ -415,7 +463,10 @@ class RootNavLinux(object):
         #imageDownloaded = image.name + ".tif"
         imageDownloaded = image.name 
         
-        resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
+        fileid, ext = os.path.splitext(image.name);
+        
+        #resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
+        resultfile = os.path.join(self.options.stagingPath, fileid +'_ove' + ext + '_result.xml')
         
         logging.debug('Result file: ' + resultfile)
     
