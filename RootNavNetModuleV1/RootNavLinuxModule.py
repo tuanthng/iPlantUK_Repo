@@ -210,7 +210,12 @@ class RootNavLinux(object):
         adjustedPathsNode = etree.SubElement(inputDataNode, "AdjustedPaths")
         
         statisticNode = etree.SubElement(inputDataNode, "StatisticNode")
-        
+
+        #for data detection from CNN
+        datadetectedNode = etree.SubElement(inputDataNode, "DataDetected")
+        etree.SubElement(datadetectedNode, "gobject", {'name' : 'detection'})
+        ########
+                
         # extract gobject inputs
         tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('sources', 'gobject')
         #with open('inputtips.csv', 'w') as TIPS:

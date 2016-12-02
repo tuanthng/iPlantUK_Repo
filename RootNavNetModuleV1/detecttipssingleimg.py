@@ -182,6 +182,15 @@ rootNode = tree.getroot()
 #          
 # # look for the Tips Output tag
 pointsNode = rootNode.findall("./Points")
+statisticNode = rootNode.findall("./StatisticNode")
+gobjectdatadetectionNode = rootNode.findall("./DataDetected/gobject")
+
+numberNode = statisticNode[0].findall("NumberPoints")
+numberpoints = int(numberNode[0].attrib['number'])
+numberNode = statisticNode[0].findall("NumberCircles")
+numbercircles = int(numberNode[0].attrib['number'])
+numberNode = statisticNode[0].findall("NumberSquares")
+numbersquares = int(numberNode[0].attrib['number'])
 
 #if len(pointsNode) == 0:
 
@@ -264,24 +273,38 @@ testedlateralroot = calculateTestedClassV2(out, LateralId, thresholdarealateral)
 
 radius = 5
 
-for tip in testedprimaryroot:
+for idx, tip in enumerate(testedprimaryroot):
     xL = float(tip[1] - radius)
     yT = float(tip[0] - radius)
     
     xR =  tip[1] + radius #use // to get float number
     yB = tip[0] + radius
-    pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
+    
+    ###############
+    pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Primary", "name" : str(idx)})
+    vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    tagnode = etree.SubElement(vertexnode, "tag", {'name' : 'color', "value" : "#0000FF"})
+    ###############
+    if numbercircles == 0:
+        pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
                                  
-for tip in testedlateralroot:
+for idx, tip in enumerate(testedlateralroot):
     xL = float(tip[1] - radius)
     yT = float(tip[0] - radius)
     
     xR =  tip[1] + radius #use // to get float number
     yB = tip[0] + radius
-    pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
+    
+    ###############
+    pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Lateral", "name" : str(idx)})
+    vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    tagnode = etree.SubElement(vertexnode, "tag", {'name' : 'color', "value" : "#00FF00"})
+    ###############
+    
+    if numbercircles == 0:
+        pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
 
-#find the source point? 
-
+#save data if any changed
 tree.write(inputdatafile)
 
 

@@ -17,7 +17,7 @@
 					<tag name="gobject" value="square" type="square" />
 					<tag name="gobject" value="polyline" type="polyline" />
 					<tag name="require_gobjects">
-						<tag name="amount" value=">=1" />
+						<tag name="amount" value=">=0" />
 						<tag name="fail_message"
 							value="Requires select of at least one source and tips (optional)" />
 					</tag>
