@@ -177,6 +177,8 @@ rootNode = tree.getroot()
 pointsNode = rootNode.findall("./Points")
 statisticNode = rootNode.findall("./StatisticNode")
 gobjectdatadetectionNode = rootNode.findall("./DataDetected/gobject")
+statisticDetectionNode = rootNode.findall("./StatisticDetectionNode")
+
 
 numberNode = statisticNode[0].findall("NumberPoints")
 numberpoints = int(numberNode[0].attrib['number'])
@@ -236,8 +238,12 @@ print 'Output img: ' + resultimgpath
 #extract source if necessary
 #find primary tips, lateral tips
 testedseeds = calculateTestedClassV2(out, SeedID, thresholdareaseed)
-
+numberdetectedpoints = len(testedseeds)
+#numbercircles = 0
+#numbersquares = 0
 #radius = 5
+
+snode = etree.SubElement(statisticDetectionNode[0], "NumberSeeds", {'number' : str(numberdetectedpoints)})
 
 for idx, tip in enumerate(testedseeds):
     #xL = float(tip[1] - radius)
@@ -245,12 +251,19 @@ for idx, tip in enumerate(testedseeds):
     
     #xR =  tip[1] + radius #use // to get float number
     #yB = tip[0] + radius
-    pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Source", "name" : str(idx)})
-    vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
-    tagnode = etree.SubElement(vertexnode, "tag", {'name' : 'color', "value" : "#FF0000"})
+    gobjectNode = etree.SubElement(gobjectdatadetectionNode[0], "gobject", {"type" : "point", "name" : str(idx)})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'color', "value" : "#FF0000"})
+    vertexnode = etree.SubElement(gobjectNode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'shape', "value" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'line_width', "value" : "1"})
+    
+    #pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Source", "name" : str(idx)})
+    #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#FF0000"})
     
     if numberpoints == 0:
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})                         
 
-tree.write(inputdatafile)
-
+#tree.write(inputdatafile)
+with open(inputdatafile, "w") as id:
+    tree.write(id, encoding="utf-8", xml_declaration=True)

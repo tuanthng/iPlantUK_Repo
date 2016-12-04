@@ -184,6 +184,7 @@ rootNode = tree.getroot()
 pointsNode = rootNode.findall("./Points")
 statisticNode = rootNode.findall("./StatisticNode")
 gobjectdatadetectionNode = rootNode.findall("./DataDetected/gobject")
+statisticDetectionNode = rootNode.findall("./StatisticDetectionNode")
 
 numberNode = statisticNode[0].findall("NumberPoints")
 numberpoints = int(numberNode[0].attrib['number'])
@@ -271,6 +272,12 @@ print 'Output img: ' + resultimgpath
 testedprimaryroot = calculateTestedClassV2(out, PrimaryId, thresholdareaprimary)
 testedlateralroot = calculateTestedClassV2(out, LateralId, thresholdarealateral)
 
+numberdetectedcircles = len(testedprimaryroot)
+numberdetectedsquares = len(testedlateralroot)
+
+snode = etree.SubElement(statisticDetectionNode[0], "NumberPrimary", {'number' : str(numberdetectedcircles)})
+snode = etree.SubElement(statisticDetectionNode[0], "NumberLateral", {'number' : str(numberdetectedsquares)})
+
 radius = 5
 
 for idx, tip in enumerate(testedprimaryroot):
@@ -281,9 +288,16 @@ for idx, tip in enumerate(testedprimaryroot):
     yB = tip[0] + radius
     
     ###############
-    pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Primary", "name" : str(idx)})
-    vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
-    tagnode = etree.SubElement(vertexnode, "tag", {'name' : 'color', "value" : "#0000FF"})
+    gobjectNode = etree.SubElement(gobjectdatadetectionNode[0], "gobject", {"type" : "point", "name" : str(idx)})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'color', "value" : "#0000FF"})
+    vertexnode = etree.SubElement(gobjectNode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'shape', "value" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'line_width', "value" : "1"})
+        
+    
+    #pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Primary", "name" : str(idx)})
+    #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#0000FF"})
     ###############
     if numbercircles == 0:
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
@@ -296,16 +310,25 @@ for idx, tip in enumerate(testedlateralroot):
     yB = tip[0] + radius
     
     ###############
-    pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Lateral", "name" : str(idx)})
-    vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
-    tagnode = etree.SubElement(vertexnode, "tag", {'name' : 'color', "value" : "#00FF00"})
+    gobjectNode = etree.SubElement(gobjectdatadetectionNode[0], "gobject", {"type" : "point", "name" : str(idx)})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'color', "value" : "#00FF00"})
+    vertexnode = etree.SubElement(gobjectNode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'shape', "value" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'line_width', "value" : "1"})
+    
+    
+    #pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Lateral", "name" : str(idx)})
+    #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#00FF00"})
     ###############
     
     if numbercircles == 0:
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
 
 #save data if any changed
-tree.write(inputdatafile)
+#tree.write(inputdatafile)
+with open(inputdatafile, "w") as id:
+    tree.write(id, encoding="utf-8", xml_declaration=True)
 
 
 

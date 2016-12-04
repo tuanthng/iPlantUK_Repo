@@ -271,7 +271,13 @@
 				<tag name="label" value="Tips detected" />
 			</template>
 		</tag>
-
+		
+		<tag name="SegmentedImage" type="image">
+			<template>
+				<tag name="label" value="Segmented image" />
+			</template>
+		</tag>
+		
 		<tag name="OutputPathImage" type="image">
 			<template>
 				<tag name="label" value="Paths" />
