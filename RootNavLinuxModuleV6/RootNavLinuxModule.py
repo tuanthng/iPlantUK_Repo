@@ -36,6 +36,7 @@ from bqapi.util import fetch_image_planes, AttrDict, fetch_image_pixels, localpa
 
 imageDownloaded = '';
 BASE_URL = 'http://127.0.0.1:8080'
+UPLOADED_FOLDER = 'RootNav'
 
 #named_args = {}
 #staging_path = None
@@ -44,8 +45,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 #EXEC = "mono RootNavLinux.exe"
 EXEC = "./runRootNav.sh"
-
-UPLOADED_FOLDER = 'RootNavNet'
 
 def gettag (el, tagname):
     for kid in el:
@@ -128,59 +127,6 @@ class RootNavLinux(object):
         else:
             raise BQCommError("improper parameters for postblob")
 
-    imgformatname = {
-                    'png': 'png',
-                    'tif': 'tiff',
-                    'tiff': 'tiff',
-                    'jpg': 'jpeg',
-                    'jpeg': 'jpeg',
-                    'jpe': 'jpeg',
-                    'bmp': 'bmp'}
-
-    def getimgformatname(self, ext):
-        return self.imgformatname.get(ext, 'tiff')
-
-    def fetch_image_pixelsbytxn(self, session, uri, dest, uselocalpath=False, imgformat='tiff', ext='tif'):
-        """
-        fetch original image locally as tif
-        @param session: the bqsession
-        @param uri: resource image uri
-        @param dest: a destination directory
-        @param uselocalpath: true when routine is run on same host as server
-        """
-        image = session.load(uri)
-        name = image.name or next_name("image")
-        ip = image.pixels().format(imgformat)
-        if uselocalpath:
-            ip = ip.localpath()
-        pixels = ip.fetch()
-        if os.path.isdir(dest):
-            dest = os.path.join(dest, os.path.basename(name))
-        else:
-            dest = os.path.join('.', os.path.basename(name))
-        if not dest.lower().endswith ('.'+ext):
-            dest = "%s%s" % (dest, ext)
-    
-    
-        if uselocalpath:
-            # path = ET.XML(pixels).xpath('/resource/@src')[0]
-            resource = session.factory.string2etree(pixels)
-            path = resource.get ('value')
-            # path = urllib.url2pathname(path[5:])
-            if path.startswith('file:/'):
-                path = path[5:]
-                # Skip 'file:'
-            if os.path.exists(path):
-                safecopy(path, dest)
-                return { uri : dest }
-            else:
-                log.error ("localpath did not return valid path: %s", path)
-    
-        f = open(dest, 'wb')
-        f.write(pixels)
-        f.close()
-        return { uri : dest }
-
                 
     def setup(self):
         #if not os.path.exists(self.images):
@@ -209,15 +155,6 @@ class RootNavLinux(object):
         
         adjustedPathsNode = etree.SubElement(inputDataNode, "AdjustedPaths")
         
-        statisticNode = etree.SubElement(inputDataNode, "StatisticNode")
-
-        statisticDetectionNode  = etree.SubElement(inputDataNode, "StatisticDetectionNode")
-        
-        #for data detection from CNN
-        datadetectedNode = etree.SubElement(inputDataNode, "DataDetected")
-        etree.SubElement(datadetectedNode, "gobject", {'name' : 'detection'})
-        ########
-                
         # extract gobject inputs
         tips = self.bq.mex.find('inputs', 'tag').find('image_url', 'tag').find('sources', 'gobject')
         #with open('inputtips.csv', 'w') as TIPS:
@@ -228,20 +165,11 @@ class RootNavLinux(object):
             #    print >> TIPS, "%(y)s, %(x)s" % dict(x=circle. .vertices[0].x,y=point.vertices[0].y)
             #    logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
         
-        #fileid, ext = os.path.splitext(image.name);
-        #ext = ext.split('.')[-1] #remove . in the extension
-        
-        numberpoints = 0
-        numbercircles = 0
-        numbersquares = 0
-        numberpolylines = 0
-        
         for ob in tips.gobjects:
             logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
             
             if ob.xmltag == 'point':
                 pointNode = etree.SubElement(pointsNode, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source", "Shape" : "Point"})
-                numberpoints = numberpoints + 1
                 
             elif ob.xmltag == 'circle':
                 xL = float(ob.vertices[0].x)
@@ -251,7 +179,6 @@ class RootNavLinux(object):
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
                 pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
-                numbercircles = numbercircles + 1
                 
             elif ob.xmltag == 'square':
                 xL = float(ob.vertices[0].x)
@@ -261,7 +188,6 @@ class RootNavLinux(object):
                 y = yT + (float(ob.vertices[1].y) - yT)//2.0
                 
                 pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
-                numbersquares = numbersquares + 1
                 
             elif ob.xmltag == 'polyline':
                 pathNode = etree.SubElement(adjustedPathsNode, "Path")
@@ -275,28 +201,7 @@ class RootNavLinux(object):
                         pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Start", "Shape" : "Polyline"})
                     else:
                         pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Mid", "Shape" : "Polyline"})
-                
-                numberpolylines = numberpolylines + 1
-        
-        #numberpoints = 0
-        #numbercircles = 0
-        #numbersquares = 0
-        #numberpolylines = 0
-        snode = etree.SubElement(statisticNode, "NumberPoints", {'number' : str(numberpoints)})
-        snode = etree.SubElement(statisticNode, "NumberCircles", {'number' : str(numbercircles)})
-        snode = etree.SubElement(statisticNode, "NumberSquares", {'number' : str(numbersquares)})
-        
-                                
-        #if either sources or tips haven't not entered, then use CNN to detect source and tips
-#         if numberpoints == 0 or numbercircles == 0 or numbersquares == 0:
-#             tipsImg = os.path.join(self.options.stagingPath, fileid + '_tips.png')
-#         
-#             paras = imageDownloaded + ' ' + tipsImg
-#             
-#             logging.debug('execute python detecttipssingleimg.py ' + paras)
-#             
-#             os.system('python detecttipssingleimg.py ' + paras)
-                
+                        
         #tree = etree.ElementTree(pointsNode)
         tree = etree.ElementTree(inputDataNode)
                 
@@ -323,22 +228,8 @@ class RootNavLinux(object):
         #image_url = self.bq.service_url('image_service',path=image_xml.attrib['resource_uniq'])
         #logging.debug('image_url: ' + str(image_url))
         
-        #get input data xml file
-        image = self.bq.load(self.options.image_url)
-        inputDataFile = image.name + "_InputData.xml"
-        
-        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
-        
-        fileid, ext = os.path.splitext(image.name);
-        ext = ext.split('.')[-1] #remove . in the extension
-        formatimg = self.getimgformatname(ext)
-        
         #results = fetch_image_planes(self.bq, self.options.image_url, self.options.stagingPath)
-        #results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
-        # trying to download images keeping their original types
-        results = self.fetch_image_pixelsbytxn(self.bq, self.options.image_url, self.options.stagingPath,False,formatimg,ext)
-          
-        
+        results = fetch_image_pixels (self.bq, self.options.image_url, self.options.stagingPath)
 #         image = self.bq.load(self.options.image_url)
 #         pixels = image.pixels() #.fetch()
 #         dest = os.path.join(self.options.stagingPath, image.name)
@@ -350,51 +241,12 @@ class RootNavLinux(object):
         #logging.debug('image name: ' + str(image.name))
         imageDownloaded = results[self.options.image_url];
         #imageDownloadedFullPath = os.path.join(self.options.stagingPath, imageDownloaded)
-        fileid, ext = os.path.splitext(imageDownloaded);
         
-        #call FCN to do the segmentation
-        #need to use png because the output image is in P mode, not RGB
-        #else, need to convert the output to RGB before saving it
-        #segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg' + ext)
-        segmentedImg = os.path.join(self.options.stagingPath, fileid + '_seg.png')
+        #get input data xml file
+        image = self.bq.load(self.options.image_url)
+        inputDataFile = image.name + "_InputData.xml"
         
-        paras = imageDownloaded + ' ' + segmentedImg + ' ' + inputDataFileFullPath
-        
-        logging.debug('execute python segmentsingleimg.py ' + paras)
-        
-        os.system('python segmentsingleimg.py ' + paras)
-        
-        #overlay the output on the original
-        overlayedImg = os.path.join(self.options.stagingPath, fileid + '_ove' + ext)
-        
-        paras = segmentedImg + ' ' + imageDownloaded + ' ' + overlayedImg
-        
-        logging.debug('execute python overlayOutputToOriginalImg.py ' + paras)
-        
-        os.system('python overlayOutputToOriginalImg.py ' + paras)
-        
-        #######################
-        #check if needs tip detected
-        
-        tipsImg = os.path.join(self.options.stagingPath, fileid + '_tips.png')
-        scaledImg = os.path.join(self.options.stagingPath, fileid + '_scaled' + ext)
-        
-        paras = imageDownloaded + ' ' + tipsImg + ' ' + inputDataFileFullPath + ' ' + scaledImg
-            
-        logging.debug('execute python detecttipssingleimg.py ' + paras)
-            
-        os.system('python detecttipssingleimg.py ' + paras)
-                
-        ################
-        
-        #assign the output image to the imageDownloaded variable
-        imageDownloaded = overlayedImg
-        
-#         #get input data xml file
-#         image = self.bq.load(self.options.image_url)
-#         inputDataFile = image.name + "_InputData.xml"
-#         
-#         inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
+        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
         
         #construct the parameters for the tool
         #' -ImageFile="' +  os.path.basename(imageDownloaded) + '"'
@@ -467,63 +319,39 @@ class RootNavLinux(object):
         self.mex_parameter_parser(self.options, self.bq.mex.xmltree)
         #get the image downloaded
         image = self.bq.load(self.options.image_url)
-        #imageDownloaded = image.name + ".tif"
-        imageDownloaded = image.name 
+        imageDownloaded = image.name + ".tif"
         
-        fileid, ext = os.path.splitext(image.name);
-        
-        #resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
-        resultfile = os.path.join(self.options.stagingPath, fileid +'_ove' + ext + '_result.xml')
-        
-        inputDataFile = imageDownloaded + "_InputData.xml"
-        inputDataFileFullPath = os.path.join(self.options.stagingPath, inputDataFile)
+        resultfile = os.path.join(self.options.stagingPath, imageDownloaded + '_result.xml')
         
         logging.debug('Result file: ' + resultfile)
-        logging.debug('Input data file: ' + inputDataFileFullPath)
     
         #load the result file and display info.
 #       tree.parse('/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002.jpg_result.xml')
         tree = etree.ElementTree()
         tree.parse(resultfile)
         rootNode = tree.getroot()
-        ########
-        #tree = etree.ElementTree()
-        tree.parse(inputDataFileFullPath)
-        rootInputNode = tree.getroot()
-        ##########
+#         
         logging.debug('Root node: ' + rootNode.tag)
 #          
         # # look for the Tips Output tag
         tipDetectionNode = rootNode.findall("./Output/TipsDetected")
         
-        statisticDetectionNode = rootInputNode.findall("./StatisticDetectionNode")
-
-        numberNode = statisticDetectionNode[0].findall("NumberSeeds")
-        numberpoints = int(numberNode[0].attrib['number'])
-        numberNode = statisticDetectionNode[0].findall("NumberPrimary")
-        numbercircles = int(numberNode[0].attrib['number'])
-        numberNode = statisticDetectionNode[0].findall("NumberLateral")
-        numbersquares = int(numberNode[0].attrib['number'])
-        
-        
         outputTag = etree.Element('tag', name='outputs')
         outputSubTag = etree.SubElement(outputTag, 'tag', name='summary')
         
-        #if len(tipDetectionNode) > 0:
-        if numberpoints + numbercircles + numbersquares > 0:    
-            #totalAttrib = tipDetectionNode[0].get('total')
+        if len(tipDetectionNode) > 0:
             
-            #logging.debug('tipDetectionNode : ' + totalAttrib)
+            totalAttrib = tipDetectionNode[0].get('total')
+            
+            logging.debug('tipDetectionNode : ' + totalAttrib)
             
             ##etree.SubElement(outputTag, 'tag', name='TipDetection', value=str(23))
-            ##etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
+            #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=str(23))
             
             
-            #etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
-            etree.SubElement( outputSubTag, 'tag', name='Seed(s) detected', value=str(numberpoints))
-            etree.SubElement( outputSubTag, 'tag', name='Primary tip(s) detected', value=str(numbercircles))
-            etree.SubElement( outputSubTag, 'tag', name='Lateral tip(s) detected', value=str(numbersquares))
+            etree.SubElement( outputSubTag, 'tag', name='Tip(s) detected', value=totalAttrib)
             
+           
             #using testing image: /home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png
             #filepath = '/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png'
             #filepath = '/home/tuan/bisque/modules/RootNavLinuxModuleV3/0002_copy.jpg'
@@ -534,12 +362,8 @@ class RootNavLinux(object):
             #gObjectValue = ""
             #gObjectTag = etree.SubElement(outputImgTag, 'gobject', name='PointsDetected')
             logging.debug('appending children to the output image tag')
-            #replacing: detection by features by detection by CNN
-            #gObjectTag = rootNode.findall("./Output/TipsDetected/gobject")[0]
-            #outputImgTag.append(gObjectTag)
-            
-            gObjectInputTag = rootInputNode.findall("./DataDetected/gobject")[0]
-            outputImgTag.append(gObjectInputTag)
+            gObjectTag = rootNode.findall("./Output/TipsDetected/gobject")[0]
+            outputImgTag.append(gObjectTag)
             
             #test colour (this works for one point, change colour from red to yello)
             #etree.SubElement(gObjectTag[0], 'tag', name='color', value="#ffff00")
@@ -617,33 +441,35 @@ class RootNavLinux(object):
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='/home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
         
         #etree.SubElement(outputTag, 'tag', name='OutputImage', value='file:///home/tuan/bisque/modules/RootNavLinuxModuleV3/FeatureMapInMain.png')
+        
         ##########################
-        #upload the segmented image
-        inputFileNode = rootNode.findall("./Input/File")
+        #upload the probability image
+        outputFileNode = rootNode.findall("./Output/File")
         
-        imagefilepathNode = inputFileNode[0].find("ImageFile").text
+        probabilityimagepathNode = outputFileNode[0].find("ProbabilityImageFile").text
         
-        imagefile = os.path.basename(imagefilepathNode)
+        imagefile = os.path.basename(probabilityimagepathNode)
         #get mexid
         parts = self.options.stagingPath.split('/')
         mexid = parts[len(parts) - 1]
         
         resource = etree.Element ('image', name=os.path.join(UPLOADED_FOLDER, mexid, imagefile))
         
-        response = self.postblobbytxn(self.bq, (imagefilepathNode), xml=resource)
+        response = self.postblobbytxn(self.bq, (probabilityimagepathNode), xml=resource)
         blob = etree.XML(response).find('./')
         
         if blob is None or blob.get('uri') is None:
-            logging.debug('Could not upload the segmented image file into the system')
-            self.bq.fail_mex('Could not upload the segmented image file into the system')
+            logging.debug('Could not upload the probability image file into the system')
+            self.bq.fail_mex('Could not upload the probability image file into the system')
         else:
             ##create node for mex
-            linksegmentedimgupload = blob.get('uri')
+            linkprobabilityimgupload = blob.get('uri')
             
-            segmentedImageTag = etree.SubElement(outputTag, 'tag', name='SegmentedImage', value=linksegmentedimgupload, type='image')
-            
+            probabilityImageTag = etree.SubElement(outputTag, 'tag', name='ProbabilityImage', value=linkprobabilityimgupload, type='image')
         
-        ##########################
+        
+        #######################################################
+        
         #output shortest paths
         outputPathImgTag = etree.SubElement(outputTag, 'tag', name='OutputPathImage', value=self.options.image_url)
         
@@ -705,41 +531,38 @@ class RootNavLinux(object):
             
         #get data for RSML file for downloading 
         #extract rsml file from xml data
-        #inputFileNode = rootNode.findall("./Input/File")
-        tempNode = inputFileNode[0].find("RSMLFile")
-        
-        if tempNode is not None:
-            rsmlFileNode = inputFileNode[0].find("RSMLFile").text
-            rsmlPathNode = inputFileNode[0].find("RSMLPath").text
+        inputFileNode = rootNode.findall("./Input/File")
+        rsmlFileNode = inputFileNode[0].find("RSMLFile").text
+        rsmlPathNode = inputFileNode[0].find("RSMLPath").text
                 
-            #upload rsml file
-            #parts = self.options.stagingPath.split('/')
-            #mexid = parts[len(parts) - 1]
-            resultrsmlfile = os.path.join(rsmlPathNode, rsmlFileNode)
-            #resource = etree.Element ('image', name="\'" + os.path.join(mexid, rsmlFileNode) + "\'")
-            resource = etree.Element ('resource', name=os.path.join(UPLOADED_FOLDER, mexid, rsmlFileNode))
-            #resource = etree.Element ('resource', name='new file %s'%rsmlFileNode )
-            #resource = etree.Element ('image', name='new file P.rsml')
-            logging.debug('name resource: ' + os.path.join(mexid, rsmlFileNode))
-            logging.debug('resultrsmlfile: ' + resultrsmlfile)
-            logging.debug('localpath: ' + localpath2url(resultrsmlfile))
-            logging.debug('resource: ' + str(resource))
+        #upload rsml file
+        parts = self.options.stagingPath.split('/')
+        mexid = parts[len(parts) - 1]
+        resultrsmlfile = os.path.join(rsmlPathNode, rsmlFileNode)
+        #resource = etree.Element ('image', name="\'" + os.path.join(mexid, rsmlFileNode) + "\'")
+        resource = etree.Element ('resource', name=os.path.join(mexid, rsmlFileNode))
+        #resource = etree.Element ('resource', name='new file %s'%rsmlFileNode )
+        #resource = etree.Element ('image', name='new file P.rsml')
+        logging.debug('name resource: ' + os.path.join(mexid, rsmlFileNode))
+        logging.debug('resultrsmlfile: ' + resultrsmlfile)
+        logging.debug('localpath: ' + localpath2url(resultrsmlfile))
+        logging.debug('resource: ' + str(resource))
         
-            #self.uploadFileToServer(resultrsmlfile);
-            
-            #response = self.bq.postblob(localpath2url(resultrsmlfile), xml=resource)
-            #response = self.bq.postblob((resultrsmlfile), xml=resource)
-            response = self.postblobbytxn(self.bq, (resultrsmlfile), xml=resource)
-            blob = etree.XML(response).find('./')
-            if blob is None or blob.get('uri') is None:
-                logging.debug('Could not upload the rsml file into the system')
-                self.bq.fail_mex('Could not upload the rsml file into the system')
-            else:
-                ##create node for mex
-                linkdataservice = blob.get('uri')
-                linkblobservice = linkdataservice.replace('data_service', 'blob_service');
-                outputRSMLFileTag = etree.SubElement(outputTag, 'tag', name='RSMLFile', value=linkblobservice, type='file')
-                outputRSMLNameTag = etree.SubElement(outputTag, 'tag', name='RSMLName', value=rsmlFileNode, type='name')
+        #self.uploadFileToServer(resultrsmlfile);
+        
+        #response = self.bq.postblob(localpath2url(resultrsmlfile), xml=resource)
+        #response = self.bq.postblob((resultrsmlfile), xml=resource)
+        response = self.postblobbytxn(self.bq, (resultrsmlfile), xml=resource)
+        blob = etree.XML(response).find('./')
+        if blob is None or blob.get('uri') is None:
+            logging.debug('Could not upload the rsml file into the system')
+            self.bq.fail_mex('Could not upload the rsml file into the system')
+        else:
+            ##create node for mex
+            linkdataservice = blob.get('uri')
+            linkblobservice = linkdataservice.replace('data_service', 'blob_service');
+            outputRSMLFileTag = etree.SubElement(outputTag, 'tag', name='RSMLFile', value=linkblobservice, type='file')
+            outputRSMLNameTag = etree.SubElement(outputTag, 'tag', name='RSMLName', value=rsmlFileNode, type='name')
                 
         #response = save_blob(self.bq, localpath2url(resultrsmlfile), resource=resource)
 #         response = save_blob(self.bq, resultrsmlfile, resource=resource)

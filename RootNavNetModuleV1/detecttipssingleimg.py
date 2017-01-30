@@ -3,6 +3,7 @@ from __future__ import division
 import sys , os
 
 from lxml import etree
+import numpy as np
 from scipy import misc, ndimage
 from skimage import measure
 from skimage.feature import blob_doh
@@ -10,7 +11,7 @@ from skimage.feature import blob_doh
 from skimage.color import rgb2gray
 from scipy.ndimage.measurements import center_of_mass
 import math
-
+#import matplotlib.pyplot as plt
 sys.path.append('/home/tuan/caffe/caffe/python')
 #sys.path.append('/usr/local/lib/python2.7/dist-packages')
 sys.path.append('/home/tuan/caffe/caffe/lib')
@@ -33,7 +34,7 @@ cdll.LoadLibrary('/home/tuan/caffe/caffe/lib/libcaffe.so')
 
 import caffe
 
-import numpy as np
+#import numpy as np
 from PIL import Image
 #from PIL import ImageDraw
 #import scipy.io
@@ -41,8 +42,8 @@ from PIL import Image
 
 # few settings
 ##for threeclasses
-fWeights = '/home/tuan/MyProject/rootnet/threeclasses/weights-30-08-2016/trainscore59pool43_iter_140000.caffemodel'
-fModel = '/home/tuan/MyProject/rootnet/threeclasses/deploy/deploythreeclasses.prototxt'
+fWeights = '/home/tuan/MyProject/rootnet/twotipclasses-24/weights-02-09-2016/trainscore59pool43_iter_140000.caffemodel'
+fModel = '/home/tuan/MyProject/rootnet/twotipclasses-24/deploy/deploytwotipclasses.prototxt'
 
 #fWeights = sys.argv[1]
 #fModel = sys.argv[2]
@@ -60,17 +61,25 @@ GPUid = 0
 imgpath = sys.argv[1]
 resultimgpath = sys.argv[2]
 inputdatafile = sys.argv[3]
+scaledimgfile = sys.argv[4]
 
 #make sure the class ID matching with Ids in the test data
 BackgroundId = 0
-RootID = 1
-SeedID = 2
+#RootID = 1
+#SeedID = 2
 #PrimaryId = 3
 #LateralId = 4
+PrimaryId = 1
+LateralId = 2
+
+thresholdareaprimary = 3
+thresholdarealateral = 3
+
+baselinelength = 850
 
 useSmoothed = 0
-
-thresholdareaseed = 3
+useScale = 1
+scaleFactor = 1
 
 palette = np.zeros((255,3))
 palette[0,:] = [   0,   0,   0] # Background
@@ -88,7 +97,6 @@ palette[6,:] = [  67,   0,   0] # Mouth
 palette[7,:] = [ 135,   4,   0] # Lower lip
 palette = palette.astype('uint8').tostring()
 
-#######################
 def calculateTestedClass(testedimg, classId):
     #img = Image.open(imgfile);
     img = testedimg
@@ -164,8 +172,7 @@ def calculateTestedClassV2(testedimg, classId, thresholdarea):
     
     return centreobjects  # for each item, the format is y, x
 
-
-#####################################
+###############################################
 #add tips to input data xml file
 tree = etree.ElementTree()
 tree.parse(inputdatafile)
@@ -179,13 +186,14 @@ statisticNode = rootNode.findall("./StatisticNode")
 gobjectdatadetectionNode = rootNode.findall("./DataDetected/gobject")
 statisticDetectionNode = rootNode.findall("./StatisticDetectionNode")
 
-
 numberNode = statisticNode[0].findall("NumberPoints")
 numberpoints = int(numberNode[0].attrib['number'])
 numberNode = statisticNode[0].findall("NumberCircles")
 numbercircles = int(numberNode[0].attrib['number'])
 numberNode = statisticNode[0].findall("NumberSquares")
 numbersquares = int(numberNode[0].attrib['number'])
+
+#if len(pointsNode) == 0:
 
 # set up caffe
 if useGPU == 0:
@@ -205,6 +213,26 @@ print 'Test img: ' + imgpath
 imgsrc = Image.open(imgpath)
 if imgsrc.mode != 'RGB':
     imgsrc = imgsrc.convert('RGB')
+#keep the original image
+keptimgsrc = imgsrc.copy()
+
+###################
+#downsample: use bicubic
+#upsample: use bilinear
+#scale the image
+if useScale == 1:
+    maxLength = max(imgsrc.size[1], imgsrc.size[0], baselinelength ) # (height, width)
+    print 'max size: ' + str(maxLength)
+    scaleFactor = float(baselinelength)/float(maxLength);
+    
+    sourceimageresized = misc.imresize(np.array(imgsrc, dtype=np.uint8), scaleFactor, interp='bicubic');
+    #save scaled image
+    newimg = Image.fromarray(sourceimageresized)
+    newimg.save(scaledimgfile)
+    
+    imgsrc = newimg
+    
+###################
     
 im = np.array(imgsrc, dtype=np.float32)
 if len(im.shape) == 2:
@@ -226,44 +254,81 @@ net.forward()
 out = net.blobs['score'].data[0].argmax(axis=0)
 print out.shape;
 
+#upsample result image
+if useScale == 1:
+    upoutimg = misc.imresize(out.astype(np.uint8), 1.0/scaleFactor, interp='bilinear');
+    out = upoutimg
+
+
 out = Image.fromarray(out.astype(np.uint8))
 out.putpalette(palette)
-
 
 out.save(resultimgpath)
 
 print 'Output img: ' + resultimgpath
 
 
-#extract source if necessary
 #find primary tips, lateral tips
-testedseeds = calculateTestedClassV2(out, SeedID, thresholdareaseed)
-numberdetectedpoints = len(testedseeds)
-#numbercircles = 0
-#numbersquares = 0
-#radius = 5
+testedprimaryroot = calculateTestedClassV2(out, PrimaryId, thresholdareaprimary)
+testedlateralroot = calculateTestedClassV2(out, LateralId, thresholdarealateral)
 
-snode = etree.SubElement(statisticDetectionNode[0], "NumberSeeds", {'number' : str(numberdetectedpoints)})
+numberdetectedcircles = len(testedprimaryroot)
+numberdetectedsquares = len(testedlateralroot)
 
-for idx, tip in enumerate(testedseeds):
-    #xL = float(tip[1] - radius)
-    #yT = float(tip[0] - radius)
+snode = etree.SubElement(statisticDetectionNode[0], "NumberPrimary", {'number' : str(numberdetectedcircles)})
+snode = etree.SubElement(statisticDetectionNode[0], "NumberLateral", {'number' : str(numberdetectedsquares)})
+
+radius = 5
+
+for idx, tip in enumerate(testedprimaryroot):
+    xL = float(tip[1] - radius)
+    yT = float(tip[0] - radius)
     
-    #xR =  tip[1] + radius #use // to get float number
-    #yB = tip[0] + radius
+    xR =  tip[1] + radius #use // to get float number
+    yB = tip[0] + radius
+    
+    ###############
     gobjectNode = etree.SubElement(gobjectdatadetectionNode[0], "gobject", {"type" : "point", "name" : str(idx)})
-    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'color', "value" : "#FF0000"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'color', "value" : "#0000FF"})
+    vertexnode = etree.SubElement(gobjectNode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'shape', "value" : "0"})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'line_width', "value" : "1"})
+        
+    
+    #pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Primary", "name" : str(idx)})
+    #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#0000FF"})
+    ###############
+    if numbercircles == 0:
+        pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
+                                 
+for idx, tip in enumerate(testedlateralroot):
+    xL = float(tip[1] - radius)
+    yT = float(tip[0] - radius)
+    
+    xR =  tip[1] + radius #use // to get float number
+    yB = tip[0] + radius
+    
+    ###############
+    gobjectNode = etree.SubElement(gobjectdatadetectionNode[0], "gobject", {"type" : "point", "name" : str(idx)})
+    tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'color', "value" : "#00FF00"})
     vertexnode = etree.SubElement(gobjectNode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
     tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'shape', "value" : "0"})
     tagnode = etree.SubElement(gobjectNode, "tag", {'name' : 'line_width', "value" : "1"})
     
-    #pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Source", "name" : str(idx)})
-    #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
-    #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#FF0000"})
     
-    if numberpoints == 0:
-        pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})                         
+    #pointnode = etree.SubElement(gobjectdatadetectionNode[0], "point", {"type" : "Lateral", "name" : str(idx)})
+    #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
+    #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#00FF00"})
+    ###############
+    
+    if numbercircles == 0:
+        pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
 
+#save data if any changed
 #tree.write(inputdatafile)
 with open(inputdatafile, "w") as id:
     tree.write(id, encoding="utf-8", xml_declaration=True)
+
+
+
