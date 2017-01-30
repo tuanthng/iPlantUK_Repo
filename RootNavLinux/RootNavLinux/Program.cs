@@ -68,8 +68,55 @@ namespace RootNavLinux
 						mainRoot.InputPointsFilename = options.InputPointsFile;
 					}
 
+					mainRoot.PlantName = options.PlantName;
+					mainRoot.TagName = options.TagName;
+
+					if (options.RSMLDIR != null && !options.RSMLDIR.Equals("."))
+					{
+						mainRoot.RSMLDirectory = options.RSMLDIR;
+					}
+
+					//check measurement
+					if (options.DoMeasurement != null && options.DoMeasurement.Equals("true"))
+					{
+						mainRoot.DoMeasurement = true;
+						bool tempBool;
+						double tempDouble;
+
+						bool result = double.TryParse(options.ImageResolutionValue, out tempDouble);
+						mainRoot.ImageResolutionValue = result ? tempDouble : 0;
+						int tempInt;
+
+						result = Int32.TryParse(options.SplineSpacing, out tempInt);
+						mainRoot.SplineSpacing = result ? tempInt : 40; //use default when false
+
+						result = Boolean.TryParse(options.CurvatureProfile, out tempBool);
+						mainRoot.DoCurvatureProfile = result ? tempBool : true;
+
+						result = Boolean.TryParse(options.MapProfile, out tempBool);
+						mainRoot.DoMapProfile = result ? tempBool : true;
+
+						result = Int32.TryParse(options.TravelMap, out tempInt);
+						mainRoot.TravelMap = result ? tempInt : 40;
+
+						result = Boolean.TryParse(options.CompleteArch, out tempBool);
+						mainRoot.DoCompleteArch = result ? tempBool : true;
+
+						mainRoot.PlantName = options.PlantName;
+
+						result = Boolean.TryParse(options.DoMeasurementTable, out tempBool);
+						mainRoot.DoMeasurementTable = result ? tempBool : true;
+					}
+					else 
+					{
+						mainRoot.DoMeasurement = false;
+					}
 					//process the task
 					mainRoot.Process ();
+
+					//save data before exists the program
+					//mainRoot.saveData();
+
 				} else {
 					Console.WriteLine ("Using the default image.");
 

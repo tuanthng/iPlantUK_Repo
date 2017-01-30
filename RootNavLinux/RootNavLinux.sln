@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plossum", "plossum-commandl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConnections", "DataConnections\DataConnections.csproj", "{72B53656-016D-4BB7-A6CB-9402A1A5E956}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootNavMeasurement", "RootNavMeasurement\RootNavMeasurement.csproj", "{A470A636-A244-43D3-8048-AE899B102100}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -25,5 +27,9 @@ Global
 		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Debug|x86.Build.0 = Debug|Any CPU
 		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Release|x86.ActiveCfg = Release|Any CPU
 		{72B53656-016D-4BB7-A6CB-9402A1A5E956}.Release|x86.Build.0 = Release|Any CPU
+		{A470A636-A244-43D3-8048-AE899B102100}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A470A636-A244-43D3-8048-AE899B102100}.Debug|x86.Build.0 = Debug|Any CPU
+		{A470A636-A244-43D3-8048-AE899B102100}.Release|x86.ActiveCfg = Release|Any CPU
+		{A470A636-A244-43D3-8048-AE899B102100}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

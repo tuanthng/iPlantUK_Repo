@@ -14,16 +14,16 @@ namespace RootNav.Core.Measurement
     {
         public static Dictionary<RootBase, Tuple<double,double>[]> GetCurvatureProfiles(List<RootBase> roots, double resolution)
         {
-            Dictionary<RootBase, Tuple<double, double>[]> data = new Dictionary<RootBase, Tuple<double, double>[]>();
+			Dictionary<RootBase, Tuple<double, double>[]> data = new Dictionary<RootBase,  Tuple<double, double>[]>();
             TraverseRootsCurvature(roots, ref data, resolution);
             return data;
         }
 
-        private static void TraverseRootsCurvature(List<RootBase> roots, ref Dictionary<RootBase, Tuple<double, double>[]> data, double resolution)
+		private static void TraverseRootsCurvature(List<RootBase> roots, ref Dictionary<RootBase, Tuple<double, double>[]> data, double resolution)
         {
             foreach (RootBase r in roots)
             {
-                data.Add(r, r.GetCurvatureProfile(resolution));
+				data.Add(r, r.GetCurvatureProfile(resolution));
                 if (r.Children.Count > 0)
                 {
                     List<RootBase> children = new List<RootBase>();

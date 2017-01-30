@@ -158,7 +158,9 @@ namespace RootNav.Core.LiveWires
                 w.Graph = Graph;
                 w.DistanceMap = DistanceMap;
                 w.Run();
+				//w.Join ();
             }
+
         }
 
         public void ReRun()
@@ -336,6 +338,7 @@ namespace RootNav.Core.LiveWires
                 w.DistanceMap = DistanceMap;
                 w.Graph = Graph;
                 w.Run();
+				//w.Join ();
             }
         }
 

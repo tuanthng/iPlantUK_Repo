@@ -199,8 +199,17 @@ class RootNavLinux(object):
 			' -BackgroundPercentage=' + self.options.BackgroundPercentage + \
 			' -BackgroundExcessSigma=' + self.options.BackgroundExcessSigma + \
 			' -Weights="' + self.options.Weights + '"' + \
-            ' -InputPointsFile="' + inputDataFile + '"'
-         
+            ' -InputPointsFile="' + inputDataFile + '"' + \
+            ' -DoMeasurement="' + self.options.DoMeasurement + '"' + \
+            ' -ImageResolutionValue="' + self.options.ImageRes + '"' + \
+            ' -SplineSpacing="' + self.options.SplineSpacing + '"' + \
+            ' -PlantName="' + self.options.PlantName + '"' + \
+            ' -CurvatureProfile="' + self.options.CurvatureProfile + '"' + \
+            ' -MapProfile="' + self.options.MapProfile + '"' + \
+            ' -TravelMap="' + self.options.Travel + '"' + \
+            ' -CompleteArch="' + self.options.CompleteArch + '"' + \
+            ' -DoMeasurementTable="' + self.options.OutputMeasurementTable + '"' 
+            
         #parasRootNav = str(parasRootNav)
          
         logging.debug('parasRootNav: ' + parasRootNav)

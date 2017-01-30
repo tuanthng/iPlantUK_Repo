@@ -48,6 +48,7 @@
     <Reference Include="Emgu.CV.World">
       <HintPath>..\..\..\..\Downloads\emgucv\bin\Emgu.CV.World.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Core\LiveWires\LiveWireThread.cs" />
     <Compile Include="Core\LiveWires\LiveWireManagerThread.cs" />
     <Compile Include="Interface\Controls\ScreenOverlayRenderInfo.cs" />
+    <Compile Include="AdjustedPath.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -125,6 +127,10 @@
     <ProjectReference Include="..\DataConnections\DataConnections.csproj">
       <Project>{72B53656-016D-4BB7-A6CB-9402A1A5E956}</Project>
       <Name>DataConnections</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RootNavMeasurement\RootNavMeasurement.csproj">
+      <Project>{A470A636-A244-43D3-8048-AE899B102100}</Project>
+      <Name>RootNavMeasurement</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
