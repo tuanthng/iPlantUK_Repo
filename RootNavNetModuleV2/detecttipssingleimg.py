@@ -325,7 +325,7 @@ for idx, tip in enumerate(testedlateralroot):
     #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#00FF00"})
     ###############
     
-    if numbercircles == 0:
+    if numbersquares == 0:
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
 
 #save data if any changed

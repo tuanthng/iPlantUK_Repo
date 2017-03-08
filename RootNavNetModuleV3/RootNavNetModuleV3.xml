@@ -1,4 +1,4 @@
-<module name="RootNavNetModuleV2" type="runtime">
+<module name="RootNavNetModuleV3" type="runtime">
 	<tag name="inputs">
 
 		<tag name="mex_url" type="system-input" />
@@ -403,7 +403,7 @@
 	<tag name="help"
 		value="Use Point tool for source nodes, Circle for primary nodes and Square for lateral nodes. The centre of each shape will be used as the initial points. Use Annotation tool to manage (i.e. resize/move/delete etc.) the shapes as you desire...More help Coming soon" />
 	<tag name="thumbnail" type="file" value="public/roots.png" />
-	<tag name="title" value="RootNavNet version 2" />
+	<tag name="title" value="RootNavNet version 3" />
 	<tag name="authors" value="Tuan Nguyen - iPlantUK" />
 	<tag name="description"
 		value="This module allows the semiautomated quantification of complex root system architectures in a range of plant species grown and imaged in a variety of ways. Deep learning method has been employed to do the segmentation and tip detections" />

@@ -63,7 +63,7 @@ imgpath = sys.argv[1]
 resultimgpath = sys.argv[2]
 inputdatafile = sys.argv[3]
 scaledimgfile = sys.argv[4]
-
+inputdatatype = sys.argv[5]
 #make sure the class ID matching with Ids in the test data
 BackgroundId = 0
 #RootID = 1
@@ -302,9 +302,12 @@ for idx, tip in enumerate(testedprimaryroot):
     #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
     #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#0000FF"})
     ###############
-    if numbercircles == 0:
+    if inputdatatype == 'Auto':
+        if numbercircles == 0:
+            pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
+    elif inputdatatype == 'Semi-Auto':
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
-                                 
+        
 for idx, tip in enumerate(testedlateralroot):
     xL = float(tip[1] - radius)
     yT = float(tip[0] - radius)
@@ -324,8 +327,10 @@ for idx, tip in enumerate(testedlateralroot):
     #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
     #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#00FF00"})
     ###############
-    
-    if numbersquares == 0:
+    if inputdatatype == 'Auto':
+        if numbersquares == 0:
+            pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
+    elif inputdatatype == 'Semi-Auto':
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
 
 #save data if any changed
