@@ -306,6 +306,7 @@ for idx, tip in enumerate(testedprimaryroot):
         if numbercircles == 0:
             pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
     elif inputdatatype == 'Semi-Auto':
+        print 'In semi-auto part of primary dets'
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
         
 for idx, tip in enumerate(testedlateralroot):
@@ -331,6 +332,7 @@ for idx, tip in enumerate(testedlateralroot):
         if numbersquares == 0:
             pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
     elif inputdatatype == 'Semi-Auto':
+        print 'In semi-auto part of lateral dets'
         pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(xR), "yBottom" : str(yB)})
 
 #save data if any changed

@@ -352,11 +352,17 @@ for idx, tip in enumerate(testedseeds):
     #vertexnode = etree.SubElement(pointnode, "vertex", {'x' : str(tip[1]), 'y' : str(tip[0]), "index" : "0"})
     #tagnode = etree.SubElement(pointnode, "tag", {'name' : 'color', "value" : "#FF0000"})
     
-    if inputdatatype == 'Auto':
+    if inputdatatype == 'Auto': #note: the Source always at the top of the list
         if numberpoints == 0:
-            pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})                         
+            #pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})
+            pointNode = etree.Element("Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})
+            pointsNode[0].insert(0, pointNode)
+            
     elif inputdatatype == 'Semi-Auto':
-        pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})
+        print 'In semi-auto part of seg'
+        #pointNode = etree.SubElement(pointsNode[0], "Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})
+        pointNode = etree.Element("Point", {'x' : str(tip[1]), 'y' : str(tip[0]), "type" : "Source", "Shape" : "Point"})
+        pointsNode[0].insert(0, pointNode)
     
 #tree.write(inputdatafile)
 with open(inputdatafile, "w") as id:
