@@ -1,0 +1,1 @@
+mono RootNavLinux.exe -ImageFile="DSC_0104.JPG" -PresetName="Custom" -InitialClassCount=3 -MaximumClassCount=4 -ExpectedRootClassCount=2 -PatchSize=150 -BackgroundPercentage=0.5 -BackgroundExcessSigma=1.5 -Weights="0.35,0.68,0.99"
