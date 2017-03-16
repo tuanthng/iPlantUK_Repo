@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CellSeTiPlant", "CellSeTiPlant\CellSeTiPlant.csproj", "{4B7EF6CB-DE37-470D-90C8-4711B64B62C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plossum", "plossum-commandline\src\Plossum\Plossum.csproj", "{156BF637-7F50-4EC8-8476-D4E162335364}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{156BF637-7F50-4EC8-8476-D4E162335364}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{156BF637-7F50-4EC8-8476-D4E162335364}.Debug|x86.Build.0 = Debug|Any CPU
+		{156BF637-7F50-4EC8-8476-D4E162335364}.Release|x86.ActiveCfg = Release|Any CPU
+		{156BF637-7F50-4EC8-8476-D4E162335364}.Release|x86.Build.0 = Release|Any CPU
+		{4B7EF6CB-DE37-470D-90C8-4711B64B62C3}.Debug|x86.ActiveCfg = Debug|x86
+		{4B7EF6CB-DE37-470D-90C8-4711B64B62C3}.Debug|x86.Build.0 = Debug|x86
+		{4B7EF6CB-DE37-470D-90C8-4711B64B62C3}.Release|x86.ActiveCfg = Release|x86
+		{4B7EF6CB-DE37-470D-90C8-4711B64B62C3}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+EndGlobal
