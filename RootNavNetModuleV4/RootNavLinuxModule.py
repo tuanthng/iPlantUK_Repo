@@ -97,7 +97,7 @@ class RootNavLinux(object):
         
         if mex_inputs:
             for tag in mex_inputs[0]:
-                if tag.tag == 'tag' and tag.attrib['type'] != 'system-input':
+                if tag.tag == 'tag' and ('type' in tag.attrib) and tag.attrib['type'] != 'system-input':
                     logging.debug('Set options with %s as %s'%(tag.attrib['name'],tag.attrib['value']))
                     setattr(options,tag.attrib['name'],tag.attrib['value'])
         else:
@@ -315,47 +315,48 @@ class RootNavLinux(object):
             numbersquares = 0
             numberpolylines = 0
             
-            for ob in tips.gobjects:
-                logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
-                
-                if ob.xmltag == 'point':
-                    pointNode = etree.SubElement(pointsNode, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source", "Shape" : "Point"})
-                    numberpoints = numberpoints + 1
+            if tips is not None:
+                for ob in tips.gobjects:
+                    logging.debug('xmltag: ' + ob.xmltag +  ' ' + str(ob))
                     
-                elif ob.xmltag == 'circle':
-                    xL = float(ob.vertices[0].x)
-                    yT = float(ob.vertices[0].y)
-                    
-                    x =  xL + (float(ob.vertices[1].x) - xL)//2.0 #use // to get float number
-                    y = yT + (float(ob.vertices[1].y) - yT)//2.0
-                    
-                    pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
-                    numbercircles = numbercircles + 1
-                    
-                elif ob.xmltag == 'square':
-                    xL = float(ob.vertices[0].x)
-                    yT = float(ob.vertices[0].y)
-                    
-                    x =  xL + (float(ob.vertices[1].x) - xL)//2.0
-                    y = yT + (float(ob.vertices[1].y) - yT)//2.0
-                    
-                    pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
-                    numbersquares = numbersquares + 1
-                    
-                elif ob.xmltag == 'polyline':
-                    pathNode = etree.SubElement(adjustedPathsNode, "Path")
-                    
-                    numPoints = len(ob.vertices)
-                    
-                    for index in range(0, numPoints):
-                        x = float(ob.vertices[index].x)
-                        y = float(ob.vertices[index].y)
-                        if index == 0:
-                            pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Start", "Shape" : "Polyline"})
-                        else:
-                            pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Mid", "Shape" : "Polyline"})
-                    
-                    numberpolylines = numberpolylines + 1
+                    if ob.xmltag == 'point':
+                        pointNode = etree.SubElement(pointsNode, "Point", {'x' : ob.vertices[0].x, 'y' : ob.vertices[0].y, "type" : "Source", "Shape" : "Point"})
+                        numberpoints = numberpoints + 1
+                        
+                    elif ob.xmltag == 'circle':
+                        xL = float(ob.vertices[0].x)
+                        yT = float(ob.vertices[0].y)
+                        
+                        x =  xL + (float(ob.vertices[1].x) - xL)//2.0 #use // to get float number
+                        y = yT + (float(ob.vertices[1].y) - yT)//2.0
+                        
+                        pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Primary", "Shape" : "Circle", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
+                        numbercircles = numbercircles + 1
+                        
+                    elif ob.xmltag == 'square':
+                        xL = float(ob.vertices[0].x)
+                        yT = float(ob.vertices[0].y)
+                        
+                        x =  xL + (float(ob.vertices[1].x) - xL)//2.0
+                        y = yT + (float(ob.vertices[1].y) - yT)//2.0
+                        
+                        pointNode = etree.SubElement(pointsNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Lateral", "Shape" : "Square", "xLeft" : str(xL), "yTop" : str(yT), "xRight" : str(ob.vertices[1].x), "yBottom" : str(ob.vertices[1].y)})
+                        numbersquares = numbersquares + 1
+                        
+                    elif ob.xmltag == 'polyline':
+                        pathNode = etree.SubElement(adjustedPathsNode, "Path")
+                        
+                        numPoints = len(ob.vertices)
+                        
+                        for index in range(0, numPoints):
+                            x = float(ob.vertices[index].x)
+                            y = float(ob.vertices[index].y)
+                            if index == 0:
+                                pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Start", "Shape" : "Polyline"})
+                            else:
+                                pointNode = etree.SubElement(pathNode, "Point", {'x' : str(x), 'y' : str(y), "type" : "Mid", "Shape" : "Polyline"})
+                        
+                        numberpolylines = numberpolylines + 1
             
             #numberpoints = 0
             #numbercircles = 0
