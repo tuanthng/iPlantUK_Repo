@@ -6,6 +6,12 @@ namespace CellSeTiPlant
 	{
 		public CellSeTMain ()
 		{
+			
+		}
+
+		public void Process()
+		{
+			
 		}
 	}
 }
