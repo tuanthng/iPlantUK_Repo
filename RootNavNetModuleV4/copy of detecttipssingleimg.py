@@ -13,9 +13,9 @@ from skimage.color import rgb2gray
 from scipy.ndimage.measurements import center_of_mass
 import math
 #import matplotlib.pyplot as plt
-sys.path.append('/home/tuan/caffe/caffe/python')
+sys.path.append('/usr/local/caffe/python')
 #sys.path.append('/usr/local/lib/python2.7/dist-packages')
-sys.path.append('/home/tuan/caffe/caffe/lib')
+sys.path.append('/usr/local/caffe/lib')
 """
 adding lib path to the system (this works for older version of caffe. With the new version, no need to do this
 Tested with the version available on caffe github
@@ -29,9 +29,9 @@ save, and quit
 
 run: sudo ldconfig
 """
-os.environ['LD_LIBRARY_PATH'] = '/home/tuan/caffe/caffe/lib'
+os.environ['LD_LIBRARY_PATH'] = '/usr/local/caffe/lib'
 from ctypes import *
-cdll.LoadLibrary('/home/tuan/caffe/caffe/lib/libcaffe.so')
+cdll.LoadLibrary('/usr/local/caffe/lib/libcaffe.so')
 
 import caffe
 
@@ -43,8 +43,9 @@ from PIL import Image
 
 # few settings
 ##for threeclasses
-fWeights = '/home/tuan/MyProject/rootnet/twotipclasses-24/weights-02-09-2016/trainscore59pool43_iter_140000.caffemodel'
-fModel = '/home/tuan/MyProject/rootnet/twotipclasses-24/deploy/deploytwotipclasses.prototxt'
+#fWeights = '/home/rootnet/twotipclasses-24/weights-02-09-2016/trainscore59pool43_iter_140000.caffemodel'
+fWeights = '/home/rootnet/twotipclasses-24/weights-01-08-2016/trainscore59pool43_iter_140000.caffemodel'
+fModel = '/home/rootnet/twotipclasses-24/deploy/deploytwotipclasses.prototxt'
 
 #fWeights = sys.argv[1]
 #fModel = sys.argv[2]
@@ -73,7 +74,7 @@ BackgroundId = 0
 PrimaryId = 1
 LateralId = 2
 
-thresholdareaprimary = 20
+thresholdareaprimary = 3
 thresholdarealateral = 3
 
 baselinelength = 850
@@ -287,22 +288,6 @@ print 'Output img: ' + resultimgpath
 #find primary tips, lateral tips
 testedprimaryroot = calculateTestedClassV2(out, PrimaryId, thresholdareaprimary)
 testedlateralroot = calculateTestedClassV2(out, LateralId, thresholdarealateral)
-
-#remove noise tips
-flaggt = np.zeros(len(testedprimaryroot), dtype=np.int)
-
-for testedtip in testedlateralroot:
-    #only care nodes not visited yet
-    flaggt =  check_closest_node(testedtip, testedprimaryroot, flaggt, 40)
-
-trueprimarytips = []
-countid = 0
-for fg in flaggt:
-    if fg == 0:
-        trueprimarytips.append(testedprimaryroot[countid])
-    countid = countid + 1
-
-testedprimaryroot = trueprimarytips
 
 numberdetectedcircles = len(testedprimaryroot)
 numberdetectedsquares = len(testedlateralroot)
